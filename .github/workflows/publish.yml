@@ -29,13 +29,13 @@ name: Publish to npm
           working-directory: ui
           run: npm ci
 
-        - name: Build @lucifer91299/ui
+        - name: Build ui
           working-directory: ui
           run: npm run build
 
         - name: Publish @lucifer91299/ui
           working-directory: ui
-          run: npm publish --access public --provenance
+          run: npm publish --access public
           env:
             NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -43,12 +43,12 @@ name: Publish to npm
           working-directory: create-portal-app
           run: npm ci
 
-        - name: Build @lucifer91299/create-portal-app
+        - name: Build create-portal-app
           working-directory: create-portal-app
           run: npm run build
 
         - name: Publish @lucifer91299/create-portal-app
           working-directory: create-portal-app
-          run: npm publish --access public --provenance
+          run: npm publish --access public
           env:
             NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
