@@ -9,7 +9,7 @@
 **Scaffold a full portal in seconds using the CLI:**
 
 ```bash
-npx create-portal-app my-portal --yes
+npx @lucifer91299/create-portal-app my-portal --yes
 ```
 
 ---
@@ -611,7 +611,7 @@ cd packages/ui && npm run build
 Or scaffold with a local path reference:
 
 ```bash
-npx create-portal-app my-portal --yes --local-ui=../../ui
+npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../ui
 ```
 
 ---

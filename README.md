@@ -66,7 +66,7 @@
 ### Interactive mode
 
 ```bash
-npx create-portal-app my-portal
+npx @lucifer91299/create-portal-app my-portal
 ```
 
 The CLI walks you through each option one by one with arrow-key menus.
@@ -74,16 +74,16 @@ The CLI walks you through each option one by one with arrow-key menus.
 ### Non-interactive mode (`--yes`)
 
 ```bash
-npx create-portal-app my-portal --yes
+npx @lucifer91299/create-portal-app my-portal --yes
 ```
 
 Skips every prompt and uses the defaults listed below. Ready in under 5 seconds.
 
 ```bash
 # Override specific defaults while skipping the rest
-npx create-portal-app my-portal --yes --login=simple --sidebar=rail
-npx create-portal-app my-portal --yes --primary=#E11D48 --accent=#F59E0B
-npx create-portal-app my-portal --yes --auth=laravel
+npx @lucifer91299/create-portal-app my-portal --yes --login=simple --sidebar=rail
+npx @lucifer91299/create-portal-app my-portal --yes --primary=#E11D48 --accent=#F59E0B
+npx @lucifer91299/create-portal-app my-portal --yes --auth=laravel
 ```
 
 ### All CLI flags
@@ -819,7 +819,7 @@ npm run build     # run this after each SDK change
 Or use the CLI's `--local-ui` flag when scaffolding:
 
 ```bash
-npx create-portal-app my-portal --yes --local-ui=../../ui
+npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../ui
 # generates: "@lucifer91299/ui": "file:../../ui" in package.json
 ```
 
