@@ -817,7 +817,7 @@ export default function SettingsPage() {
         actions={<Button variant="primary" onClick={handleSave}>Save changes</Button>}
       />
 
-      {saved && <AlertBanner variant="success" message="Settings saved successfully." />}
+      {saved && <AlertBanner variant="success">Settings saved successfully.</AlertBanner>}
 
       <Card className="p-6">
         <h3 className="text-callout font-semibold text-label-primary mb-4">Appearance</h3>

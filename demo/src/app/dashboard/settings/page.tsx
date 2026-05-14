@@ -38,7 +38,7 @@ export default function SettingsPage() {
         }
       />
 
-      {saved && <AlertBanner variant="success" message="Settings saved successfully." />}
+      {saved && <AlertBanner variant="success">Settings saved successfully.</AlertBanner>}
 
       {/* Appearance */}
       <Card className="p-6">
