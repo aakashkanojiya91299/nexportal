@@ -1,13 +1,14 @@
 'use client'
 
 import React, { useState, useEffect, useRef, useMemo } from 'react'
-import { ChevronDown, Check, Search, Plus } from 'lucide-react'
+import { Check, Search, Plus, ChevronsUpDown, X } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 export interface SelectOption {
   value: string
   label: string
   disabled?: boolean
+  group?: string
 }
 
 export interface SelectProps {
@@ -22,6 +23,7 @@ export interface SelectProps {
   helperText?: string
   disabled?: boolean
   searchable?: boolean
+  clearable?: boolean
   onAddNew?: () => void
   addNewLabel?: string
   required?: boolean
@@ -41,6 +43,7 @@ export function Select({
   helperText,
   disabled = false,
   searchable = false,
+  clearable = false,
   onAddNew,
   addNewLabel = 'Add new…',
   required,
@@ -60,6 +63,17 @@ export function Select({
     return options.filter((o) => o.label.toLowerCase().includes(q))
   }, [options, query, searchable])
 
+  // Group options if any have a group key
+  const grouped = useMemo(() => {
+    const map = new Map<string, SelectOption[]>()
+    filtered.forEach((o) => {
+      const key = o.group ?? ''
+      if (!map.has(key)) map.set(key, [])
+      map.get(key)!.push(o)
+    })
+    return map
+  }, [filtered])
+
   useEffect(() => {
     if (open && searchable) {
       const id = setTimeout(() => searchRef.current?.focus(), 50)
@@ -69,7 +83,6 @@ export function Select({
     return undefined
   }, [open, searchable])
 
-  // Close on outside click
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
@@ -79,6 +92,16 @@ export function Select({
     if (open) document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [open])
+
+  function handleSelect(val: string) {
+    onChange(val)
+    setOpen(false)
+  }
+
+  function handleClear(e: React.MouseEvent) {
+    e.stopPropagation()
+    onChange('')
+  }
 
   return (
     <div className={cn('flex flex-col gap-1.5', containerClassName)} ref={containerRef}>
@@ -110,14 +133,26 @@ export function Select({
             className,
           )}
         >
-          <span className={cn('truncate', !selected && 'text-label-tertiary')}>
+          <span className={cn('truncate flex-1 text-left', !selected && 'text-label-tertiary')}>
             {selected ? selected.label : placeholder}
           </span>
-          <ChevronDown className={cn('w-4 h-4 text-label-tertiary shrink-0 ml-2 transition-transform duration-150', open && 'rotate-180')} />
+
+          <div className="flex items-center gap-1 shrink-0 ml-2">
+            {clearable && selected && !disabled && (
+              <span
+                role="button"
+                onClick={handleClear}
+                className="text-label-quaternary hover:text-label-secondary transition-colors"
+              >
+                <X className="h-3.5 w-3.5" />
+              </span>
+            )}
+            <ChevronsUpDown className={cn('h-4 w-4 text-label-tertiary transition-transform duration-150', open && 'rotate-180')} />
+          </div>
         </button>
 
         {open && (
-          <div className="absolute z-50 mt-1 w-full rounded-apple border border-separator-opaque bg-white shadow-lg overflow-hidden">
+          <div className="absolute z-50 mt-1 w-full rounded-apple border border-separator-opaque bg-white shadow-xl overflow-hidden">
             {searchable && (
               <div className="px-3 py-2 border-b border-surface-tertiary">
                 <div className="flex items-center gap-2 text-label-tertiary">
@@ -135,24 +170,41 @@ export function Select({
 
             <ul className="max-h-60 overflow-y-auto py-1">
               {filtered.length === 0 && (
-                <li className="px-3 py-2 text-body text-label-tertiary text-center">No options found</li>
+                <li className="px-3 py-3 text-body text-label-tertiary text-center">No options found</li>
               )}
-              {filtered.map((opt) => (
-                <li key={opt.value}>
-                  <button
-                    type="button"
-                    disabled={opt.disabled}
-                    onClick={() => { onChange(opt.value); setOpen(false) }}
-                    className={cn(
-                      'w-full flex items-center justify-between px-3 py-2 text-body text-left transition-colors',
-                      'hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed',
-                      value === opt.value && 'text-primary font-medium',
-                    )}
-                  >
-                    <span>{opt.label}</span>
-                    {value === opt.value && <Check className="w-3.5 h-3.5 text-primary shrink-0" />}
-                  </button>
-                </li>
+
+              {Array.from(grouped.entries()).map(([group, items]) => (
+                <React.Fragment key={group}>
+                  {group && (
+                    <li className="px-3 pt-2 pb-1">
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-label-quaternary">
+                        {group}
+                      </span>
+                    </li>
+                  )}
+                  {items.map((opt) => {
+                    const isSelected = value === opt.value
+                    return (
+                      <li key={opt.value}>
+                        <button
+                          type="button"
+                          disabled={opt.disabled}
+                          onClick={() => handleSelect(opt.value)}
+                          className={cn(
+                            'w-full flex items-center justify-between px-3 py-2.5 text-body text-left transition-colors',
+                            'hover:bg-surface-secondary disabled:opacity-50 disabled:cursor-not-allowed',
+                            isSelected && 'bg-primary-soft/50',
+                          )}
+                        >
+                          <span className={cn('truncate', isSelected ? 'text-primary font-medium' : 'text-label-secondary')}>
+                            {opt.label}
+                          </span>
+                          {isSelected && <Check className="w-3.5 h-3.5 shrink-0 ml-2" style={{ color: 'var(--primary, #000080)' }} />}
+                        </button>
+                      </li>
+                    )
+                  })}
+                </React.Fragment>
               ))}
             </ul>
 
@@ -161,7 +213,8 @@ export function Select({
                 <button
                   type="button"
                   onClick={() => { onAddNew(); setOpen(false) }}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-body text-primary hover:bg-primary-soft transition-colors"
+                  className="w-full flex items-center gap-2 px-3 py-2 text-body hover:bg-primary-soft transition-colors"
+                  style={{ color: 'var(--primary, #000080)' }}
                 >
                   <Plus className="w-3.5 h-3.5" />
                   {addNewLabel}

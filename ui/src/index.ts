@@ -35,6 +35,8 @@ export { DataTable, StatusBadge, ActionButtons } from './components/ui/DataTable
 export type { DataTableProps, TableColumn, StatusBadgeProps, ActionButtonsProps } from './components/ui/DataTable'
 export { Select } from './components/ui/Select'
 export type { SelectProps, SelectOption } from './components/ui/Select'
+export { MultiSelect } from './components/ui/MultiSelect'
+export type { MultiSelectProps, MultiSelectOption } from './components/ui/MultiSelect'
 export { DatePicker } from './components/ui/DatePicker'
 export type { DatePickerProps } from './components/ui/DatePicker'
 
