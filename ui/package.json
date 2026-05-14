@@ -1,6 +1,6 @@
 {
   "name": "@lucifer91299/ui",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "description": "Portal UI design system — components, Tailwind preset, auth hooks for Next.js",
   "license": "MIT",
   "author": "Aakash Kanojiya",

@@ -216,6 +216,15 @@ See the full component and theming documentation at:
 
 ## Changelog
 
+### v1.0.7
+- Removed `PageFooter` from generated dashboard layout — no double footer
+- Template generates cleaner layout; `PageFooter` can be added manually where needed
+
+### v1.0.6
+- Generated project now includes Users and Settings pages
+- Fixed Windows folder creation bug (`path.dirname` instead of `lastIndexOf('/')`)
+- CLI help text corrected to `npx @lucifer91299/create-portal-app`
+
 ### v1.0.3
 - Added `workflow_dispatch` to GitHub Actions — manual publish trigger from Actions tab
 - README improvements: badges, changelog
