@@ -31,6 +31,10 @@ export { Card } from './components/ui/Card'
 export type { CardProps } from './components/ui/Card'
 export { AlertBanner } from './components/ui/AlertBanner'
 export { LoadingSpinner } from './components/ui/LoadingSpinner'
+export { DataTable, StatusBadge, ActionButtons } from './components/ui/DataTable'
+export type { DataTableProps, TableColumn, StatusBadgeProps, ActionButtonsProps } from './components/ui/DataTable'
+export { Select } from './components/ui/Select'
+export type { SelectProps, SelectOption } from './components/ui/Select'
 
 // ── Brand / layout components ─────────────────────────────────────────────
 export { BrandLogo } from './components/layout/BrandLogo'
@@ -48,6 +52,12 @@ export type { SidebarRailProps } from './components/layout/SidebarRail'
 export { DashboardLayout } from './components/layout/DashboardLayout'
 export type { DashboardLayoutProps } from './components/layout/DashboardLayout'
 export type { NavItem, NavGroup, UserInfo, PoweredByConfig } from './components/layout/types'
+export { PageShell } from './components/layout/PageShell'
+export type { PageShellProps } from './components/layout/PageShell'
+export { Breadcrumbs } from './components/layout/Breadcrumbs'
+export type { BreadcrumbsProps, BreadcrumbItem } from './components/layout/Breadcrumbs'
+export { PageFooter } from './components/layout/PageFooter'
+export type { PageFooterProps, FooterSocialLink } from './components/layout/PageFooter'
 
 // ── Login components ──────────────────────────────────────────────────────
 export { LoginPage } from './components/login/LoginPage'
