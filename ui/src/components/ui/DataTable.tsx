@@ -9,7 +9,8 @@ import { cn } from '../../lib/cn'
 export interface TableColumn<T> {
   key: string
   header: string
-  render?: (item: T, index: number) => ReactNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  render?: (item: any, index: number) => ReactNode
   className?: string
 }
 
