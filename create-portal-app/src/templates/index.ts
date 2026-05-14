@@ -27,8 +27,8 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.4',
-    'next': '^15.3.0',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.5',
+    'next': '^16.2.6',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
     'framer-motion': '^12.0.0',

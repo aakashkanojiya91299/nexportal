@@ -4,7 +4,7 @@ import React, { forwardRef, type ButtonHTMLAttributes } from 'react'
 import { cn } from '../../lib/cn'
 import { LoadingSpinner } from './LoadingSpinner'
 
-export type ButtonVariant = 'primary' | 'accent' | 'tinted' | 'danger' | 'outline'
+export type ButtonVariant = 'primary' | 'accent' | 'tinted' | 'danger' | 'outline' | 'ghost'
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -19,6 +19,7 @@ const variantClass: Record<ButtonVariant, string> = {
   tinted:  'btn-tinted',
   danger:  'btn-danger',
   outline: 'btn-outline',
+  ghost:   'btn-ghost',
 }
 
 const sizeClass: Record<ButtonSize, string> = {
