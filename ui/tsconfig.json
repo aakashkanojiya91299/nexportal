@@ -19,7 +19,7 @@
     "outDir": "./dist",
     "rootDir": "./src",
     "paths": {
-      "@nexportal/ui": ["./src/index.ts"]
+      "@lucifer91299/ui": ["./src/index.ts"]
     }
   },
   "include": ["src"],
