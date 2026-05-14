@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.0.7',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.0',
     'next': '^15.3.0',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
@@ -416,7 +416,7 @@ export default api
 }
 
 export function genNavConfig(o: ScaffoldOptions): string {
-  return `import { LayoutDashboard, Settings, Users, FileText } from 'lucide-react'
+  return `import { LayoutDashboard, Settings, Users, Layers } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
 export const navGroups: NavGroup[] = [
@@ -424,8 +424,9 @@ export const navGroups: NavGroup[] = [
     heading: 'Main',
     groupIcon: <LayoutDashboard className="h-3.5 w-3.5" />,
     items: [
-      { label: 'Dashboard', href: '/dashboard',       icon: <LayoutDashboard className="h-4 w-4" /> },
-      { label: 'Users',     href: '/dashboard/users', icon: <Users className="h-4 w-4" /> },
+      { label: 'Dashboard',  href: '/dashboard',            icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: 'Users',      href: '/dashboard/users',      icon: <Users className="h-4 w-4" /> },
+      { label: 'Components', href: '/dashboard/components', icon: <Layers className="h-4 w-4" /> },
     ],
   },
   {
@@ -852,6 +853,500 @@ export default function SettingsPage() {
           />
         </div>
       </Card>
+    </div>
+  )
+}
+`
+}
+
+export function genComponentsShowcasePage(): string {
+  return `'use client'
+
+import { useState } from 'react'
+import {
+  PageShell, Breadcrumbs, Card, TricolorBar,
+  Badge, StatusBadge, AlertBanner, LoadingSpinner,
+  Button, Input, Select, Textarea, Switch, Checkbox, RadioGroup, DatePicker,
+  Dialog, Tooltip, Tabs, TabsList, TabsTrigger, TabsContent,
+  Accordion, AccordionItem, Progress, Skeleton, SkeletonCard, SkeletonText,
+  Separator, Avatar, AvatarGroup, DataTable, ActionButtons,
+  PortalBarChart, PortalLineChart, PortalAreaChart, PortalDonutChart,
+} from '@lucifer91299/ui'
+
+// ── Demo data ────────────────────────────────────────────────────────────────
+
+const BAR_DATA = [
+  { month: 'Jan', revenue: 42, expenses: 28 },
+  { month: 'Feb', revenue: 55, expenses: 31 },
+  { month: 'Mar', revenue: 48, expenses: 29 },
+  { month: 'Apr', revenue: 63, expenses: 35 },
+  { month: 'May', revenue: 71, expenses: 38 },
+  { month: 'Jun', revenue: 58, expenses: 32 },
+]
+
+const DONUT_DATA = [
+  { label: 'Active',   value: 58 },
+  { label: 'Pending',  value: 22 },
+  { label: 'Inactive', value: 12 },
+  { label: 'Blocked',  value: 8  },
+]
+
+const TABLE_DATA = [
+  { id: 1, name: 'Priya Mehta',  role: 'Admin',   status: 'active',   joined: '12 Jan 2024' },
+  { id: 2, name: 'Arjun Sharma', role: 'Manager', status: 'pending',  joined: '03 Feb 2024' },
+  { id: 3, name: 'Neha Gupta',   role: 'Viewer',  status: 'inactive', joined: '22 Mar 2024' },
+  { id: 4, name: 'Ravi Patel',   role: 'Editor',  status: 'active',   joined: '05 Apr 2024' },
+]
+
+const SELECT_OPTS = [
+  { value: 'admin',   label: 'Administrator' },
+  { value: 'manager', label: 'Manager'       },
+  { value: 'viewer',  label: 'Viewer'        },
+]
+
+const RADIO_OPTS = [
+  { value: 'monthly',   label: 'Monthly',   description: 'Billed every month' },
+  { value: 'quarterly', label: 'Quarterly', description: 'Save 10% quarterly' },
+  { value: 'annual',    label: 'Annual',    description: 'Save 25% annually'  },
+]
+
+const ACCORDION_ITEMS = [
+  { value: 'q1', trigger: 'What components are included?',
+    body: 'Buttons, inputs, selects, datepickers, charts, tables, modals, tabs, accordions, and more. Everything you need for a production admin portal.' },
+  { value: 'q2', trigger: 'How do I theme the components?',
+    body: 'Wrap your app in ThemeProvider with a createTheme() config. Every component reads CSS variables — no class overrides needed.' },
+  { value: 'q3', trigger: 'Do I need recharts?',
+    body: 'Only for chart components (PortalBarChart, PortalLineChart, etc.). Install it separately: npm install recharts' },
+]
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function Section({ id, title, subtitle, children }: {
+  id?: string; title: string; subtitle?: string; children: React.ReactNode
+}) {
+  return (
+    <section id={id} className="space-y-4">
+      <div>
+        <h2 className="text-title3 font-bold text-label-primary">{title}</h2>
+        {subtitle && <p className="text-callout text-label-tertiary mt-1">{subtitle}</p>}
+      </div>
+      {children}
+    </section>
+  )
+}
+
+function Row({ children }: { children: React.ReactNode }) {
+  return <div className="flex flex-wrap items-center gap-3">{children}</div>
+}
+
+function Label({ children }: { children: React.ReactNode }) {
+  return (
+    <p className="text-[11px] font-bold uppercase tracking-widest text-label-tertiary mb-3">
+      {children}
+    </p>
+  )
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+
+export default function ComponentsPage() {
+  const [dialogOpen,  setDialogOpen]  = useState(false)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [tabVariant,  setTabVariant]  = useState<'line' | 'pill' | 'card'>('line')
+  const [selectVal,   setSelectVal]   = useState('admin')
+  const [radioVal,    setRadioVal]    = useState('monthly')
+  const [sw1, setSw1] = useState(true)
+  const [sw2, setSw2] = useState(false)
+  const [cb1, setCb1] = useState(true)
+  const [cb2, setCb2] = useState(false)
+
+  return (
+    <div className="p-6 space-y-14 max-w-5xl pb-20">
+
+      <PageShell
+        title="Component Gallery"
+        subtitle="Every component in the @lucifer91299/ui SDK — live and interactive."
+        breadcrumbs={
+          <Breadcrumbs items={[
+            { label: 'Dashboard', href: '/dashboard' },
+            { label: 'Components' },
+          ]} />
+        }
+      />
+
+      {/* ── Buttons ─────────────────────────────────────────────────────── */}
+      <Section id="buttons" title="Button" subtitle="5 semantic variants · 3 sizes · loading and disabled states.">
+        <Card className="p-5 space-y-5">
+          <div>
+            <Label>Variants</Label>
+            <Row>
+              <Button variant="primary">Primary</Button>
+              <Button variant="accent">Accent</Button>
+              <Button variant="tinted">Tinted</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="danger">Danger</Button>
+            </Row>
+          </div>
+          <Separator />
+          <div>
+            <Label>Sizes</Label>
+            <Row>
+              <Button variant="primary" size="sm">Small</Button>
+              <Button variant="primary" size="md">Medium</Button>
+              <Button variant="primary" size="lg">Large</Button>
+            </Row>
+          </div>
+          <Separator />
+          <div>
+            <Label>States</Label>
+            <Row>
+              <Button variant="primary" isLoading>Saving…</Button>
+              <Button variant="primary" disabled>Disabled</Button>
+            </Row>
+          </div>
+        </Card>
+      </Section>
+
+      {/* ── Badges ──────────────────────────────────────────────────────── */}
+      <Section id="badges" title="Badge & StatusBadge" subtitle="Semantic chips for labels and workflow states.">
+        <Card className="p-5 space-y-5">
+          <div>
+            <Label>Badge variants</Label>
+            <Row>
+              <Badge variant="primary">Primary</Badge>
+              <Badge variant="active">Active</Badge>
+              <Badge variant="pending">Pending</Badge>
+              <Badge variant="inactive">Inactive</Badge>
+              <Badge variant="rejected">Rejected</Badge>
+            </Row>
+          </div>
+          <Separator />
+          <div>
+            <Label>StatusBadge — all workflow states</Label>
+            <Row>
+              {['active','pending','approved','rejected','completed','paid','scheduled','inactive','cancelled'].map((s) => (
+                <StatusBadge key={s} status={s} />
+              ))}
+            </Row>
+          </div>
+        </Card>
+      </Section>
+
+      {/* ── AlertBanner ─────────────────────────────────────────────────── */}
+      <Section id="alerts" title="AlertBanner" subtitle="Contextual inline feedback messages.">
+        <div className="space-y-3">
+          <AlertBanner variant="info">Informational — your session expires in 30 minutes.</AlertBanner>
+          <AlertBanner variant="success">Success — your changes have been saved successfully.</AlertBanner>
+          <AlertBanner variant="warning">Warning — this action cannot be undone.</AlertBanner>
+          <AlertBanner variant="error">Error — failed to connect to the server.</AlertBanner>
+        </div>
+      </Section>
+
+      {/* ── Avatar ──────────────────────────────────────────────────────── */}
+      <Section id="avatar" title="Avatar & AvatarGroup" subtitle="User profile images with initials fallback.">
+        <Card className="p-5 space-y-5">
+          <div>
+            <Label>Sizes (xs → xl)</Label>
+            <Row>
+              <Avatar name="Priya Mehta"  size="xs" />
+              <Avatar name="Arjun Sharma" size="sm" />
+              <Avatar name="Neha Gupta"   size="md" />
+              <Avatar name="Ravi Patel"   size="lg" />
+              <Avatar name="Sunita Rao"   size="xl" />
+            </Row>
+          </div>
+          <Separator />
+          <div>
+            <Label>AvatarGroup (max 4 visible)</Label>
+            <AvatarGroup
+              avatars={[
+                { name: 'Priya Mehta'  },
+                { name: 'Arjun Sharma' },
+                { name: 'Neha Gupta'  },
+                { name: 'Ravi Patel'  },
+                { name: 'Sunita Rao'  },
+                { name: 'Kiran Das'   },
+              ]}
+              max={4}
+            />
+          </div>
+        </Card>
+      </Section>
+
+      {/* ── Inputs ──────────────────────────────────────────────────────── */}
+      <Section id="inputs" title="Input, Select & Textarea" subtitle="Form controls with labels, helpers, and validation states.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input label="Full name"  placeholder="Priya Mehta" />
+          <Input label="Email"      type="email" placeholder="priya@example.com" />
+          <Input label="With error" error="This field is required" placeholder="..." />
+          <Input label="Disabled"   disabled defaultValue="Read-only value" />
+          <Select label="Role" options={SELECT_OPTS} value={selectVal} onChange={setSelectVal} />
+          <Input label="Password" type="password" placeholder="••••••••" />
+          <div className="sm:col-span-2">
+            <Textarea label="Message" placeholder="Type your message here…" helperText="Max 500 characters." />
+          </div>
+          <div className="sm:col-span-2">
+            <Textarea label="Textarea with error" error="Message cannot be empty." />
+          </div>
+        </div>
+      </Section>
+
+      {/* ── Switch, Checkbox, RadioGroup ────────────────────────────────── */}
+      <Section id="toggles" title="Switch, Checkbox & RadioGroup" subtitle="Selection controls for settings and forms.">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <Card className="p-5 space-y-4">
+            <Label>Switch</Label>
+            <Switch label="Email notifications" description="Receive daily digest emails" checked={sw1} onChange={setSw1} />
+            <Switch label="SMS alerts"          description="Critical alerts only"        checked={sw2} onChange={setSw2} />
+            <Switch label="Disabled"            disabled />
+          </Card>
+          <Card className="p-5 space-y-4">
+            <Label>Checkbox</Label>
+            <Checkbox label="Accept terms"  description="I agree to the terms" checked={cb1} onChange={setCb1} />
+            <Checkbox label="Subscribe"     description="Newsletter opt-in"    checked={cb2} onChange={setCb2} />
+            <Checkbox label="Disabled"      disabled />
+            <Checkbox label="Indeterminate" indeterminate />
+          </Card>
+          <Card className="p-5">
+            <Label>RadioGroup</Label>
+            <RadioGroup options={RADIO_OPTS} value={radioVal} onChange={setRadioVal} />
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── DatePicker ──────────────────────────────────────────────────── */}
+      <Section id="datepicker" title="DatePicker" subtitle="3-level calendar (days → months → years) with past/future/weekend constraints.">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <DatePicker label="Default"         placeholder="DD/MM/YYYY" />
+          <DatePicker label="No future dates" disableFuture  helperText="Past dates only" />
+          <DatePicker label="Weekdays only"   excludeWeekends helperText="Weekends disabled" />
+        </div>
+      </Section>
+
+      {/* ── Progress ────────────────────────────────────────────────────── */}
+      <Section id="progress" title="Progress" subtitle="Progress bars in 4 semantic variants and 3 sizes.">
+        <Card className="p-5 space-y-4">
+          <Progress label="Default (68%)" value={68} showValue />
+          <Progress label="Success (90%)" value={90} variant="success" showValue />
+          <Progress label="Warning (45%)" value={45} variant="warning" showValue />
+          <Progress label="Danger  (15%)" value={15} variant="danger"  showValue />
+          <Separator label="sizes" />
+          <Progress label="Large bar" value={60} size="lg" showValue />
+          <Progress label="Small bar" value={60} size="sm" showValue />
+        </Card>
+      </Section>
+
+      {/* ── Skeleton ────────────────────────────────────────────────────── */}
+      <Section id="skeleton" title="Skeleton" subtitle="Loading placeholders while async content fetches.">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <SkeletonCard />
+          <SkeletonCard />
+          <Card className="p-5 space-y-3">
+            <div className="flex items-center gap-3">
+              <Skeleton className="h-12 w-12" rounded="full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4" width="75%" />
+                <Skeleton className="h-3" width="50%" />
+              </div>
+            </div>
+            <Skeleton className="h-28 w-full" rounded="lg" />
+            <SkeletonText lines={2} />
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── Separator ───────────────────────────────────────────────────── */}
+      <Section id="separator" title="Separator" subtitle="Horizontal, vertical, and labelled dividers.">
+        <Card className="p-5 space-y-4">
+          <Separator />
+          <Separator label="OR" />
+          <div className="flex items-center gap-4 h-8">
+            <span className="text-callout text-label-secondary">Section A</span>
+            <Separator orientation="vertical" />
+            <span className="text-callout text-label-secondary">Section B</span>
+            <Separator orientation="vertical" />
+            <span className="text-callout text-label-secondary">Section C</span>
+          </div>
+        </Card>
+      </Section>
+
+      {/* ── Tooltip ─────────────────────────────────────────────────────── */}
+      <Section id="tooltip" title="Tooltip" subtitle="Hover hints in 4 placement directions.">
+        <Card className="p-5">
+          <Row>
+            <Tooltip content="Appears on top"    placement="top">    <Button variant="outline" size="sm">Top</Button>    </Tooltip>
+            <Tooltip content="Appears on bottom" placement="bottom"> <Button variant="outline" size="sm">Bottom</Button> </Tooltip>
+            <Tooltip content="Appears on left"   placement="left">   <Button variant="outline" size="sm">Left</Button>   </Tooltip>
+            <Tooltip content="Appears on right"  placement="right">  <Button variant="outline" size="sm">Right</Button>  </Tooltip>
+          </Row>
+        </Card>
+      </Section>
+
+      {/* ── Dialog ──────────────────────────────────────────────────────── */}
+      <Section id="dialog" title="Dialog" subtitle="Modal overlays for forms and confirmations.">
+        <Card className="p-5">
+          <Row>
+            <Button variant="primary" onClick={() => setDialogOpen(true)}>Open form dialog</Button>
+            <Button variant="danger"  onClick={() => setConfirmOpen(true)}>Open confirm dialog</Button>
+          </Row>
+        </Card>
+
+        <Dialog
+          open={dialogOpen}
+          onClose={() => setDialogOpen(false)}
+          title="Edit profile"
+          description="Update your name and role."
+          size="md"
+          footer={
+            <>
+              <Button variant="ghost"   onClick={() => setDialogOpen(false)}>Cancel</Button>
+              <Button variant="primary" onClick={() => setDialogOpen(false)}>Save changes</Button>
+            </>
+          }
+        >
+          <div className="space-y-4">
+            <Input    label="Full name" defaultValue="Priya Mehta" />
+            <Select   label="Role"      options={SELECT_OPTS} value={selectVal} onChange={setSelectVal} />
+            <Textarea label="Bio"       placeholder="Tell us about yourself…" />
+          </div>
+        </Dialog>
+
+        <Dialog
+          open={confirmOpen}
+          onClose={() => setConfirmOpen(false)}
+          title="Delete record"
+          description="This will permanently delete the record. This cannot be undone."
+          size="sm"
+          footer={
+            <>
+              <Button variant="ghost"  onClick={() => setConfirmOpen(false)}>Cancel</Button>
+              <Button variant="danger" onClick={() => setConfirmOpen(false)}>Delete</Button>
+            </>
+          }
+        />
+      </Section>
+
+      {/* ── Tabs ────────────────────────────────────────────────────────── */}
+      <Section id="tabs" title="Tabs" subtitle="Three visual variants: line, pill, card.">
+        <div className="flex gap-2 mb-3">
+          {(['line', 'pill', 'card'] as const).map((v) => (
+            <Button key={v} variant={tabVariant === v ? 'primary' : 'outline'} size="sm"
+              onClick={() => setTabVariant(v)}>
+              {v}
+            </Button>
+          ))}
+        </div>
+        <Card className="p-5">
+          <Tabs defaultValue="overview" variant={tabVariant}>
+            <TabsList>
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+              <TabsTrigger value="disabled" disabled>Disabled</TabsTrigger>
+            </TabsList>
+            <TabsContent value="overview">
+              <AlertBanner variant="info">Viewing the Overview tab.</AlertBanner>
+            </TabsContent>
+            <TabsContent value="analytics">
+              <AlertBanner variant="success">Analytics data would appear here.</AlertBanner>
+            </TabsContent>
+            <TabsContent value="settings">
+              <div className="space-y-4">
+                <Switch label="Dark mode"     description="Toggle dark theme" />
+                <Switch label="Notifications" defaultChecked />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Card>
+      </Section>
+
+      {/* ── Accordion ───────────────────────────────────────────────────── */}
+      <Section id="accordion" title="Accordion" subtitle="Collapsible FAQ / info panels.">
+        <Card className="px-5">
+          <Accordion type="single" defaultValue="q1">
+            {ACCORDION_ITEMS.map((item) => (
+              <AccordionItem key={item.value} value={item.value} trigger={item.trigger}>
+                {item.body}
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </Card>
+      </Section>
+
+      {/* ── LoadingSpinner ──────────────────────────────────────────────── */}
+      <Section id="spinner" title="LoadingSpinner" subtitle="Composable spinner in 4 sizes.">
+        <Card className="p-5">
+          <Row>
+            <LoadingSpinner size="sm" />
+            <LoadingSpinner size="md" />
+            <LoadingSpinner size="lg" />
+            <LoadingSpinner size="xl" />
+            <Button variant="primary" isLoading>Loading state</Button>
+          </Row>
+        </Card>
+      </Section>
+
+      {/* ── DataTable ───────────────────────────────────────────────────── */}
+      <Section id="datatable" title="DataTable & ActionButtons" subtitle="Typed table with search, skeleton loading, and row actions.">
+        <Card className="overflow-hidden">
+          <DataTable
+            columns={[
+              { key: 'name',   header: 'Name',   render: (r: {name: string}) => <span className="font-medium text-label-primary">{r.name}</span> },
+              { key: 'role',   header: 'Role'   },
+              { key: 'status', header: 'Status', render: (r: {status: string}) => <StatusBadge status={r.status} /> },
+              { key: 'joined', header: 'Joined', render: (r: {joined: string}) => <span className="text-label-tertiary">{r.joined}</span> },
+              { key: 'actions', header: '', render: () => <ActionButtons showView showEdit onView={() => {}} onEdit={() => {}} /> },
+            ]}
+            data={TABLE_DATA}
+            keyExtractor={(r: {id: number}) => r.id}
+            searchable
+            searchPlaceholder="Search members…"
+          />
+        </Card>
+      </Section>
+
+      {/* ── Charts ──────────────────────────────────────────────────────── */}
+      <Section id="charts" title="Charts" subtitle="Bar, line, area, donut — built on recharts (npm install recharts).">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <Card className="p-5">
+            <p className="text-callout font-semibold text-label-primary mb-4">PortalBarChart</p>
+            <PortalBarChart
+              data={BAR_DATA}
+              xKey="month"
+              series={[{ key: 'revenue', name: 'Revenue' }, { key: 'expenses', name: 'Expenses' }]}
+              height={200}
+            />
+          </Card>
+          <Card className="p-5">
+            <p className="text-callout font-semibold text-label-primary mb-4">PortalDonutChart</p>
+            <PortalDonutChart data={DONUT_DATA} centerLabel="Total" centerValue={100} height={200} />
+          </Card>
+          <Card className="p-5">
+            <p className="text-callout font-semibold text-label-primary mb-4">PortalLineChart</p>
+            <PortalLineChart
+              data={BAR_DATA}
+              xKey="month"
+              series={[{ key: 'revenue', name: 'Revenue' }]}
+              height={200}
+            />
+          </Card>
+          <Card className="p-5">
+            <p className="text-callout font-semibold text-label-primary mb-4">PortalAreaChart</p>
+            <PortalAreaChart
+              data={BAR_DATA}
+              xKey="month"
+              series={[{ key: 'revenue', name: 'Revenue' }]}
+              height={200}
+            />
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── TricolorBar ─────────────────────────────────────────────────── */}
+      <Section id="tricolor" title="TricolorBar" subtitle="Brand accent bar — appears in sidebar header/footer and login card.">
+        <TricolorBar />
+      </Section>
+
     </div>
   )
 }

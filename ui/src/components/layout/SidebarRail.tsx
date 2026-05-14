@@ -2,7 +2,6 @@
 
 import React, { useState, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { LogOut } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { BrandLogo } from './BrandLogo'
 import { TricolorBar } from './TricolorBar'
@@ -48,7 +47,7 @@ export function SidebarRail({
   projectName,
   user,
   pathname,
-  onLogout,
+  onLogout: _onLogout,
   className,
 }: SidebarRailProps) {
   const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number } | null>(null)
@@ -116,18 +115,8 @@ export function SidebarRail({
 
         {/* Footer */}
         <div className="flex-shrink-0 border-t border-separator-opaque">
-          <div className="flex flex-col items-center gap-2 py-3 px-2">
+          <div className="flex flex-col items-center py-3 px-2">
             <UserAvatar name={user.name} />
-            <button
-              type="button"
-              onClick={onLogout}
-              onMouseEnter={(e) => showTooltip(e, 'Sign out')}
-              onMouseLeave={hideTooltip}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-red-400 transition-colors hover:bg-red-50 hover:text-red-500"
-              aria-label="Sign out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
           </div>
           <TricolorBar />
         </div>

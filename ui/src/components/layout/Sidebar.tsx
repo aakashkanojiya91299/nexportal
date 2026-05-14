@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, ChevronRight, LogOut, Menu, X } from 'lucide-react'
+import { ChevronDown, ChevronRight, LogOut, Menu, X, Settings } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { BrandLogo } from './BrandLogo'
 import { TricolorBar } from './TricolorBar'
@@ -59,6 +59,16 @@ export function Sidebar({
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [openSection, setOpenSection] = useState<string | null>(null)
   const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number } | null>(null)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const mobileMenuRef = React.useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleOutside(e: MouseEvent) {
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target as Node)) setMobileMenuOpen(false)
+    }
+    if (mobileMenuOpen) document.addEventListener('mousedown', handleOutside)
+    return () => document.removeEventListener('mousedown', handleOutside)
+  }, [mobileMenuOpen])
 
   const showTooltip = useCallback(
     (e: React.MouseEvent, label: string) => {
@@ -243,22 +253,12 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* ── Footer (user card + logout) ─────────────────────────────────── */}
+      {/* ── Footer (user card) ──────────────────────────────────────────── */}
       <div className="flex-shrink-0 border-t border-separator-opaque">
         {collapsed ? (
-          /* Collapsed footer: just logout icon */
-          <div className="flex flex-col items-center gap-2 py-3 px-2">
+          /* Collapsed footer: avatar only */
+          <div className="flex flex-col items-center py-3 px-2">
             <UserAvatar name={user.name} size="sm" />
-            <button
-              type="button"
-              onClick={onLogout}
-              onMouseEnter={(e) => showTooltip(e, 'Sign out')}
-              onMouseLeave={hideTooltip}
-              className="flex h-9 w-9 items-center justify-center rounded-xl text-red-400 hover:bg-red-50 hover:text-red-500 transition-colors"
-              aria-label="Sign out"
-            >
-              <LogOut className="h-4 w-4" />
-            </button>
           </div>
         ) : (
           /* Expanded footer: user card */
@@ -272,14 +272,6 @@ export function Sidebar({
                 <p className="text-callout font-semibold text-label-primary truncate leading-tight">{user.name}</p>
                 <p className="text-[11px] text-label-tertiary truncate mt-0.5">{user.role}</p>
               </div>
-              <button
-                type="button"
-                onClick={onLogout}
-                title="Sign out"
-                className="flex-shrink-0 p-1.5 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-50/80 transition-colors"
-              >
-                <LogOut className="h-4 w-4" />
-              </button>
             </div>
           </div>
         )}
@@ -312,7 +304,47 @@ export function Sidebar({
               {projectName}
             </span>
           </div>
-          <UserAvatar name={user.name} size="sm" />
+          {/* Mobile profile menu */}
+          <div ref={mobileMenuRef} className="relative">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              className="rounded-full focus:outline-none"
+            >
+              <UserAvatar name={user.name} size="sm" />
+            </button>
+            {mobileMenuOpen && (
+              <div
+                className="absolute right-0 top-full mt-2 w-48 rounded-2xl bg-white shadow-xl border border-separator-opaque overflow-hidden z-[60]"
+                style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+              >
+                <div className="px-4 py-3 border-b border-separator-opaque" style={{ background: 'var(--primary-soft, rgba(0,0,128,0.05))' }}>
+                  <p className="text-callout font-semibold text-label-primary truncate">{user.name}</p>
+                  <p className="text-[11px] text-label-tertiary truncate">{user.role}</p>
+                </div>
+                <div className="py-1.5">
+                  <a
+                    href="/dashboard/settings"
+                    onClick={() => { setMobileMenuOpen(false); setIsMobileOpen(false) }}
+                    className="flex items-center gap-3 px-4 py-2.5 text-callout font-medium text-label-secondary hover:bg-surface-secondary/80 transition-colors"
+                  >
+                    <Settings className="h-4 w-4 text-label-tertiary" />
+                    Settings
+                  </a>
+                </div>
+                <div className="border-t border-separator-opaque py-1.5">
+                  <button
+                    type="button"
+                    onClick={() => { setMobileMenuOpen(false); setIsMobileOpen(false); onLogout() }}
+                    className="flex w-full items-center gap-3 px-4 py-2.5 text-callout font-medium text-red-500 hover:bg-red-50/80 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
