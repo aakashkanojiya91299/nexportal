@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { join, dirname } from 'path'
 import { ask, select, closePrompt } from './prompt'
 import type { ScaffoldOptions } from '../templates'
 import {
@@ -12,7 +12,7 @@ import {
 } from '../templates'
 
 function write(filePath: string, content: string) {
-  const dir = filePath.substring(0, filePath.lastIndexOf('/'))
+  const dir = dirname(filePath)
   if (dir) mkdirSync(dir, { recursive: true })
   writeFileSync(filePath, content, 'utf-8')
 }
@@ -248,7 +248,7 @@ async function main() {
   const { flags, positional } = parseArgs(process.argv.slice(2))
 
   if (flags['help'] || flags['h']) {
-    log('Usage:  create-portal-app [project-name] [options]')
+    log('Usage:  npx @lucifer91299/create-portal-app [project-name] [options]')
     log('')
     log('  Without options  → interactive prompts for all settings')
     log('')
@@ -264,11 +264,11 @@ async function main() {
     log('  --local-ui=PATH  Use local @lucifer91299/ui (file: reference, for development)')
     log('')
     log('Examples:')
-    log('  create-portal-app')
-    log('  create-portal-app my-portal')
-    log('  create-portal-app my-portal --yes')
-    log('  create-portal-app my-portal --yes --auth=laravel --primary=#E11D48')
-    log('  create-portal-app my-portal --yes --local-ui=../../ui')
+    log('  npx @lucifer91299/create-portal-app')
+    log('  npx @lucifer91299/create-portal-app my-portal')
+    log('  npx @lucifer91299/create-portal-app my-portal --yes')
+    log('  npx @lucifer91299/create-portal-app my-portal --yes --auth=laravel --primary=#E11D48')
+    log('  npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../ui')
     process.exit(0)
   }
 

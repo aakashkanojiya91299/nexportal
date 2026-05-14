@@ -11,7 +11,7 @@
 ## Quick start
 
 ```bash
-npx create-portal-app my-portal
+npx @lucifer91299/create-portal-app my-portal
 ```
 
 The CLI walks you through each choice with arrow-key menus, then generates a ready-to-run project.
@@ -31,23 +31,23 @@ npm run dev
 Skip every prompt and use defaults instantly:
 
 ```bash
-npx create-portal-app my-portal --yes
+npx @lucifer91299/create-portal-app my-portal --yes
 ```
 
 Override specific options while skipping the rest:
 
 ```bash
 # Change login style and sidebar
-npx create-portal-app my-portal --yes --login=simple --sidebar=rail
+npx @lucifer91299/create-portal-app my-portal --yes --login=simple --sidebar=rail
 
 # Custom brand colours
-npx create-portal-app my-portal --yes --primary=#E11D48 --accent=#F59E0B --success=#10B981
+npx @lucifer91299/create-portal-app my-portal --yes --primary=#E11D48 --accent=#F59E0B --success=#10B981
 
 # Laravel backend
-npx create-portal-app my-portal --yes --auth=laravel
+npx @lucifer91299/create-portal-app my-portal --yes --auth=laravel
 
 # Show all flags
-npx create-portal-app --help
+npx @lucifer91299/create-portal-app --help
 ```
 
 ---
@@ -198,7 +198,7 @@ Clean gradient card login with optional role-select splash. Best for SaaS or min
 ## Local development (use a local SDK build)
 
 ```bash
-npx create-portal-app my-portal --yes --local-ui=../../packages/ui
+npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 # generates: "@lucifer91299/ui": "file:../../packages/ui" in package.json
 ```
 
