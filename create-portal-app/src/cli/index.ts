@@ -8,7 +8,7 @@ import {
   genLoginRoute, genUserRoute,
   genMiddleware, genSessionRoute, genLogoutRoute, genApiClient,
   genNavConfig, genDashboardLayout, genReduxStore, genAuthSlice,
-  genRootPage, genDashboardHomePage,
+  genRootPage, genDashboardHomePage, genUsersPage, genSettingsPage,
 } from '../templates'
 
 function write(filePath: string, content: string) {
@@ -193,6 +193,8 @@ function scaffold(opts: ScaffoldOptions) {
   write(f('src/app/login/page.tsx'),                 genLoginPage(opts))
   write(f('src/app/dashboard/layout.tsx'),           genDashboardLayout(opts))
   write(f('src/app/dashboard/page.tsx'),             genDashboardHomePage(opts))
+  write(f('src/app/dashboard/users/page.tsx'),       genUsersPage(opts))
+  write(f('src/app/dashboard/settings/page.tsx'),    genSettingsPage(opts))
   write(f('src/app/api/auth/login/route.ts'),         genLoginRoute(opts))
   write(f('src/app/api/auth/user/route.ts'),          genUserRoute(opts))
   write(f('src/app/api/auth/session/route.ts'),       genSessionRoute(opts))

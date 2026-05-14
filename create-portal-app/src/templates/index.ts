@@ -415,7 +415,7 @@ export default api
 }
 
 export function genNavConfig(o: ScaffoldOptions): string {
-  return `import { LayoutDashboard, Settings, User } from 'lucide-react'
+  return `import { LayoutDashboard, Settings, Users, FileText } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
 export const navGroups: NavGroup[] = [
@@ -423,14 +423,14 @@ export const navGroups: NavGroup[] = [
     heading: 'Main',
     groupIcon: <LayoutDashboard className="h-3.5 w-3.5" />,
     items: [
-      { label: 'Dashboard', href: '/dashboard', icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: 'Dashboard', href: '/dashboard',       icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: 'Users',     href: '/dashboard/users', icon: <Users className="h-4 w-4" /> },
     ],
   },
   {
     heading: 'Account',
-    groupIcon: <User className="h-3.5 w-3.5" />,
+    groupIcon: <Settings className="h-3.5 w-3.5" />,
     items: [
-      { label: 'Profile', href: '/dashboard/profile', icon: <User className="h-4 w-4" /> },
       { label: 'Settings', href: '/dashboard/settings', icon: <Settings className="h-4 w-4" /> },
     ],
   },
@@ -441,14 +441,21 @@ export const navGroups: NavGroup[] = [
 export function genDashboardLayout(o: ScaffoldOptions): string {
   return `'use client'
 
-import { DashboardLayout } from '@lucifer91299/ui'
-import { use${o.authMode === 'multi-role' ? 'MultiRoleAuth' : 'JwtAuth'} } from '@lucifer91299/ui'
+import { DashboardLayout, PageFooter, use${o.authMode === 'multi-role' ? 'MultiRoleAuth' : 'JwtAuth'} } from '@lucifer91299/ui'
 import { usePathname } from 'next/navigation'
 import { navGroups } from '@/components/layout/nav-config'
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const { user, logout } = use${o.authMode === 'multi-role' ? 'MultiRoleAuth({ roles: [] })' : 'JwtAuth()'}
+  const { user, loading, logout } = use${o.authMode === 'multi-role' ? 'MultiRoleAuth({ roles: [] })' : 'JwtAuth()'}
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-surface-secondary">
+        <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <DashboardLayout
@@ -456,11 +463,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       sidebar="${o.sidebarStyle}"
       projectName="${o.projectName}"
       logoSrc="/brand/logo.svg"
-      user={{ name: (user as any)?.name ?? 'User', role: (user as any)?.role ?? '' }}
+      user={{ name: String((user as any)?.name ?? 'User'), role: String((user as any)?.role ?? '') }}
       pathname={pathname}
       onLogout={logout}
     >
-      {children}
+      <div className="flex flex-col min-h-full">
+        <div className="flex-1">{children}</div>
+        <PageFooter
+          organizationName="${o.projectName}"
+          logoSrc="/brand/logo.svg"
+          poweredByText="Powered by"
+          poweredByHref="#"
+        />
+      </div>
     </DashboardLayout>
   )
 }
@@ -529,85 +544,253 @@ export default function Home() {
 }
 
 export function genDashboardHomePage(o: ScaffoldOptions): string {
-  return `import { TrendingUp, Users, ShoppingCart, Activity } from 'lucide-react'
+  return `'use client'
+
+import { PageShell, DataTable, StatusBadge, useJwtAuth } from '@lucifer91299/ui'
+import { TrendingUp, Users, ShoppingCart, Activity } from 'lucide-react'
 
 const stats = [
-  { label: 'Total Users',  value: '2,847',   change: '+12%', icon: Users },
-  { label: 'Revenue',      value: '₹48,295', change: '+8.2%', icon: TrendingUp },
-  { label: 'Orders',       value: '1,429',   change: '+5.1%', icon: ShoppingCart },
-  { label: 'Active Now',   value: '94',      change: '+3',    icon: Activity },
+  { label: 'Total Users',  value: '2,847',   change: '+12%',  icon: Users,        color: 'bg-blue-50   text-blue-600'   },
+  { label: 'Revenue',      value: '₹48,295', change: '+8.2%', icon: TrendingUp,   color: 'bg-green-50  text-green-600'  },
+  { label: 'Orders',       value: '1,429',   change: '+5.1%', icon: ShoppingCart, color: 'bg-orange-50 text-orange-600' },
+  { label: 'Active Now',   value: '94',      change: '+3',    icon: Activity,     color: 'bg-purple-50 text-purple-600' },
 ]
 
 const activity = [
-  { id: 'ORD-001', user: 'Rahul Sharma',  action: 'New order placed',   time: '2 min ago',  status: 'Pending' },
-  { id: 'ORD-002', user: 'Priya Mehta',   action: 'Payment received',   time: '14 min ago', status: 'Paid' },
-  { id: 'ORD-003', user: 'Amit Patel',    action: 'Order approved',     time: '1 hr ago',   status: 'Approved' },
-  { id: 'ORD-004', user: 'Sneha Iyer',    action: 'Account registered', time: '3 hr ago',   status: 'Active' },
-  { id: 'ORD-005', user: 'Vikram Singh',  action: 'Order completed',    time: 'Yesterday',  status: 'Completed' },
+  { id: 'ORD-001', user: 'Rahul Sharma',  action: 'New order placed',   time: '2 min ago',  status: 'pending'   },
+  { id: 'ORD-002', user: 'Priya Mehta',   action: 'Payment received',   time: '14 min ago', status: 'paid'      },
+  { id: 'ORD-003', user: 'Amit Patel',    action: 'Order approved',     time: '1 hr ago',   status: 'approved'  },
+  { id: 'ORD-004', user: 'Sneha Iyer',    action: 'Account registered', time: '3 hr ago',   status: 'active'    },
+  { id: 'ORD-005', user: 'Vikram Singh',  action: 'Order completed',    time: 'Yesterday',  status: 'completed' },
 ]
 
-const statusColors: Record<string, string> = {
-  Pending:   'bg-yellow-100 text-yellow-800',
-  Paid:      'bg-blue-100   text-blue-800',
-  Approved:  'bg-green-100  text-green-800',
-  Active:    'bg-purple-100 text-purple-800',
-  Completed: 'bg-gray-100   text-gray-700',
-}
-
 export default function DashboardHome() {
+  const { user } = useJwtAuth()
+
   return (
     <div className="p-6 space-y-6">
-      <div className="page-header">
-        <h1 className="page-title">${o.projectName}</h1>
-        <p className="text-body text-label-secondary">Welcome back, Admin</p>
-      </div>
+      <PageShell
+        title={\`Welcome back, \${String(user?.name ?? 'Admin')}\`}
+        subtitle="Here's what's happening today."
+      />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, change, icon: Icon }) => (
-          <div key={label} className="card p-5">
+        {stats.map(({ label, value, change, icon: Icon, color }) => (
+          <div key={label} className="bg-white rounded-xl p-5 shadow-sm border border-separator">
             <div className="flex items-center justify-between mb-3">
               <p className="text-subhead text-label-secondary">{label}</p>
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
-                <Icon className="w-4 h-4 text-primary" />
+              <div className={\`w-8 h-8 rounded-lg flex items-center justify-center \${color}\`}>
+                <Icon className="w-4 h-4" />
               </div>
             </div>
             <p className="text-title1 font-bold text-label-primary">{value}</p>
-            <p className="text-footnote text-green-600 mt-1 font-medium">{change} this month</p>
+            <p className="text-footnote text-green-600 mt-1">{change} this month</p>
           </div>
         ))}
       </div>
 
-      <div className="card overflow-hidden">
-        <div className="px-5 py-4 border-b border-gray-100">
+      <div className="bg-white rounded-xl shadow-sm border border-separator overflow-hidden">
+        <div className="px-5 py-4 border-b border-separator">
           <h2 className="text-callout font-semibold text-label-primary">Recent Activity</h2>
         </div>
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 text-label-secondary text-subhead">
-            <tr>
-              <th className="px-5 py-3 text-left font-medium">ID</th>
-              <th className="px-5 py-3 text-left font-medium">User</th>
-              <th className="px-5 py-3 text-left font-medium">Action</th>
-              <th className="px-5 py-3 text-left font-medium">Time</th>
-              <th className="px-5 py-3 text-left font-medium">Status</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-50">
-            {activity.map((row) => (
-              <tr key={row.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-5 py-3.5 font-mono text-xs text-label-secondary">{row.id}</td>
-                <td className="px-5 py-3.5 font-medium text-label-primary">{row.user}</td>
-                <td className="px-5 py-3.5 text-label-secondary">{row.action}</td>
-                <td className="px-5 py-3.5 text-label-tertiary">{row.time}</td>
-                <td className="px-5 py-3.5">
-                  <span className={\`inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold \${statusColors[row.status] ?? ''}\`}>
-                    {row.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <DataTable
+          columns={[
+            { key: 'id',     header: 'ID',     className: 'font-mono text-xs text-label-secondary' },
+            { key: 'user',   header: 'User',   render: (r) => <span className="font-medium text-label-primary">{r.user}</span>   },
+            { key: 'action', header: 'Action', render: (r) => <span className="text-label-secondary">{r.action}</span>           },
+            { key: 'time',   header: 'Time',   render: (r) => <span className="text-label-tertiary">{r.time}</span>              },
+            { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} />                                  },
+          ]}
+          data={activity}
+          keyExtractor={(r) => r.id}
+        />
       </div>
+    </div>
+  )
+}
+`
+}
+
+export function genUsersPage(_o: ScaffoldOptions): string {
+  return `'use client'
+
+import { useState } from 'react'
+import { PageShell, Breadcrumbs, DataTable, StatusBadge, ActionButtons, Button, Input, Select } from '@lucifer91299/ui'
+import { UserPlus, Search } from 'lucide-react'
+
+type User = { id: number; name: string; email: string; role: string; status: string; joined: string }
+
+const USERS: User[] = [
+  { id: 1, name: 'Rahul Sharma',  email: 'rahul@example.com',  role: 'Admin',  status: 'active',   joined: '12 Jan 2024' },
+  { id: 2, name: 'Priya Mehta',   email: 'priya@example.com',  role: 'Member', status: 'active',   joined: '03 Feb 2024' },
+  { id: 3, name: 'Amit Patel',    email: 'amit@example.com',   role: 'Member', status: 'pending',  joined: '19 Mar 2024' },
+  { id: 4, name: 'Sneha Iyer',    email: 'sneha@example.com',  role: 'Editor', status: 'active',   joined: '07 Apr 2024' },
+  { id: 5, name: 'Vikram Singh',  email: 'vikram@example.com', role: 'Member', status: 'inactive', joined: '22 May 2024' },
+]
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'All Statuses' },
+  { value: 'active',   label: 'Active'   },
+  { value: 'pending',  label: 'Pending'  },
+  { value: 'inactive', label: 'Inactive' },
+]
+
+const ROLE_OPTIONS = [
+  { value: '', label: 'All Roles' },
+  { value: 'Admin',  label: 'Admin'  },
+  { value: 'Member', label: 'Member' },
+  { value: 'Editor', label: 'Editor' },
+]
+
+export default function UsersPage() {
+  const [search, setSearch]       = useState('')
+  const [statusFilter, setStatus] = useState('')
+  const [roleFilter, setRole]     = useState('')
+
+  const filtered = USERS.filter((u) => {
+    const q = search.toLowerCase()
+    if (q && !u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q)) return false
+    if (statusFilter && u.status !== statusFilter) return false
+    if (roleFilter   && u.role   !== roleFilter)   return false
+    return true
+  })
+
+  return (
+    <div className="p-6">
+      <PageShell
+        title="Users"
+        subtitle={\`\${filtered.length} of \${USERS.length} users\`}
+        breadcrumbs={<Breadcrumbs items={[{ label: 'Users' }]} />}
+        actions={
+          <Button variant="primary">
+            <UserPlus className="w-4 h-4 mr-1.5" />
+            Add User
+          </Button>
+        }
+        controls={
+          <>
+            <div className="flex-1 min-w-[200px]">
+              <Input
+                placeholder="Search by name or email…"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                suffix={<Search className="w-4 h-4" />}
+              />
+            </div>
+            <div className="w-40">
+              <Select options={STATUS_OPTIONS} value={statusFilter} onChange={setStatus} placeholder="Status" />
+            </div>
+            <div className="w-36">
+              <Select options={ROLE_OPTIONS} value={roleFilter} onChange={setRole} placeholder="Role" />
+            </div>
+          </>
+        }
+      />
+
+      <div className="bg-white rounded-xl border border-separator shadow-sm overflow-hidden">
+        <DataTable
+          columns={[
+            { key: 'id', header: '#', render: (_, i) => <span className="text-label-tertiary text-footnote">{i + 1}</span>, className: 'w-10' },
+            {
+              key: 'name', header: 'Name',
+              render: (u: User) => (
+                <div>
+                  <p className="font-medium text-label-primary">{u.name}</p>
+                  <p className="text-footnote text-label-tertiary">{u.email}</p>
+                </div>
+              ),
+            },
+            { key: 'role',   header: 'Role'   },
+            { key: 'joined', header: 'Joined' },
+            { key: 'status', header: 'Status', render: (u: User) => <StatusBadge status={u.status} /> },
+            {
+              key: 'actions', header: '', className: 'w-24',
+              render: () => (
+                <ActionButtons
+                  showView showEdit showDelete
+                  onView={() => {}} onEdit={() => {}} onDelete={() => {}}
+                />
+              ),
+            },
+          ]}
+          data={filtered}
+          keyExtractor={(u) => u.id}
+          emptyMessage="No users match your filters."
+        />
+      </div>
+    </div>
+  )
+}
+`
+}
+
+export function genSettingsPage(o: ScaffoldOptions): string {
+  return `'use client'
+
+import { useState } from 'react'
+import { PageShell, Breadcrumbs, Card, Input, Select, Button, AlertBanner } from '@lucifer91299/ui'
+
+const SIDEBAR_OPTIONS = [
+  { value: 'full', label: 'Full — wide sidebar with labels' },
+  { value: 'rail', label: 'Rail — icon-only narrow sidebar' },
+  { value: 'both', label: 'Both — full on desktop, rail on mobile' },
+]
+
+export default function SettingsPage() {
+  const [saved, setSaved]         = useState(false)
+  const [projectName, setProject] = useState('${o.projectName}')
+  const [sidebar, setSidebar]     = useState('${o.sidebarStyle}')
+  const [apiUrl, setApiUrl]       = useState('${o.apiUrl}')
+
+  function handleSave() {
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3000)
+  }
+
+  return (
+    <div className="p-6 space-y-6">
+      <PageShell
+        title="Settings"
+        subtitle="Configure your portal appearance and connection settings."
+        breadcrumbs={<Breadcrumbs items={[{ label: 'Settings' }]} />}
+        actions={<Button variant="primary" onClick={handleSave}>Save changes</Button>}
+      />
+
+      {saved && <AlertBanner variant="success" message="Settings saved successfully." />}
+
+      <Card className="p-6">
+        <h3 className="text-callout font-semibold text-label-primary mb-4">Appearance</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Project name"
+            value={projectName}
+            onChange={(e) => setProject(e.target.value)}
+          />
+          <Select
+            label="Sidebar style"
+            options={SIDEBAR_OPTIONS}
+            value={sidebar}
+            onChange={setSidebar}
+          />
+        </div>
+      </Card>
+
+      <Card className="p-6">
+        <h3 className="text-callout font-semibold text-label-primary mb-4">Connection</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Input
+            label="Backend API URL"
+            value={apiUrl}
+            onChange={(e) => setApiUrl(e.target.value)}
+            helperText="Used by the API client for all requests."
+          />
+          <Input
+            label="JWT cookie name"
+            defaultValue="${o.jwtCookieName}"
+            helperText="Must match the cookie set by your login route."
+          />
+        </div>
+      </Card>
     </div>
   )
 }
