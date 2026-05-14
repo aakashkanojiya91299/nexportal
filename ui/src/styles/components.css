@@ -1,0 +1,302 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+@layer base {
+  html {
+    @apply antialiased;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    @apply bg-surface-secondary text-label-primary text-body min-h-screen;
+  }
+
+  ::-webkit-scrollbar          { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track    { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 100px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.25);
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  /* Selection uses primary brand color */
+  ::selection { background: var(--primary-soft, rgba(0, 0, 128, 0.15)); }
+
+  /* Hide native browser password reveal eye — SDK provides its own toggle */
+  input::-ms-reveal,
+  input::-ms-clear { display: none; }
+}
+
+/* ── Component classes ─────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Cards */
+  .card          { @apply bg-white rounded-lg shadow; }
+  .card-elevated { @apply bg-white rounded-xl shadow-lg; }
+
+  /* Buttons — base class */
+  .btn {
+    @apply inline-flex items-center justify-center font-medium rounded
+           transition-all duration-200 active:scale-[0.97] focus:outline-none
+           disabled:opacity-50 disabled:pointer-events-none cursor-pointer;
+  }
+
+  /* Button variants */
+  .btn-primary {
+    @apply btn px-4 py-2.5;
+    background-color: var(--primary, #000080);
+    color: #fff;
+  }
+  .btn-primary:hover  { background-color: var(--primary-hover, rgba(0,0,128,0.9)); }
+
+  .btn-accent {
+    @apply btn px-4 py-2.5;
+    background-color: var(--accent, #FF9933);
+    color: #fff;
+  }
+  .btn-accent:hover   { background-color: var(--accent-hover, rgba(255,153,51,0.9)); }
+
+  .btn-tinted {
+    @apply btn px-4 py-2.5;
+    background-color: var(--primary-soft, rgba(0,0,128,0.12));
+    color: var(--primary, #000080);
+  }
+  .btn-tinted:hover   { background-color: var(--primary-hover-soft, rgba(0,0,128,0.2)); }
+
+  .btn-danger        { @apply btn bg-red-500 !text-white px-4 py-2.5 hover:bg-red-600; }
+  .btn-outline       { @apply btn border border-separator-opaque bg-white !text-label-primary px-4 py-2.5 hover:bg-gray-50; }
+
+  /* Button sizes */
+  .btn-sm            { @apply text-footnote px-3 py-1.5; }
+  .btn-md            { @apply text-callout px-4 py-2.5; }
+  .btn-lg            { @apply text-body px-5 py-3; }
+
+  /* Input */
+  /* Apple-style input: filled gray bg, no border, focus ring — matches C&J design */
+  .input-base {
+    @apply w-full px-4 py-3 rounded-lg border-0
+           text-body text-label-primary placeholder:text-label-tertiary
+           focus:outline-none focus:bg-white
+           transition-all duration-200;
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+  .input-base:focus {
+    box-shadow: 0 0 0 2px var(--primary-soft, rgba(0,0,128,0.2));
+  }
+  .input-base-error {
+    background-color: rgb(254 242 242) !important;
+  }
+  .input-base-error:focus {
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.35) !important;
+  }
+
+  /* Badges */
+  .badge          { @apply inline-flex items-center px-2 py-0.5 rounded-full text-footnote font-medium; }
+  .badge-active   { @apply badge bg-green-100 text-green-700; }
+  .badge-pending  { @apply badge bg-amber-100 text-amber-700; }
+  .badge-inactive { @apply badge bg-gray-100 text-gray-600; }
+  .badge-rejected { @apply badge bg-red-100 text-red-700; }
+  .badge-primary  {
+    @apply badge;
+    background-color: var(--primary-soft, rgba(0,0,128,0.12));
+    color: var(--primary, #000080);
+  }
+
+  /* Tricolor bar — 3-zone horizontal gradient */
+  .tricolor-bar {
+    height: 3px;
+    background: linear-gradient(
+      to right,
+      var(--accent, #FF9933)  33.33%,
+      #ffffff                  33.33% 66.66%,
+      var(--success, #138808)  66.66%
+    );
+  }
+
+  /* Inner tricolor bar for RoleAccentBar (fills parent absolutely) */
+  .tricolor-bar-inner {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      var(--accent, #FF9933)  33.33%,
+      #ffffff                  33.33% 66.66%,
+      var(--success, #138808)  66.66%
+    );
+  }
+
+  /* Animated tricolor entrance */
+  .tricolor-sweep {
+    transform-origin: left;
+    transform: scaleX(0);
+    animation: tricolorSweep 2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  }
+
+  /* Page layout helpers */
+  .page-header    { @apply flex items-center justify-between mb-6; }
+  .page-title     { @apply text-title1 text-label-primary font-semibold; }
+  .section-title  { @apply text-headline text-label-secondary uppercase tracking-wider mb-3; }
+}
+
+/* ── Login page — background ───────────────────────────────────────────────── */
+.login-bg {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 0;
+  background: linear-gradient(135deg, #f0f0f5 0%, #e8e6f0 25%, #f5f0e8 50%, #edf5ed 75%, #f0f0f5 100%);
+  background-size: 400% 400%;
+  animation: meshMove 20s ease infinite;
+}
+
+.login-bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--grid-line, rgba(0,0,128,0.03)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line, rgba(0,0,128,0.03)) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
+}
+
+.login-bg-orb {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  filter: blur(60px);
+}
+
+.login-bg-orb-1 {
+  width: 500px; height: 500px;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--primary, #000080) 18%, transparent) 0%,
+    color-mix(in srgb, var(--primary, #000080) 8%, transparent) 40%,
+    transparent 70%
+  );
+  top: -15%; right: -10%;
+  animation: orbDrift1 16s ease-in-out infinite;
+}
+
+.login-bg-orb-2 {
+  width: 450px; height: 450px;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--accent, #FF9933) 15%, transparent) 0%,
+    color-mix(in srgb, var(--accent, #FF9933) 6%, transparent) 40%,
+    transparent 70%
+  );
+  bottom: -12%; left: -8%;
+  animation: orbDrift2 18s ease-in-out infinite;
+}
+
+.login-bg-orb-3 {
+  width: 300px; height: 300px;
+  background: radial-gradient(circle,
+    color-mix(in srgb, var(--success, #138808) 12%, transparent) 0%,
+    color-mix(in srgb, var(--success, #138808) 5%, transparent) 40%,
+    transparent 70%
+  );
+  top: 35%; left: 55%;
+  animation: orbDrift3 14s ease-in-out infinite;
+}
+
+/* ── Login parallax helpers ────────────────────────────────────────────────── */
+.login-parallax-orbs {
+  position: absolute;
+  inset: -30px;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.login-parallax-card {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+.login-parallax-layer {
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* ── Login stagger entrance animations ─────────────────────────────────────── */
+.login-stagger-1,
+.login-stagger-2,
+.login-stagger-3,
+.login-stagger-4,
+.login-stagger-5,
+.login-stagger-6 {
+  opacity: 0;
+  animation: loginReveal 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.login-stagger-1 { animation-delay: 0.05s; }
+.login-stagger-2 { animation-delay: 0.15s; }
+.login-stagger-3 { animation-delay: 0.28s; }
+.login-stagger-4 { animation-delay: 0.40s; }
+.login-stagger-5 { animation-delay: 0.50s; }
+.login-stagger-6 { animation-delay: 0.60s; }
+
+/* ── Keyframes ─────────────────────────────────────────────────────────────── */
+@keyframes loginReveal {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes tricolorSweep {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+@keyframes meshMove {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes orbDrift1 {
+  0%, 100% { transform: translate(0, 0) scale(1);         opacity: 0.55; }
+  25%      { transform: translate(60px, -50px) scale(1.15); opacity: 0.7; }
+  50%      { transform: translate(20px, 40px) scale(0.9);  opacity: 0.45; }
+  75%      { transform: translate(-40px, -20px) scale(1.1); opacity: 0.65; }
+}
+@keyframes orbDrift2 {
+  0%, 100% { transform: translate(0, 0) scale(1);          opacity: 0.5; }
+  25%      { transform: translate(-50px, 40px) scale(1.1);  opacity: 0.65; }
+  50%      { transform: translate(30px, -60px) scale(0.95); opacity: 0.4; }
+  75%      { transform: translate(50px, 20px) scale(1.12);  opacity: 0.6; }
+}
+@keyframes orbDrift3 {
+  0%, 100% { transform: translate(0, 0) scale(1);            opacity: 0.4; }
+  33%      { transform: translate(-30px, -45px) scale(1.08);  opacity: 0.55; }
+  66%      { transform: translate(40px, 30px) scale(0.92);    opacity: 0.5; }
+}
+@keyframes scannerSweep {
+  0%, 100% { top: 2%;  opacity: 0.3; }
+  50%      { top: 98%; opacity: 1; }
+}
+
+/* ── Utility animations ─────────────────────────────────────────────────────── */
+@layer utilities {
+  .animate-fade-in       { animation: fadeIn      0.2s ease; }
+  .animate-slide-up      { animation: slideUp     0.3s ease; }
+  .animate-scale-in      { animation: scaleIn     0.2s cubic-bezier(0.34,1.56,0.64,1); }
+  .animate-step-forward  { animation: stepForward 0.32s cubic-bezier(0.25,0.1,0.25,1) both; }
+  .animate-step-backward { animation: stepBackward 0.32s cubic-bezier(0.25,0.1,0.25,1) both; }
+  .animate-scanner-sweep { animation: scannerSweep 3s ease-in-out infinite; }
+
+  @keyframes fadeIn        { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes slideUp       { from { opacity: 0; transform: translateY(8px); }  to { opacity: 1; transform: translateY(0); } }
+  @keyframes scaleIn       { from { opacity: 0; transform: scale(0.96); }       to { opacity: 1; transform: scale(1); } }
+  @keyframes stepForward   { from { opacity: 0; transform: translateX(28px); }  to { opacity: 1; transform: translateX(0); } }
+  @keyframes stepBackward  { from { opacity: 0; transform: translateX(-28px); } to { opacity: 1; transform: translateX(0); } }
+
+  /* Remove browser default number steppers */
+  .no-input-spinner                               { -moz-appearance: textfield; appearance: textfield; }
+  .no-input-spinner::-webkit-outer-spin-button,
+  .no-input-spinner::-webkit-inner-spin-button    { -webkit-appearance: none; margin: 0; }
+}

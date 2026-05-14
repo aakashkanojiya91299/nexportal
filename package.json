@@ -1,0 +1,10 @@
+{
+  "name": "nrai-ui-sdk",
+  "private": true,
+  "workspaces": ["ui", "create-portal-app"],
+  "scripts": {
+    "build": "pnpm --filter @nexportal/ui build && pnpm --filter create-portal-app build",
+    "typecheck": "pnpm --filter @nexportal/ui typecheck && pnpm --filter create-portal-app typecheck",
+    "test": "pnpm --filter @nexportal/ui test"
+  }
+}

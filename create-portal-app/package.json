@@ -1,0 +1,22 @@
+{
+  "name": "@nexportal/create-portal-app",
+  "version": "1.0.0",
+  "description": "Scaffold a Next.js authenticated portal with full design system in one command",
+  "license": "MIT",
+  "author": "Aakash Kanojiya",
+  "bin": {
+    "create-portal-app": "dist/cli/index.js"
+  },
+  "main": "dist/cli/index.js",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.7",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3"
+  }
+}

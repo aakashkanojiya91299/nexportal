@@ -1,0 +1,83 @@
+{
+  "name": "@nexportal/ui",
+  "version": "1.0.0",
+  "description": "Portal UI design system — components, Tailwind preset, auth hooks for Next.js",
+  "license": "MIT",
+  "author": "Aakash Kanojiya",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nexportal/ui"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "import": "./dist/server.mjs",
+      "require": "./dist/server.js"
+    },
+    "./tailwind/preset": {
+      "types": "./dist/tailwind/preset.d.ts",
+      "import": "./dist/tailwind/preset.mjs",
+      "require": "./dist/tailwind/preset.js"
+    },
+    "./styles/globals.css": "./src/styles/globals.css",
+    "./styles/components.css": "./dist/styles/components.css"
+  },
+  "files": [
+    "dist",
+    "src/styles/globals.css"
+  ],
+  "scripts": {
+    "build": "tsup && node scripts/add-client-directive.mjs && npx tailwindcss -i src/styles/components.css -o dist/styles/components.css --config tailwind.build.config.cjs",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "peerDependencies": {
+    "framer-motion": ">=10",
+    "next": ">=14",
+    "react": ">=18",
+    "react-dom": ">=18",
+    "tailwindcss": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "framer-motion": {
+      "optional": true
+    },
+    "laravel-session-sdk": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "jose": "^5.9.6",
+    "lucide-react": "^0.469.0",
+    "tailwind-merge": "^2.5.5"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.1.0",
+    "@types/node": "^22.10.7",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "autoprefixer": "^10.4.20",
+    "framer-motion": "^12.38.0",
+    "jsdom": "^26.0.0",
+    "next": "^15.5.18",
+    "postcss": "^8.4.49",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "tailwindcss": "^3.4.17",
+    "tsup": "^8.3.5",
+    "typescript": "^5.7.3",
+    "vitest": "^2.1.8"
+  }
+}
