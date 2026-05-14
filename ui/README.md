@@ -4,6 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
+[![license](https://img.shields.io/npm/l/@lucifer91299/ui)](https://github.com/aakashkanojiya91299/nexportal/blob/main/LICENSE)
 
 **Scaffold a full portal in seconds using the CLI:**
 
@@ -617,3 +618,19 @@ npx create-portal-app my-portal --yes --local-ui=../../ui
 
 **GitHub:** [aakashkanojiya91299/nexportal](https://github.com/aakashkanojiya91299/nexportal)  
 **CLI:** [`create-portal-app`](https://www.npmjs.com/package/@lucifer91299/create-portal-app)
+
+---
+
+## Changelog
+
+### v1.0.3
+- Added `workflow_dispatch` to GitHub Actions — manual publish trigger from Actions tab
+- README improvements: badges, local dev guide
+
+### v1.0.2
+- Renamed scope from `@nexportal` → `@lucifer91299`
+- Added per-package README files (shown on npm)
+- CLI: `--local-ui` flag, animated login default, all flags documented
+
+### v1.0.1
+- Initial public release

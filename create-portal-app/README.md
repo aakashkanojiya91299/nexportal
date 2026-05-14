@@ -4,6 +4,7 @@
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/create-portal-app)](https://www.npmjs.com/package/@lucifer91299/create-portal-app)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/create-portal-app)](https://www.npmjs.com/package/@lucifer91299/create-portal-app)
+[![license](https://img.shields.io/npm/l/@lucifer91299/create-portal-app)](https://github.com/aakashkanojiya91299/nexportal/blob/main/LICENSE)
 
 ---
 
@@ -210,3 +211,20 @@ See the full component and theming documentation at:
 
 - [npm — @lucifer91299/ui](https://www.npmjs.com/package/@lucifer91299/ui)
 - [GitHub — aakashkanojiya91299/nexportal](https://github.com/aakashkanojiya91299/nexportal)
+
+---
+
+## Changelog
+
+### v1.0.3
+- Added `workflow_dispatch` to GitHub Actions — manual publish trigger from Actions tab
+- README improvements: badges, changelog
+
+### v1.0.2
+- Renamed scope from `@nexportal` → `@lucifer91299`
+- Added per-package README files (shown on npm)
+- Default login style changed to `animated`
+- Added `--local-ui` flag for local SDK development
+
+### v1.0.1
+- Initial public release
