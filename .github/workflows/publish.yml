@@ -1,0 +1,54 @@
+name: Publish to npm
+
+  on:
+    release:
+      types: [published]
+
+  jobs:
+    publish:
+      runs-on: ubuntu-latest
+      permissions:
+        contents: read
+        id-token: write
+
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+
+        - name: Setup Node.js
+          uses: actions/setup-node@v4
+          with:
+            node-version: '20'
+            registry-url: 'https://registry.npmjs.org'
+            cache: 'npm'
+
+        - name: Install root dependencies
+          run: npm ci
+
+        - name: Install ui dependencies
+          working-directory: ui
+          run: npm ci
+
+        - name: Build @lucifer91299/ui
+          working-directory: ui
+          run: npm run build
+
+        - name: Publish @lucifer91299/ui
+          working-directory: ui
+          run: npm publish --access public --provenance
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+        - name: Install create-portal-app dependencies
+          working-directory: create-portal-app
+          run: npm ci
+
+        - name: Build @lucifer91299/create-portal-app
+          working-directory: create-portal-app
+          run: npm run build
+
+        - name: Publish @lucifer91299/create-portal-app
+          working-directory: create-portal-app
+          run: npm publish --access public --provenance
+          env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
