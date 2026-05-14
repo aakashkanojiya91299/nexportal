@@ -16,7 +16,7 @@ type Surface = 'days' | 'months' | 'years'
 
 export interface DatePickerProps {
   value?: string
-  onChange: (iso: string) => void
+  onChange?: (iso: string) => void
   label?: React.ReactNode
   labelRight?: React.ReactNode
   placeholder?: string
@@ -136,7 +136,7 @@ export function DatePicker({
   const handleSelectDay = (day: number) => {
     const d = new Date(getYear(visibleMonth), getMonth(visibleMonth), day)
     if (isDayDisabled(d)) return
-    onChange(format(d, 'yyyy-MM-dd'))
+    onChange?.(format(d, 'yyyy-MM-dd'))
     setOpen(false)
   }
 
@@ -262,11 +262,11 @@ export function DatePicker({
 
                 {/* Clear + Today shortcuts */}
                 <div className="flex items-center justify-between mt-3 pt-2 border-t border-separator">
-                  <button type="button" onClick={() => { onChange(''); setOpen(false) }}
+                  <button type="button" onClick={() => { onChange?.(''); setOpen(false) }}
                     className="text-caption1 text-label-tertiary hover:text-label-secondary transition-colors">
                     Clear
                   </button>
-                  <button type="button" onClick={() => { onChange(format(new Date(), 'yyyy-MM-dd')); setOpen(false) }}
+                  <button type="button" onClick={() => { onChange?.(format(new Date(), 'yyyy-MM-dd')); setOpen(false) }}
                     className="text-caption1 font-medium transition-colors"
                     style={{ color: 'var(--primary, #000080)' }}>
                     Today
