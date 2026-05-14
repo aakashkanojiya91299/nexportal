@@ -35,6 +35,18 @@ export { DataTable, StatusBadge, ActionButtons } from './components/ui/DataTable
 export type { DataTableProps, TableColumn, StatusBadgeProps, ActionButtonsProps } from './components/ui/DataTable'
 export { Select } from './components/ui/Select'
 export type { SelectProps, SelectOption } from './components/ui/Select'
+export { DatePicker } from './components/ui/DatePicker'
+export type { DatePickerProps } from './components/ui/DatePicker'
+
+// ── Charts (requires recharts peer dependency) ────────────────────────────────
+export { PortalBarChart } from './components/charts/BarChart'
+export type { PortalBarChartProps, ChartSeries } from './components/charts/BarChart'
+export { PortalLineChart } from './components/charts/LineChart'
+export type { PortalLineChartProps } from './components/charts/LineChart'
+export { PortalAreaChart } from './components/charts/AreaChart'
+export type { PortalAreaChartProps } from './components/charts/AreaChart'
+export { PortalDonutChart } from './components/charts/DonutChart'
+export type { PortalDonutChartProps, DonutSlice } from './components/charts/DonutChart'
 
 // ── Brand / layout components ─────────────────────────────────────────────
 export { BrandLogo } from './components/layout/BrandLogo'

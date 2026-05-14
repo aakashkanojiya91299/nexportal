@@ -27,11 +27,12 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.0.0',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.0.7',
     'next': '^15.3.0',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
     'framer-motion': '^12.0.0',
+    'recharts': '^3.8.1',
     'axios': '^1.7.9',
     '@tanstack/react-query': '^5.64.1',
     'jose': '^5.9.6',
@@ -538,14 +539,33 @@ export default function Home() {
 export function genDashboardHomePage(o: ScaffoldOptions): string {
   return `'use client'
 
-import { PageShell, DataTable, StatusBadge, useJwtAuth } from '@lucifer91299/ui'
+import { useState } from 'react'
+import { PageShell, DataTable, StatusBadge, useJwtAuth, PortalBarChart, PortalAreaChart, PortalDonutChart, DatePicker } from '@lucifer91299/ui'
 import { TrendingUp, Users, ShoppingCart, Activity } from 'lucide-react'
 
 const stats = [
-  { label: 'Total Users',  value: '2,847',   change: '+12%',  icon: Users,        color: 'bg-blue-50   text-blue-600'   },
-  { label: 'Revenue',      value: '₹48,295', change: '+8.2%', icon: TrendingUp,   color: 'bg-green-50  text-green-600'  },
-  { label: 'Orders',       value: '1,429',   change: '+5.1%', icon: ShoppingCart, color: 'bg-orange-50 text-orange-600' },
-  { label: 'Active Now',   value: '94',      change: '+3',    icon: Activity,     color: 'bg-purple-50 text-purple-600' },
+  { label: 'Total Users',  value: '2,847',   change: '+12%',  icon: Users,        bg: 'bg-blue-50',   fg: 'text-blue-600'   },
+  { label: 'Revenue',      value: '₹48,295', change: '+8.2%', icon: TrendingUp,   bg: 'bg-green-50',  fg: 'text-green-600'  },
+  { label: 'Orders',       value: '1,429',   change: '+5.1%', icon: ShoppingCart, bg: 'bg-orange-50', fg: 'text-orange-600' },
+  { label: 'Active Now',   value: '94',      change: '+3',    icon: Activity,     bg: 'bg-purple-50', fg: 'text-purple-600' },
+]
+
+const MONTHLY = [
+  { month: 'Jan', orders: 38, members: 120, revenue: 48 },
+  { month: 'Feb', orders: 52, members: 134, revenue: 62 },
+  { month: 'Mar', orders: 47, members: 128, revenue: 55 },
+  { month: 'Apr', orders: 65, members: 156, revenue: 78 },
+  { month: 'May', orders: 71, members: 172, revenue: 85 },
+  { month: 'Jun', orders: 60, members: 160, revenue: 72 },
+  { month: 'Jul', orders: 84, members: 198, revenue: 96 },
+  { month: 'Aug', orders: 79, members: 185, revenue: 92 },
+]
+
+const STATUS_DONUT = [
+  { name: 'Completed', value: 384, color: '#138808' },
+  { name: 'Approved',  value: 213, color: '#000080' },
+  { name: 'Pending',   value: 97,  color: '#FF9933' },
+  { name: 'Rejected',  value: 42,  color: '#ef4444' },
 ]
 
 const activity = [
@@ -558,40 +578,88 @@ const activity = [
 
 export default function DashboardHome() {
   const { user } = useJwtAuth()
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate]     = useState('')
 
   return (
-    <div className="p-6 space-y-6">
-      <PageShell
-        title={\`Welcome back, \${String(user?.name ?? 'Admin')}\`}
-        subtitle="Here's what's happening today."
-      />
+    <div className="p-4 sm:p-6 space-y-6 max-w-7xl mx-auto">
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-title1 text-label-primary font-semibold">
+            Welcome back, {String(user?.name ?? 'Admin')} 👋
+          </h1>
+          <p className="text-body text-label-secondary mt-0.5">Here&apos;s what&apos;s happening today.</p>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
+          <DatePicker value={fromDate} onChange={setFromDate} placeholder="From date" className="w-36" disableFuture />
+          <span className="text-label-tertiary">–</span>
+          <DatePicker value={toDate}   onChange={setToDate}   placeholder="To date"   className="w-36" disableFuture />
+        </div>
+      </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {stats.map(({ label, value, change, icon: Icon, color }) => (
-          <div key={label} className="bg-white rounded-xl p-5 shadow-sm border border-separator">
+        {stats.map(({ label, value, change, icon: Icon, bg, fg }) => (
+          <div key={label} className="bg-white rounded-2xl p-5 shadow-sm border border-separator">
             <div className="flex items-center justify-between mb-3">
               <p className="text-subhead text-label-secondary">{label}</p>
-              <div className={\`w-8 h-8 rounded-lg flex items-center justify-center \${color}\`}>
+              <div className={\`w-9 h-9 rounded-xl flex items-center justify-center \${bg} \${fg}\`}>
                 <Icon className="w-4 h-4" />
               </div>
             </div>
             <p className="text-title1 font-bold text-label-primary">{value}</p>
-            <p className="text-footnote text-green-600 mt-1">{change} this month</p>
+            <p className="text-footnote text-green-600 mt-0.5 font-medium">{change} this month</p>
           </div>
         ))}
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-separator overflow-hidden">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="lg:col-span-2 bg-white rounded-2xl border border-separator shadow-sm p-5">
+          <p className="text-headline font-semibold text-label-primary mb-1">Orders &amp; Members per Month</p>
+          <p className="text-footnote text-label-tertiary mb-4">Current year overview</p>
+          <PortalBarChart
+            data={MONTHLY}
+            xKey="month"
+            series={[
+              { key: 'orders',  name: 'Orders'  },
+              { key: 'members', name: 'Members' },
+            ]}
+            height={220}
+          />
+        </div>
+        <div className="bg-white rounded-2xl border border-separator shadow-sm p-5">
+          <p className="text-headline font-semibold text-label-primary mb-1">Order Status</p>
+          <p className="text-footnote text-label-tertiary mb-2">All time</p>
+          <PortalDonutChart
+            data={STATUS_DONUT}
+            height={230}
+            centerValue="764"
+            centerLabel="Orders"
+          />
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl border border-separator shadow-sm p-5">
+        <p className="text-headline font-semibold text-label-primary mb-1">Revenue Trend (₹ thousands)</p>
+        <p className="text-footnote text-label-tertiary mb-4">Monthly revenue</p>
+        <PortalAreaChart
+          data={MONTHLY}
+          xKey="month"
+          series={[{ key: 'revenue', name: 'Revenue (₹K)' }]}
+          height={200}
+        />
+      </div>
+
+      <div className="bg-white rounded-2xl shadow-sm border border-separator overflow-hidden">
         <div className="px-5 py-4 border-b border-separator">
           <h2 className="text-callout font-semibold text-label-primary">Recent Activity</h2>
         </div>
         <DataTable
           columns={[
-            { key: 'id',     header: 'ID',     className: 'font-mono text-xs text-label-secondary' },
-            { key: 'user',   header: 'User',   render: (r) => <span className="font-medium text-label-primary">{r.user}</span>   },
-            { key: 'action', header: 'Action', render: (r) => <span className="text-label-secondary">{r.action}</span>           },
-            { key: 'time',   header: 'Time',   render: (r) => <span className="text-label-tertiary">{r.time}</span>              },
-            { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} />                                  },
+            { key: 'id',     header: 'ID',     render: (r) => <span className="font-mono text-xs text-label-tertiary">{r.id}</span>   },
+            { key: 'user',   header: 'User',   render: (r) => <span className="font-medium text-label-primary">{r.user}</span>       },
+            { key: 'action', header: 'Action', render: (r) => <span className="text-label-secondary">{r.action}</span>               },
+            { key: 'time',   header: 'Time',   render: (r) => <span className="text-label-tertiary">{r.time}</span>                   },
+            { key: 'status', header: 'Status', render: (r) => <StatusBadge status={r.status} />                                        },
           ]}
           data={activity}
           keyExtractor={(r) => r.id}
@@ -602,6 +670,7 @@ export default function DashboardHome() {
 }
 `
 }
+
 
 export function genUsersPage(_o: ScaffoldOptions): string {
   return `'use client'

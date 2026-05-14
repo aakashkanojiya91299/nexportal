@@ -1,6 +1,6 @@
 {
   "name": "@lucifer91299/create-portal-app",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Scaffold a Next.js authenticated portal with full design system in one command",
   "license": "MIT",
   "author": "Aakash Kanojiya",
