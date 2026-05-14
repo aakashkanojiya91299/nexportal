@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.2',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.3',
     'next': '^15.3.0',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
@@ -220,7 +220,7 @@ export function genLoginPage(o: ScaffoldOptions): string {
   return `'use client'
 
 import { ${component} } from '@lucifer91299/ui'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 export default function Login() {
@@ -540,7 +540,7 @@ export default function Home() {
 export function genDashboardHomePage(o: ScaffoldOptions): string {
   return `'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { PageShell, DataTable, StatusBadge, useJwtAuth, PortalBarChart, PortalAreaChart, PortalDonutChart, DatePicker } from '@lucifer91299/ui'
 import { TrendingUp, Users, ShoppingCart, Activity } from 'lucide-react'
 
@@ -676,7 +676,7 @@ export default function DashboardHome() {
 export function genUsersPage(_o: ScaffoldOptions): string {
   return `'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { PageShell, Breadcrumbs, DataTable, StatusBadge, ActionButtons, Button, Input, Select } from '@lucifer91299/ui'
 import { UserPlus, Search } from 'lucide-react'
 
@@ -789,7 +789,7 @@ export default function UsersPage() {
 export function genSettingsPage(o: ScaffoldOptions): string {
   return `'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { PageShell, Breadcrumbs, Card, Input, Select, Button, AlertBanner } from '@lucifer91299/ui'
 
 const SIDEBAR_OPTIONS = [
@@ -862,7 +862,7 @@ export default function SettingsPage() {
 export function genComponentsShowcasePage(): string {
   return `'use client'
 
-import { useState } from 'react'
+import React, { useState } from 'react'
 import {
   PageShell, Breadcrumbs, Card, TricolorBar,
   Badge, StatusBadge, AlertBanner, LoadingSpinner,
