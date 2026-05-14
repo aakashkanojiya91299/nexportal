@@ -11,7 +11,7 @@ export default defineConfig([
     treeshake: true,
     sourcemap: true,
     clean: true,
-    external: ['react', 'react-dom', 'next', 'tailwindcss', 'framer-motion'],
+    external: ['react', 'react-dom', 'next', 'tailwindcss', 'framer-motion', 'recharts'],
   },
   {
     // Server bundle — middleware factories, route handlers (no "use client")

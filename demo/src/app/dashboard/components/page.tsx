@@ -4,7 +4,8 @@ import { useState } from 'react'
 import {
   PageShell, Breadcrumbs,
   Button, Input, Select, Badge, Card, AlertBanner, LoadingSpinner,
-  DataTable, StatusBadge, ActionButtons, TricolorBar,
+  DataTable, StatusBadge, ActionButtons, TricolorBar, DatePicker,
+  PortalBarChart, PortalLineChart, PortalAreaChart, PortalDonutChart,
 } from '@lucifer91299/ui'
 import {
   Search, Mail, Eye, EyeOff, Plus, Download, Zap,
@@ -32,12 +33,10 @@ function PreviewCard({ children, className = '' }: { children: React.ReactNode; 
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return (
-    <p className="text-caption1 font-semibold uppercase tracking-wider text-label-tertiary mb-2">{children}</p>
-  )
+  return <p className="text-caption1 font-semibold uppercase tracking-wider text-label-tertiary mb-2">{children}</p>
 }
 
-// ── Demo data ────────────────────────────────────────────────────────────────
+// ── Demo data ─────────────────────────────────────────────────────────────────
 
 type Order = { id: number; member: string; item: string; amount: string; status: string; date: string }
 
@@ -47,6 +46,29 @@ const ORDERS: Order[] = [
   { id: 3, member: 'Arjun Patel',  item: 'Shooting Gloves',   amount: '₹950',   status: 'completed', date: '15 Jan 2024' },
   { id: 4, member: 'Sunita Rao',   item: 'Eye Protection',    amount: '₹1,200', status: 'rejected',  date: '17 Jan 2024' },
   { id: 5, member: 'Vikram Desai', item: '9mm Pistol Ammo',   amount: '₹5,400', status: 'paid',      date: '18 Jan 2024' },
+]
+
+const MONTHLY_DATA = [
+  { month: 'Jan', orders: 38,  revenue: 48000, members: 120 },
+  { month: 'Feb', orders: 52,  revenue: 62000, members: 134 },
+  { month: 'Mar', orders: 47,  revenue: 55000, members: 128 },
+  { month: 'Apr', orders: 65,  revenue: 78000, members: 156 },
+  { month: 'May', orders: 71,  revenue: 85000, members: 172 },
+  { month: 'Jun', orders: 60,  revenue: 72000, members: 160 },
+  { month: 'Jul', orders: 84,  revenue: 96000, members: 198 },
+  { month: 'Aug', orders: 79,  revenue: 92000, members: 185 },
+  { month: 'Sep', orders: 91,  revenue: 108000, members: 214 },
+  { month: 'Oct', orders: 105, revenue: 122000, members: 238 },
+  { month: 'Nov', orders: 98,  revenue: 115000, members: 224 },
+  { month: 'Dec', orders: 112, revenue: 135000, members: 260 },
+]
+
+const STATUS_DONUT = [
+  { name: 'Completed',  value: 384, color: '#138808' },
+  { name: 'Approved',   value: 213, color: '#000080' },
+  { name: 'Pending',    value: 97,  color: '#FF9933' },
+  { name: 'Rejected',   value: 42,  color: '#ef4444' },
+  { name: 'Cancelled',  value: 28,  color: '#9ca3af' },
 ]
 
 const STATE_OPTIONS = [
@@ -59,16 +81,20 @@ const STATE_OPTIONS = [
   { value: 'up', label: 'Uttar Pradesh' },
 ]
 
-// ── Page ─────────────────────────────────────────────────────────────────────
+// ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ComponentsPage() {
-  const [selectVal, setSelectVal] = useState('')
-  const [searchVal, setSearchVal] = useState('')
-  const [showPass, setShowPass]   = useState(false)
+  const [selectVal, setSelectVal]     = useState('')
+  const [searchVal, setSearchVal]     = useState('')
+  const [showPass, setShowPass]       = useState(false)
+  const [date1, setDate1]             = useState('')
+  const [date2, setDate2]             = useState('')
   const [tableSearch, setTableSearch] = useState('')
 
   const filtered = ORDERS.filter((o) =>
-    tableSearch === '' || o.member.toLowerCase().includes(tableSearch.toLowerCase()) || o.item.toLowerCase().includes(tableSearch.toLowerCase()),
+    tableSearch === '' ||
+    o.member.toLowerCase().includes(tableSearch.toLowerCase()) ||
+    o.item.toLowerCase().includes(tableSearch.toLowerCase()),
   )
 
   return (
@@ -76,19 +102,19 @@ export default function ComponentsPage() {
 
       <PageShell
         title="Component Library"
-        subtitle="All @lucifer91299/ui components — ready to copy and drop into your project."
+        subtitle="All @lucifer91299/ui components — drop any snippet into your project."
         breadcrumbs={<Breadcrumbs items={[{ label: 'Components' }]} />}
       />
 
-      {/* ── Stats Overview ─────────────────────────────────────────────────── */}
+      {/* ── Stats Overview ───────────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="Stats Cards" description="Use plain Cards with icons for metric tiles." />
+        <SectionHeader title="Stats Cards" description="Metric tiles built from plain Cards and Lucide icons." />
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {[
-            { label: 'Total Members', value: '4,821',  delta: '+12%', icon: Users,        bg: 'bg-blue-50',   fg: 'text-blue-600'   },
-            { label: 'Revenue',       value: '₹2.4L',  delta: '+8%',  icon: TrendingUp,   bg: 'bg-green-50',  fg: 'text-green-600'  },
-            { label: 'Orders',        value: '1,429',  delta: '+23%', icon: ShoppingCart, bg: 'bg-orange-50', fg: 'text-orange-600' },
-            { label: 'Active Now',    value: '94',     delta: '+5%',  icon: Activity,     bg: 'bg-purple-50', fg: 'text-purple-600' },
+            { label: 'Total Members', value: '4,821', delta: '+12%', icon: Users,        bg: 'bg-blue-50',   fg: 'text-blue-600'   },
+            { label: 'Revenue',       value: '₹2.4L', delta: '+8%',  icon: TrendingUp,   bg: 'bg-green-50',  fg: 'text-green-600'  },
+            { label: 'Orders',        value: '1,429', delta: '+23%', icon: ShoppingCart, bg: 'bg-orange-50', fg: 'text-orange-600' },
+            { label: 'Active Now',    value: '94',    delta: '+5%',  icon: Activity,     bg: 'bg-purple-50', fg: 'text-purple-600' },
           ].map(({ label, value, delta, icon: Icon, bg, fg }) => (
             <PreviewCard key={label}>
               <div className="p-5">
@@ -106,7 +132,137 @@ export default function ComponentsPage() {
         </div>
       </section>
 
-      {/* ── Buttons ────────────────────────────────────────────────────────── */}
+      {/* ── Charts ───────────────────────────────────────────────────────── */}
+      <section>
+        <SectionHeader title="Charts" description="Themed recharts wrappers — BarChart, LineChart, AreaChart, DonutChart. Requires: npm install recharts" />
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          {/* Bar Chart */}
+          <PreviewCard>
+            <div className="px-5 pt-5 pb-2">
+              <p className="text-headline font-semibold text-label-primary">Orders per Month</p>
+              <p className="text-footnote text-label-tertiary mt-0.5">PortalBarChart</p>
+            </div>
+            <div className="px-4 pb-5">
+              <PortalBarChart
+                data={MONTHLY_DATA}
+                xKey="month"
+                series={[
+                  { key: 'orders',  name: 'Orders'  },
+                  { key: 'members', name: 'Members' },
+                ]}
+                height={220}
+              />
+            </div>
+          </PreviewCard>
+
+          {/* Donut Chart */}
+          <PreviewCard>
+            <div className="px-5 pt-5 pb-2">
+              <p className="text-headline font-semibold text-label-primary">Order Status Breakdown</p>
+              <p className="text-footnote text-label-tertiary mt-0.5">PortalDonutChart</p>
+            </div>
+            <div className="px-4 pb-5">
+              <PortalDonutChart
+                data={STATUS_DONUT}
+                height={220}
+                centerValue="764"
+                centerLabel="Total"
+              />
+            </div>
+          </PreviewCard>
+
+          {/* Line Chart */}
+          <PreviewCard>
+            <div className="px-5 pt-5 pb-2">
+              <p className="text-headline font-semibold text-label-primary">Revenue Trend</p>
+              <p className="text-footnote text-label-tertiary mt-0.5">PortalLineChart</p>
+            </div>
+            <div className="px-4 pb-5">
+              <PortalLineChart
+                data={MONTHLY_DATA}
+                xKey="month"
+                series={[{ key: 'revenue', name: 'Revenue (₹)' }]}
+                height={220}
+              />
+            </div>
+          </PreviewCard>
+
+          {/* Area Chart */}
+          <PreviewCard>
+            <div className="px-5 pt-5 pb-2">
+              <p className="text-headline font-semibold text-label-primary">Member Growth</p>
+              <p className="text-footnote text-label-tertiary mt-0.5">PortalAreaChart</p>
+            </div>
+            <div className="px-4 pb-5">
+              <PortalAreaChart
+                data={MONTHLY_DATA}
+                xKey="month"
+                series={[{ key: 'members', name: 'Members' }]}
+                height={220}
+              />
+            </div>
+          </PreviewCard>
+
+        </div>
+      </section>
+
+      {/* ── DatePicker ───────────────────────────────────────────────────── */}
+      <section>
+        <SectionHeader title="DatePicker" description="Calendar with 3-level navigation (days → months → years), weekday exclusion, min/max, and more." />
+        <PreviewCard>
+          <div className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <DatePicker
+                label="Default"
+                value={date1}
+                onChange={setDate1}
+                placeholder="DD/MM/YYYY"
+              />
+              <DatePicker
+                label="No future dates"
+                value={date2}
+                onChange={setDate2}
+                disableFuture
+                placeholder="DD/MM/YYYY"
+                helperText="Only past dates can be selected"
+              />
+              <DatePicker
+                label="No past dates"
+                value=""
+                onChange={() => {}}
+                disablePast
+                placeholder="DD/MM/YYYY"
+                helperText="Future dates only"
+              />
+              <DatePicker
+                label="Weekdays only"
+                value=""
+                onChange={() => {}}
+                excludeWeekends
+                placeholder="DD/MM/YYYY"
+                helperText="Saturdays and Sundays are disabled"
+              />
+              <DatePicker
+                label="Required with error"
+                value=""
+                onChange={() => {}}
+                required
+                error="Date of birth is required"
+              />
+              <DatePicker
+                label="Disabled"
+                value="2024-06-15"
+                onChange={() => {}}
+                disabled
+              />
+            </div>
+          </div>
+        </PreviewCard>
+      </section>
+
+      {/* ── Buttons ──────────────────────────────────────────────────────── */}
       <section>
         <SectionHeader title="Button" description="Five semantic variants in three sizes with loading and disabled states." />
         <PreviewCard>
@@ -130,50 +286,29 @@ export default function ComponentsPage() {
               </div>
             </div>
             <div>
-              <Label>States</Label>
+              <Label>States &amp; with icons</Label>
               <div className="flex flex-wrap items-center gap-3">
                 <Button variant="primary" isLoading>Saving…</Button>
                 <Button variant="primary" disabled>Disabled</Button>
-                <Button variant="accent">
-                  <Plus className="w-4 h-4 mr-1.5" /> Add Member
-                </Button>
-                <Button variant="outline">
-                  <Download className="w-4 h-4 mr-1.5" /> Export CSV
-                </Button>
-                <Button variant="tinted">
-                  <Zap className="w-4 h-4 mr-1.5" /> Quick Action
-                </Button>
+                <Button variant="accent"><Plus className="w-4 h-4 mr-1.5" /> Add Member</Button>
+                <Button variant="outline"><Download className="w-4 h-4 mr-1.5" /> Export CSV</Button>
+                <Button variant="tinted"><Zap className="w-4 h-4 mr-1.5" /> Quick Action</Button>
               </div>
             </div>
           </div>
         </PreviewCard>
       </section>
 
-      {/* ── Input ──────────────────────────────────────────────────────────── */}
+      {/* ── Input ────────────────────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="Input" description="Text, number, password, email with labels, helpers, errors, prefix and suffix slots." />
+        <SectionHeader title="Input" description="Text, number, password, email with labels, helpers, errors, and suffix slot." />
         <PreviewCard>
           <div className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              <Input
-                label="Default"
-                placeholder="Type something…"
-              />
-              <Input
-                label="With helper text"
-                placeholder="Enter email…"
-                helperText="We'll never share your email."
-              />
-              <Input
-                label="Required field"
-                placeholder="Full name"
-                required
-              />
-              <Input
-                label="Validation error"
-                placeholder="Enter value…"
-                error="This field is required"
-              />
+              <Input label="Default" placeholder="Type something…" />
+              <Input label="With helper text" placeholder="Enter email…" helperText="We'll never share your email." />
+              <Input label="Required field" placeholder="Full name" required />
+              <Input label="Validation error" placeholder="Enter value…" error="This field is required" />
               <Input
                 label="Search with suffix"
                 placeholder="Search members…"
@@ -191,84 +326,37 @@ export default function ComponentsPage() {
                   </button>
                 }
               />
-              <Input
-                label="Amount"
-                placeholder="0.00"
-                type="number"
+              <Input label="Amount" placeholder="0.00" type="number"
                 labelRight={<span className="text-footnote text-primary cursor-pointer hover:underline">Use max</span>}
               />
-              <Input
-                label="Email"
-                type="email"
-                placeholder="you@example.com"
-                suffix={<Mail className="w-4 h-4 text-label-tertiary" />}
-              />
-              <Input
-                label="Disabled"
-                placeholder="Cannot edit this field"
-                disabled
-              />
+              <Input label="Email" type="email" placeholder="you@example.com" suffix={<Mail className="w-4 h-4 text-label-tertiary" />} />
+              <Input label="Disabled" placeholder="Cannot edit this field" disabled />
             </div>
           </div>
         </PreviewCard>
       </section>
 
-      {/* ── Select ─────────────────────────────────────────────────────────── */}
+      {/* ── Select ───────────────────────────────────────────────────────── */}
       <section>
         <SectionHeader title="Select" description="Custom dropdown with optional search, add-new action, and full keyboard support." />
         <PreviewCard>
           <div className="p-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              <Select
-                label="Basic dropdown"
-                options={STATE_OPTIONS}
-                value={selectVal}
-                onChange={setSelectVal}
-                placeholder="Pick a state…"
-              />
-              <Select
-                label="Searchable"
-                options={STATE_OPTIONS}
-                value={selectVal}
-                onChange={setSelectVal}
-                placeholder="Search states…"
-                searchable
-              />
-              <Select
-                label="Searchable + Add new"
-                options={STATE_OPTIONS}
-                value={selectVal}
-                onChange={setSelectVal}
-                placeholder="Select or add…"
-                searchable
-                onAddNew={() => alert('Open add state modal')}
-                addNewLabel="+ Add new state"
-              />
-              <Select
-                label="Required with error"
-                options={STATE_OPTIONS}
-                value=""
-                onChange={() => {}}
-                placeholder="Select state…"
-                required
-                error="Please select a state"
-              />
-              <Select
-                label="Disabled"
-                options={STATE_OPTIONS}
-                value="mh"
-                onChange={() => {}}
-                placeholder="Cannot change"
-                disabled
-              />
+              <Select label="Basic" options={STATE_OPTIONS} value={selectVal} onChange={setSelectVal} placeholder="Pick a state…" />
+              <Select label="Searchable" options={STATE_OPTIONS} value={selectVal} onChange={setSelectVal} placeholder="Search states…" searchable />
+              <Select label="Add new" options={STATE_OPTIONS} value={selectVal} onChange={setSelectVal} placeholder="Select or add…"
+                searchable onAddNew={() => alert('Open add modal')} addNewLabel="+ Add new state" />
+              <Select label="Required + error" options={STATE_OPTIONS} value="" onChange={() => {}} placeholder="Select state…"
+                required error="Please select a state" />
+              <Select label="Disabled" options={STATE_OPTIONS} value="mh" onChange={() => {}} disabled />
             </div>
           </div>
         </PreviewCard>
       </section>
 
-      {/* ── Badge ──────────────────────────────────────────────────────────── */}
+      {/* ── Badge ────────────────────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="Badge &amp; StatusBadge" description="Semantic colour chips for categories and workflow states." />
+        <SectionHeader title="Badge &amp; StatusBadge" description="Semantic chips for roles and workflow states." />
         <PreviewCard>
           <div className="p-6 space-y-6">
             <div>
@@ -284,25 +372,15 @@ export default function ComponentsPage() {
             <div>
               <Label>StatusBadge — all workflow states</Label>
               <div className="flex flex-wrap gap-2">
-                <StatusBadge status="active" />
-                <StatusBadge status="pending" />
-                <StatusBadge status="approved" />
-                <StatusBadge status="rejected" />
-                <StatusBadge status="completed" />
-                <StatusBadge status="paid" />
-                <StatusBadge status="scheduled" />
-                <StatusBadge status="inactive" />
-                <StatusBadge status="cancelled" />
+                {['active', 'pending', 'approved', 'rejected', 'completed', 'paid', 'scheduled', 'inactive', 'cancelled'].map((s) => (
+                  <StatusBadge key={s} status={s} />
+                ))}
               </div>
             </div>
             <div>
               <Label>In context — member list</Label>
               <div className="rounded-xl border border-separator overflow-hidden">
-                {[
-                  { name: 'Ravi Sharma',  role: 'Admin',  status: 'active'   },
-                  { name: 'Priya Mehta',  role: 'Coach',  status: 'pending'  },
-                  { name: 'Arjun Patel',  role: 'Member', status: 'inactive' },
-                ].map(({ name, role, status }, i) => (
+                {[['Ravi Sharma', 'Admin', 'active'], ['Priya Mehta', 'Coach', 'pending'], ['Arjun Patel', 'Member', 'inactive']].map(([name, role, status], i) => (
                   <div key={name} className={`flex items-center justify-between px-4 py-3 ${i > 0 ? 'border-t border-separator' : ''}`}>
                     <div>
                       <p className="text-callout font-medium text-label-primary">{name}</p>
@@ -317,169 +395,100 @@ export default function ComponentsPage() {
         </PreviewCard>
       </section>
 
-      {/* ── AlertBanner ────────────────────────────────────────────────────── */}
+      {/* ── AlertBanner ──────────────────────────────────────────────────── */}
       <section>
         <SectionHeader title="AlertBanner" description="Contextual feedback messages for form validation, system notices, and confirmations." />
         <PreviewCard>
           <div className="p-6 space-y-3">
-            <AlertBanner variant="success">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="w-4 h-4 shrink-0" />
-                <span><strong>Saved.</strong> Your profile changes have been updated successfully.</span>
-              </div>
-            </AlertBanner>
-            <AlertBanner variant="error">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 shrink-0" />
-                <span><strong>Error.</strong> Could not connect to the server. Please try again.</span>
-              </div>
-            </AlertBanner>
-            <AlertBanner variant="warning">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0" />
-                <span><strong>Warning.</strong> Your session will expire in 5 minutes.</span>
-              </div>
-            </AlertBanner>
-            <AlertBanner variant="info">
-              <div className="flex items-center gap-2">
-                <Info className="w-4 h-4 shrink-0" />
-                <span><strong>Update available.</strong> A new version of the SDK is available — <a href="#" className="underline font-medium">see changelog</a>.</span>
-              </div>
-            </AlertBanner>
+            {[
+              { variant: 'success' as const, icon: <CheckCircle className="w-4 h-4 shrink-0" />, msg: 'Saved. Your profile changes have been updated successfully.' },
+              { variant: 'error'   as const, icon: <AlertCircle  className="w-4 h-4 shrink-0" />, msg: 'Error. Could not connect to the server. Please try again.' },
+              { variant: 'warning' as const, icon: <AlertTriangle className="w-4 h-4 shrink-0" />, msg: 'Warning. Your session will expire in 5 minutes.' },
+              { variant: 'info'    as const, icon: <Info          className="w-4 h-4 shrink-0" />, msg: 'Update available. A new SDK version is ready — see changelog.' },
+            ].map(({ variant, icon, msg }) => (
+              <AlertBanner key={variant} variant={variant}>
+                <div className="flex items-center gap-2">{icon}<span>{msg}</span></div>
+              </AlertBanner>
+            ))}
           </div>
         </PreviewCard>
       </section>
 
-      {/* ── LoadingSpinner ─────────────────────────────────────────────────── */}
+      {/* ── LoadingSpinner + Card ─────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="LoadingSpinner" description="Inline activity indicator in three sizes — composable inside buttons, overlays, or cards." />
-        <PreviewCard>
-          <div className="p-6">
-            <div className="flex items-end gap-8">
-              <div className="flex flex-col items-center gap-2">
-                <LoadingSpinner size="sm" />
-                <span className="text-caption1 text-label-tertiary">sm</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <LoadingSpinner size="md" />
-                <span className="text-caption1 text-label-tertiary">md</span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <LoadingSpinner size="lg" />
-                <span className="text-caption1 text-label-tertiary">lg</span>
-              </div>
-              <div className="flex flex-col gap-2 ml-6">
-                <span className="text-caption1 text-label-tertiary mb-1">In a card</span>
-                <div className="bg-surface-secondary rounded-xl p-8 flex items-center justify-center w-40 h-20">
-                  <LoadingSpinner size="md" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <SectionHeader title="LoadingSpinner" description="Three sizes, composable anywhere." />
+            <PreviewCard>
+              <div className="p-6">
+                <div className="flex items-end gap-8">
+                  {(['sm', 'md', 'lg'] as const).map((sz) => (
+                    <div key={sz} className="flex flex-col items-center gap-2">
+                      <LoadingSpinner size={sz} />
+                      <span className="text-caption1 text-label-tertiary">{sz}</span>
+                    </div>
+                  ))}
+                  <Button variant="primary" isLoading className="ml-2">Loading</Button>
                 </div>
               </div>
-              <div className="flex flex-col gap-2">
-                <span className="text-caption1 text-label-tertiary mb-1">Inside button</span>
-                <Button variant="primary" isLoading>Processing…</Button>
-              </div>
+            </PreviewCard>
+          </div>
+          <div>
+            <SectionHeader title="Card" description="Default and elevated surface containers." />
+            <div className="flex flex-col gap-3">
+              <Card className="p-4">
+                <p className="text-callout font-semibold text-label-primary mb-1">Default card</p>
+                <p className="text-footnote text-label-secondary">Flat border-based surface for grouping content.</p>
+              </Card>
+              <Card variant="elevated" className="p-4">
+                <p className="text-callout font-semibold text-label-primary mb-1">Elevated card</p>
+                <p className="text-footnote text-label-secondary">Shadow-based surface for highlighted sections.</p>
+              </Card>
             </div>
-          </div>
-        </PreviewCard>
-      </section>
-
-      {/* ── Card ───────────────────────────────────────────────────────────── */}
-      <section>
-        <SectionHeader title="Card" description="Surface container in default and elevated variants for grouping related content." />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <Label>Default card</Label>
-            <Card className="p-6">
-              <p className="text-headline font-semibold text-label-primary mb-1">Member Summary</p>
-              <p className="text-subhead text-label-secondary mb-4">Registration overview for the current quarter.</p>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                {[['1,284', 'Total'], ['92', 'Pending'], ['38', 'Lapsed']].map(([n, l]) => (
-                  <div key={l} className="bg-surface-secondary rounded-lg p-2">
-                    <p className="text-title2 font-bold text-label-primary">{n}</p>
-                    <p className="text-caption1 text-label-tertiary">{l}</p>
-                  </div>
-                ))}
-              </div>
-            </Card>
-          </div>
-          <div>
-            <Label>Elevated card</Label>
-            <Card variant="elevated" className="p-6">
-              <p className="text-headline font-semibold text-label-primary mb-1">Quick Actions</p>
-              <p className="text-subhead text-label-secondary mb-4">Frequently used operations.</p>
-              <div className="flex flex-col gap-2">
-                <Button variant="primary">New Order</Button>
-                <Button variant="outline">View Reports</Button>
-                <Button variant="tinted">Manage Slots</Button>
-              </div>
-            </Card>
           </div>
         </div>
       </section>
 
-      {/* ── TricolorBar ────────────────────────────────────────────────────── */}
+      {/* ── TricolorBar ──────────────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="TricolorBar" description="Thin decorative stripe in brand primary / accent / success — appears at the top of every sidebar and login card." />
+        <SectionHeader title="TricolorBar" description="Brand stripe in primary / accent / success — appears at top of sidebar and login card." />
         <PreviewCard>
-          <div className="p-6 space-y-4">
-            <div>
-              <Label>Standard bar</Label>
-              <div className="rounded-lg overflow-hidden border border-separator">
-                <TricolorBar />
-                <div className="px-4 py-3 text-subhead text-label-secondary">Content below the bar</div>
-              </div>
+          <div className="p-6 space-y-3">
+            <div className="rounded-xl overflow-hidden border border-separator">
+              <TricolorBar />
+              <div className="px-4 py-3 text-subhead text-label-secondary">Content area below the bar</div>
             </div>
           </div>
         </PreviewCard>
       </section>
 
-      {/* ── DataTable ──────────────────────────────────────────────────────── */}
+      {/* ── DataTable ────────────────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="DataTable" description="Generic typed table with loading skeletons, empty states, row click, and custom cell renderers." />
+        <SectionHeader title="DataTable" description="Generic typed table with loading skeleton, empty state, and custom cell renderers." />
 
-        {/* Live table with filtering */}
         <div className="mb-4">
-          <Label>Live example — filterable orders table</Label>
-          <div className="mb-3 flex items-center gap-3 flex-wrap">
-            <div className="flex-1 min-w-[220px]">
-              <Input
-                placeholder="Search by member or item…"
-                value={tableSearch}
+          <Label>Live — filterable orders</Label>
+          <div className="mb-3 flex gap-3">
+            <div className="flex-1">
+              <Input placeholder="Search member or item…" value={tableSearch}
                 onChange={(e) => setTableSearch(e.target.value)}
                 suffix={<Search className="w-4 h-4 text-label-tertiary" />}
               />
             </div>
-            {tableSearch && (
-              <Button variant="outline" size="sm" onClick={() => setTableSearch('')}>Clear</Button>
-            )}
+            {tableSearch && <Button variant="outline" size="sm" onClick={() => setTableSearch('')}>Clear</Button>}
           </div>
           <PreviewCard>
             <DataTable
               columns={[
-                {
-                  key: 'id', header: '#',
-                  render: (_, i) => <span className="text-label-tertiary text-footnote font-mono">{i + 1}</span>,
-                  className: 'w-10',
-                },
-                {
-                  key: 'member', header: 'Member',
-                  render: (o: Order) => <span className="font-medium text-label-primary">{o.member}</span>,
-                },
-                { key: 'item', header: 'Item', render: (o: Order) => <span className="text-label-secondary">{o.item}</span> },
-                {
-                  key: 'amount', header: 'Amount',
-                  render: (o: Order) => <span className="font-semibold text-label-primary">{o.amount}</span>,
-                },
-                { key: 'status', header: 'Status',  render: (o: Order) => <StatusBadge status={o.status} /> },
-                { key: 'date',   header: 'Date',    render: (o: Order) => <span className="text-label-tertiary text-footnote">{o.date}</span> },
+                { key: 'id', header: '#', render: (_, i) => <span className="text-label-tertiary font-mono text-footnote">{i + 1}</span>, className: 'w-10' },
+                { key: 'member', header: 'Member', render: (o: Order) => <span className="font-medium text-label-primary">{o.member}</span> },
+                { key: 'item',   header: 'Item',   render: (o: Order) => <span className="text-label-secondary">{o.item}</span> },
+                { key: 'amount', header: 'Amount', render: (o: Order) => <span className="font-semibold">{o.amount}</span> },
+                { key: 'status', header: 'Status', render: (o: Order) => <StatusBadge status={o.status} /> },
+                { key: 'date',   header: 'Date',   render: (o: Order) => <span className="text-footnote text-label-tertiary">{o.date}</span> },
                 {
                   key: 'actions', header: '',
-                  render: () => (
-                    <ActionButtons
-                      showView showApprove showReject showEdit
-                      onView={() => {}} onApprove={() => {}} onReject={() => {}} onEdit={() => {}}
-                    />
-                  ),
+                  render: () => <ActionButtons showView showApprove showReject showEdit onView={() => {}} onApprove={() => {}} onReject={() => {}} onEdit={() => {}} />,
                 },
               ]}
               data={filtered}
@@ -489,17 +498,11 @@ export default function ComponentsPage() {
           </PreviewCard>
         </div>
 
-        {/* Loading skeleton */}
         <div>
-          <Label>Loading skeleton state</Label>
+          <Label>Loading skeleton (isLoading=true)</Label>
           <PreviewCard>
             <DataTable
-              columns={[
-                { key: 'member', header: 'Member' },
-                { key: 'item',   header: 'Item'   },
-                { key: 'status', header: 'Status' },
-                { key: 'actions', header: ''      },
-              ]}
+              columns={[{ key: 'member', header: 'Member' }, { key: 'item', header: 'Item' }, { key: 'status', header: 'Status' }, { key: 'actions', header: '' }]}
               data={[]}
               keyExtractor={(o: Order) => o.id}
               isLoading
@@ -509,24 +512,21 @@ export default function ComponentsPage() {
         </div>
       </section>
 
-      {/* ── ActionButtons ──────────────────────────────────────────────────── */}
+      {/* ── ActionButtons ────────────────────────────────────────────────── */}
       <section>
-        <SectionHeader title="ActionButtons" description="Compact icon-button row for table row actions — show only the actions relevant to the row's state." />
+        <SectionHeader title="ActionButtons" description="Compact icon-button row — show only the actions relevant to each row's state." />
         <PreviewCard>
           <div className="p-6">
             <div className="divide-y divide-separator rounded-xl border border-separator overflow-hidden">
               {[
-                { label: 'Pending order — approve / reject / view', props: { showView: true, showApprove: true, showReject: true } },
-                { label: 'Active record — view / edit / delete',     props: { showView: true, showEdit: true, showDelete: true } },
-                { label: 'All actions enabled',                      props: { showView: true, showApprove: true, showReject: true, showEdit: true, showDelete: true } },
-                { label: 'All actions disabled',                     props: { showView: true, showApprove: true, showReject: true, showEdit: true, showDelete: true, disabled: true } },
+                { label: 'Pending — approve / reject / view', props: { showView: true, showApprove: true, showReject: true } },
+                { label: 'Active — view / edit / delete',     props: { showView: true, showEdit: true, showDelete: true } },
+                { label: 'All actions enabled',               props: { showView: true, showApprove: true, showReject: true, showEdit: true, showDelete: true } },
+                { label: 'Disabled state',                    props: { showView: true, showApprove: true, showReject: true, showEdit: true, showDelete: true, disabled: true } },
               ].map(({ label, props }) => (
                 <div key={label} className="flex items-center justify-between px-4 py-3">
                   <span className="text-subhead text-label-secondary">{label}</span>
-                  <ActionButtons
-                    {...props}
-                    onView={() => {}} onApprove={() => {}} onReject={() => {}} onEdit={() => {}} onDelete={() => {}}
-                  />
+                  <ActionButtons {...props} onView={() => {}} onApprove={() => {}} onReject={() => {}} onEdit={() => {}} onDelete={() => {}} />
                 </div>
               ))}
             </div>
@@ -534,20 +534,16 @@ export default function ComponentsPage() {
         </PreviewCard>
       </section>
 
-      {/* ── PageShell + Breadcrumbs ─────────────────────────────────────────── */}
+      {/* ── PageShell + Breadcrumbs ───────────────────────────────────────── */}
       <section>
-        <SectionHeader title="PageShell &amp; Breadcrumbs" description="Consistent inner-page header with title, breadcrumbs, actions slot, and a controls panel for filters." />
+        <SectionHeader title="PageShell &amp; Breadcrumbs" description="Consistent inner-page header with title, actions slot, and controls panel." />
         <PreviewCard className="overflow-visible">
           <div className="border-b border-separator">
             <PageShell
               title="Members"
               subtitle="1,284 registered members"
               breadcrumbs={<Breadcrumbs items={[{ label: 'Members', href: '/dashboard/members' }, { label: 'List' }]} />}
-              actions={
-                <Button variant="primary" size="sm">
-                  <Plus className="w-4 h-4 mr-1.5" /> Add Member
-                </Button>
-              }
+              actions={<Button variant="primary" size="sm"><Plus className="w-4 h-4 mr-1.5" /> Add Member</Button>}
               controls={
                 <>
                   <div className="flex-1 min-w-[200px]">
@@ -556,15 +552,13 @@ export default function ComponentsPage() {
                   <div className="w-40">
                     <Select options={STATE_OPTIONS} value="" onChange={() => {}} placeholder="State" searchable />
                   </div>
-                  <div className="w-36">
-                    <Select options={[{ value: '', label: 'All Statuses' }, { value: 'active', label: 'Active' }, { value: 'pending', label: 'Pending' }]} value="" onChange={() => {}} placeholder="Status" />
-                  </div>
+                  <DatePicker value="" onChange={() => {}} placeholder="Filter by date" />
                 </>
               }
             />
           </div>
           <div className="px-6 py-4 text-subhead text-label-tertiary text-center">
-            ↑ PageShell renders the header and controls panel — table goes below here
+            ↑ PageShell — header and controls panel above; table or content goes here
           </div>
         </PreviewCard>
       </section>
