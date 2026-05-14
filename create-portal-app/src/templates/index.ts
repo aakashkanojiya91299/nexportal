@@ -8,7 +8,7 @@ export interface ScaffoldOptions {
   accentColor: string
   successColor: string
   brandLogoPath: string
-  /** Path to local @nexportal/ui for development (uses file: reference instead of registry) */
+  /** Path to local @lucifer91299/ui for development (uses file: reference instead of registry) */
   localUiPath?: string
   apiUrl?: string
   jwtCookieName?: string
@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@nexportal/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.0.0',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.0.0',
     'next': '^15.3.0',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
@@ -80,7 +80,7 @@ export function genPackageJson(o: ScaffoldOptions): string {
 
 export function genTailwindConfig(_o: ScaffoldOptions): string {
   return `import type { Config } from 'tailwindcss'
-import preset from '@nexportal/ui/tailwind/preset'
+import preset from '@lucifer91299/ui/tailwind/preset'
 
 // Brand colors are set via ThemeProvider CSS variables (see src/theme.config.ts).
 // Do NOT override color tokens here — that would bypass runtime theming.
@@ -95,7 +95,7 @@ export default config
 }
 
 export function genThemeConfig(o: ScaffoldOptions): string {
-  return `import { createTheme } from '@nexportal/ui'
+  return `import { createTheme } from '@lucifer91299/ui'
 
 export default createTheme({
   primary:          '${o.primaryColor}',
@@ -131,7 +131,7 @@ export function genEnvLocal(o: ScaffoldOptions): string {
 }
 
 export function genGlobalsCSS(): string {
-  return `/* Project-specific utilities — SDK component styles are in @nexportal/ui/styles/components.css */
+  return `/* Project-specific utilities — SDK component styles are in @lucifer91299/ui/styles/components.css */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -141,7 +141,7 @@ export function genGlobalsCSS(): string {
 export function genRootLayout(o: ScaffoldOptions): string {
   return `import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
-import '@nexportal/ui/styles/components.css'
+import '@lucifer91299/ui/styles/components.css'
 import './globals.css'
 import { Providers } from '@/providers'
 
@@ -168,7 +168,7 @@ export function genProviders(o: ScaffoldOptions): string {
   const imports: string[] = [
     `'use client'`,
     `import { type ReactNode } from 'react'`,
-    `import { ThemeProvider } from '@nexportal/ui'`,
+    `import { ThemeProvider } from '@lucifer91299/ui'`,
     `import { QueryClient, QueryClientProvider } from '@tanstack/react-query'`,
     `import theme from '@/theme.config'`,
   ]
@@ -218,7 +218,7 @@ export function genLoginPage(o: ScaffoldOptions): string {
 
   return `'use client'
 
-import { ${component} } from '@nexportal/ui'
+import { ${component} } from '@lucifer91299/ui'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -323,7 +323,7 @@ export async function GET() {
 export function genMiddleware(o: ScaffoldOptions): string {
   if (o.authMode === 'multi-role') {
     const rolesArr = (o.roles ?? ['admin']).map((r) => `'${r}'`).join(', ')
-    return `import { multiRoleMiddleware } from '@nexportal/ui/server'
+    return `import { multiRoleMiddleware } from '@lucifer91299/ui/server'
 
 export default multiRoleMiddleware({
   roles: [${rolesArr}],
@@ -361,7 +361,7 @@ export const config = {
   }
 
   const cookieName = o.jwtCookieName ?? 'access_token'
-  return `import { jwtMiddleware } from '@nexportal/ui/server'
+  return `import { jwtMiddleware } from '@lucifer91299/ui/server'
 
 export default jwtMiddleware({
   cookieName: '${cookieName}',
@@ -378,14 +378,14 @@ export const config = {
 
 export function genSessionRoute(o: ScaffoldOptions): string {
   const cookieName = o.jwtCookieName ?? 'access_token'
-  return `import { sessionRoute } from '@nexportal/ui/server'
+  return `import { sessionRoute } from '@lucifer91299/ui/server'
 export const { POST, DELETE } = sessionRoute({ cookieName: '${cookieName}' })
 `
 }
 
 export function genLogoutRoute(o: ScaffoldOptions): string {
   const cookieName = o.jwtCookieName ?? 'access_token'
-  return `import { logoutRoute } from '@nexportal/ui/server'
+  return `import { logoutRoute } from '@lucifer91299/ui/server'
 export const { POST } = logoutRoute({ cookieName: '${cookieName}' })
 `
 }
@@ -416,7 +416,7 @@ export default api
 
 export function genNavConfig(o: ScaffoldOptions): string {
   return `import { LayoutDashboard, Settings, User } from 'lucide-react'
-import type { NavGroup } from '@nexportal/ui'
+import type { NavGroup } from '@lucifer91299/ui'
 
 export const navGroups: NavGroup[] = [
   {
@@ -441,8 +441,8 @@ export const navGroups: NavGroup[] = [
 export function genDashboardLayout(o: ScaffoldOptions): string {
   return `'use client'
 
-import { DashboardLayout } from '@nexportal/ui'
-import { use${o.authMode === 'multi-role' ? 'MultiRoleAuth' : 'JwtAuth'} } from '@nexportal/ui'
+import { DashboardLayout } from '@lucifer91299/ui'
+import { use${o.authMode === 'multi-role' ? 'MultiRoleAuth' : 'JwtAuth'} } from '@lucifer91299/ui'
 import { usePathname } from 'next/navigation'
 import { navGroups } from '@/components/layout/nav-config'
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { type ReactNode } from 'react'
-import { ThemeProvider } from '@nexportal/ui'
+import { ThemeProvider } from '@lucifer91299/ui'
 import theme from '@/theme.config'
 
 export function Providers({ children }: { children: ReactNode }) {

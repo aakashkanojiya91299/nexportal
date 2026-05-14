@@ -1,5 +1,5 @@
 import type { Config } from 'tailwindcss'
-import preset from '@nexportal/ui/tailwind/preset'
+import preset from '@lucifer91299/ui/tailwind/preset'
 import { join } from 'path'
 
 const config: Config = {

@@ -1,4 +1,4 @@
-import { jwtMiddleware } from '@nexportal/ui/server'
+import { jwtMiddleware } from '@lucifer91299/ui/server'
 
 export default jwtMiddleware({
   cookieName:     'access_token',

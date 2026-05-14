@@ -1,6 +1,6 @@
 'use client'
 
-import { DashboardLayout, useJwtAuth } from '@nexportal/ui'
+import { DashboardLayout, useJwtAuth } from '@lucifer91299/ui'
 import { usePathname } from 'next/navigation'
 import { navGroups } from '@/components/nav-config'
 

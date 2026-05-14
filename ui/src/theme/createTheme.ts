@@ -9,7 +9,7 @@ import type { PortalTheme, ThemeOverrides } from './types'
  *
  * @example
  * // theme.config.ts
- * import { createTheme } from '@nexportal/ui'
+ * import { createTheme } from '@lucifer91299/ui'
  * export default createTheme({
  *   primary: '#E11D48',
  *   projectName: 'My Portal',

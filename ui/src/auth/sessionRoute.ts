@@ -8,7 +8,7 @@ const DEFAULT_MAX_AGE = 60 * 60 * 24 * 7 // 7 days
  *
  * @example
  * // src/app/api/auth/session/route.ts
- * import { sessionRoute } from '@nexportal/ui'
+ * import { sessionRoute } from '@lucifer91299/ui'
  * export const { POST, DELETE } = sessionRoute({ cookieName: 'access_token' })
  */
 export function sessionRoute({ cookieName, maxAge = DEFAULT_MAX_AGE }: SessionRouteConfig) {
@@ -47,7 +47,7 @@ export function sessionRoute({ cookieName, maxAge = DEFAULT_MAX_AGE }: SessionRo
  *
  * @example
  * // src/app/api/auth/logout/route.ts
- * import { logoutRoute } from '@nexportal/ui'
+ * import { logoutRoute } from '@lucifer91299/ui'
  * export const { POST } = logoutRoute({ cookieName: 'access_token' })
  */
 export function logoutRoute({ cookieName }: Pick<SessionRouteConfig, 'cookieName'>) {

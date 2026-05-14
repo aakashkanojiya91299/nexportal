@@ -174,7 +174,7 @@ function scaffold(opts: ScaffoldOptions) {
   write(f('.env.local'),             genEnvLocal(opts))
   write(f('.env.example'),           genEnvLocal(opts).replace(/=.+/g, '='))
   write(f('postcss.config.mjs'),     `export default { plugins: { tailwindcss: {}, autoprefixer: {} } }\n`)
-  write(f('next.config.ts'),         `import type { NextConfig } from 'next'\nconst config: NextConfig = {\n  transpilePackages: ['@nexportal/ui'],\n}\nexport default config\n`)
+  write(f('next.config.ts'),         `import type { NextConfig } from 'next'\nconst config: NextConfig = {\n  transpilePackages: ['@lucifer91299/ui'],\n}\nexport default config\n`)
   write(f('tsconfig.json'), JSON.stringify({
     compilerOptions: {
       target: 'ES2017', lib: ['dom', 'dom.iterable', 'esnext'], allowJs: true,
@@ -261,7 +261,7 @@ async function main() {
     log('  --success=#hex   Success colour')
     log('  --api-url=URL    Backend API URL')
     log('  --pm=npm|pnpm|yarn')
-    log('  --local-ui=PATH  Use local @nexportal/ui (file: reference, for development)')
+    log('  --local-ui=PATH  Use local @lucifer91299/ui (file: reference, for development)')
     log('')
     log('Examples:')
     log('  create-portal-app')

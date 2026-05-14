@@ -1,4 +1,4 @@
-import { createTheme } from '@nexportal/ui'
+import { createTheme } from '@lucifer91299/ui'
 
 export default createTheme({
   primary:  '#000080',

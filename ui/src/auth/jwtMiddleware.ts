@@ -8,7 +8,7 @@ import type { JwtMiddlewareConfig } from './types'
  *
  * @example
  * // src/middleware.ts
- * import { jwtMiddleware } from '@nexportal/ui'
+ * import { jwtMiddleware } from '@lucifer91299/ui'
  * export default jwtMiddleware({
  *   cookieName: 'access_token',
  *   jwtSecret: process.env.JWT_SECRET!,

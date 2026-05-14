@@ -1,6 +1,6 @@
 'use client'
 
-import { LoginPageSimple } from '@nexportal/ui'
+import { LoginPageSimple } from '@lucifer91299/ui'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 

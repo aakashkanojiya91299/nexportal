@@ -7,7 +7,7 @@ import type { MultiRoleMiddlewareConfig } from './types'
  *
  * @example
  * // src/middleware.ts
- * import { multiRoleMiddleware } from '@nexportal/ui'
+ * import { multiRoleMiddleware } from '@lucifer91299/ui'
  * export default multiRoleMiddleware({
  *   roles: ['coach', 'judge'],
  *   cookiePrefix: 'portal_',

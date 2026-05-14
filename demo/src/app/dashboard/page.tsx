@@ -1,6 +1,6 @@
 'use client'
 
-import { useJwtAuth } from '@nexportal/ui'
+import { useJwtAuth } from '@lucifer91299/ui'
 import { Users, TrendingUp, ShoppingCart, Activity } from 'lucide-react'
 
 const stats = [
@@ -87,7 +87,7 @@ export default function DashboardHome() {
 
       {/* SDK info */}
       <div className="bg-primary/5 border border-primary/10 rounded-xl p-5">
-        <p className="text-callout font-semibold text-primary mb-1">@nexportal/ui SDK Demo</p>
+        <p className="text-callout font-semibold text-primary mb-1">@lucifer91299/ui SDK Demo</p>
         <p className="text-subhead text-label-secondary">
           This dashboard is rendered by <code className="text-xs bg-white rounded px-1 py-0.5">DashboardLayout</code> from the SDK.
           The sidebar, nav groups, user avatar, and logout are all from the component library.

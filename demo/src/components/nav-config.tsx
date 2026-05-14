@@ -1,4 +1,4 @@
-import type { NavGroup } from '@nexportal/ui'
+import type { NavGroup } from '@lucifer91299/ui'
 import {
   LayoutDashboard, Users, Settings, LogIn, Palette, Layers,
 } from 'lucide-react'

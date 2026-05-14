@@ -17,7 +17,7 @@ interface ThemeProviderProps {
 
 /**
  * Wrap your app (or a subtree) with ThemeProvider to inject CSS variables
- * and make the theme available to all @nexportal/ui components via useTheme().
+ * and make the theme available to all @lucifer91299/ui components via useTheme().
  *
  * CSS variables injected on the wrapper div:
  *   --primary, --primary-soft, --primary-hover
@@ -26,7 +26,7 @@ interface ThemeProviderProps {
  *
  * @example
  * // app/layout.tsx
- * import { ThemeProvider } from '@nexportal/ui'
+ * import { ThemeProvider } from '@lucifer91299/ui'
  * import theme from '@/theme.config'
  *
  * export default function RootLayout({ children }) {

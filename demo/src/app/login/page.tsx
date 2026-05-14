@@ -1,6 +1,6 @@
 'use client'
 
-import { LoginPage } from '@nexportal/ui'
+import { LoginPage } from '@lucifer91299/ui'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -37,7 +37,7 @@ export default function LoginAnimated() {
       onSubmit={handleSubmit}
       isLoading={isLoading}
       error={error}
-      poweredBy={{ logoSrc: '/brand/powered-by.svg', text: 'Powered by @nexportal/ui' }}
+      poweredBy={{ logoSrc: '/brand/powered-by.svg', text: 'Powered by @lucifer91299/ui' }}
     />
   )
 }

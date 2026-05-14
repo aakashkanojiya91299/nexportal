@@ -1,6 +1,6 @@
 {
-  "name": "@nexportal/create-portal-app",
-  "version": "1.0.0",
+  "name": "@lucifer91299/create-portal-app",
+  "version": "1.0.1",
   "description": "Scaffold a Next.js authenticated portal with full design system in one command",
   "license": "MIT",
   "author": "Aakash Kanojiya",
@@ -8,7 +8,9 @@
     "create-portal-app": "dist/cli/index.js"
   },
   "main": "dist/cli/index.js",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsup",
     "dev": "tsup --watch",

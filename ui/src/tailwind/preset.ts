@@ -2,10 +2,10 @@ import type { Config } from 'tailwindcss'
 import { join } from 'path'
 
 /**
- * @nexportal/ui Tailwind preset
+ * @lucifer91299/ui Tailwind preset
  *
  * Usage in tailwind.config.ts:
- *   presets: [require('@nexportal/ui/tailwind/preset')]
+ *   presets: [require('@lucifer91299/ui/tailwind/preset')]
  *
  * Override any token by extending in your own theme — the preset uses `extend`
  * so your project colors are merged, not replaced.
