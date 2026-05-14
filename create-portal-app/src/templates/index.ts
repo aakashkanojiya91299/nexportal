@@ -441,7 +441,7 @@ export const navGroups: NavGroup[] = [
 export function genDashboardLayout(o: ScaffoldOptions): string {
   return `'use client'
 
-import { DashboardLayout, PageFooter, use${o.authMode === 'multi-role' ? 'MultiRoleAuth' : 'JwtAuth'} } from '@lucifer91299/ui'
+import { DashboardLayout, use${o.authMode === 'multi-role' ? 'MultiRoleAuth' : 'JwtAuth'} } from '@lucifer91299/ui'
 import { usePathname } from 'next/navigation'
 import { navGroups } from '@/components/layout/nav-config'
 
@@ -467,15 +467,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       pathname={pathname}
       onLogout={logout}
     >
-      <div className="flex flex-col min-h-full">
-        <div className="flex-1">{children}</div>
-        <PageFooter
-          organizationName="${o.projectName}"
-          logoSrc="/brand/logo.svg"
-          poweredByText="Powered by"
-          poweredByHref="#"
-        />
-      </div>
+      {children}
     </DashboardLayout>
   )
 }

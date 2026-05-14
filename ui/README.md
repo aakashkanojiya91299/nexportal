@@ -623,6 +623,17 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../ui
 
 ## Changelog
 
+### v1.0.7
+- Removed `PageFooter` from `DashboardLayout` wrapper — footer no longer renders in every page automatically
+- Completely redesigned components showcase with stats cards, all Badge variants, live DataTable with search, PageShell preview, and TricolorBar section
+- Fixed component page to use correct Button / Badge variant names
+
+### v1.0.6
+- Added `DataTable<T>`, `StatusBadge`, `ActionButtons`, `Select`, `PageShell`, `Breadcrumbs`, `PageFooter`
+- Improved `Input`: `labelRight`, `suffix`, number sanitisation, required asterisk
+- CLI: Windows folder creation fix, `npx @lucifer91299/create-portal-app` docs corrected
+- Added Users and Settings pages to generated template
+
 ### v1.0.3
 - Added `workflow_dispatch` to GitHub Actions — manual publish trigger from Actions tab
 - README improvements: badges, local dev guide
