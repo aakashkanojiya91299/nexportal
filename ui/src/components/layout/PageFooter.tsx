@@ -101,57 +101,38 @@ export function PageFooter({
   const year = new Date().getFullYear()
 
   return (
-    <footer className={cn('shrink-0 px-3 sm:px-4 lg:px-6 pb-3 sm:pb-6', className)}>
+    <footer className={cn('shrink-0 px-3 pb-3', className)}>
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-
-        {/* Mobile */}
-        <div className="sm:hidden px-3.5 py-2.5 flex flex-col gap-2">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-1.5 min-w-0">
-              {logoSrc && <img src={logoSrc} alt={logoAlt} className="w-6 h-6 object-contain shrink-0" />}
-              <span className="text-[11px] font-semibold text-gray-700">{organizationName}</span>
-              <span className="text-[10px] text-gray-400">&copy; {year}</span>
+        <div className="px-5 py-3 flex items-center justify-between gap-4 flex-wrap">
+          {/* Left: org name + copyright */}
+          <div className="flex items-center gap-2 min-w-0">
+            {logoSrc && <img src={logoSrc} alt={logoAlt} className="w-6 h-6 object-contain shrink-0" />}
+            <div className="flex flex-col leading-tight">
+              <span className="text-[12px] font-semibold text-gray-700">{organizationName}</span>
+              <span className="text-[10px] text-gray-400">&copy; {year} &middot; All rights reserved</span>
             </div>
-            {poweredByHref && (
-              <a href={poweredByHref} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[10px] text-gray-400 hover:opacity-70 transition-opacity shrink-0">
-                <span>{poweredByText}</span>
-                {poweredByLogoSrc && <img src={poweredByLogoSrc} alt="powered by" className="h-3 w-auto" />}
-              </a>
-            )}
           </div>
+
+          {/* Center: social icons */}
           {socialLinks.length > 0 && (
-            <div className="flex items-center justify-center gap-1.5">
+            <div className="flex items-center gap-2">
               {socialLinks.map((l) => <SocialIcon key={l.label} link={l} />)}
             </div>
           )}
-        </div>
 
-        {/* Desktop */}
-        <div className="hidden sm:block px-6 py-3">
-          <div className="grid grid-cols-3 items-center gap-3">
-            <div className="flex items-center gap-2.5">
-              {logoSrc && <img src={logoSrc} alt={logoAlt} className="w-7 h-7 object-contain" />}
-              <div className="flex flex-col leading-tight">
-                <span className="text-[12px] font-semibold text-gray-700">{organizationName}</span>
-                <span className="text-[10px] text-gray-400">&copy; {year} &middot; All rights reserved</span>
-              </div>
-            </div>
-            {socialLinks.length > 0 && (
-              <div className="flex items-center justify-center gap-2">
-                {socialLinks.map((l) => <SocialIcon key={l.label} link={l} />)}
-              </div>
-            )}
-            {poweredByHref && (
-              <a href={poweredByHref} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1.5 justify-end text-xs text-gray-400 hover:opacity-70 transition-opacity">
-                <span>{poweredByText}</span>
-                {poweredByLogoSrc && <img src={poweredByLogoSrc} alt="powered by" className="h-4 w-auto" />}
-              </a>
-            )}
-          </div>
+          {/* Right: powered by */}
+          {poweredByHref && (
+            <a
+              href={poweredByHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 text-[11px] text-gray-400 hover:opacity-70 transition-opacity shrink-0"
+            >
+              <span>{poweredByText}</span>
+              {poweredByLogoSrc && <img src={poweredByLogoSrc} alt="powered by" className="h-4 w-auto" />}
+            </a>
+          )}
         </div>
-
         <div className="tricolor-bar" />
       </div>
     </footer>
