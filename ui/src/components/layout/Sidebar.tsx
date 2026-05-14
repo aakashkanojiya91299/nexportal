@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, ChevronRight, LogOut, Menu, X, Shield } from 'lucide-react'
+import { ChevronDown, ChevronRight, LogOut, Menu, X } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { BrandLogo } from './BrandLogo'
 import { TricolorBar } from './TricolorBar'
@@ -23,6 +23,26 @@ export interface SidebarProps {
 function isActive(pathname: string, href: string): boolean {
   if (href === '/dashboard') return pathname === href
   return pathname === href || pathname.startsWith(href + '/')
+}
+
+function UserAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
+  const initials = name
+    .split(' ')
+    .map((w) => w[0] ?? '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+  return (
+    <span
+      className={cn(
+        'flex flex-shrink-0 items-center justify-center rounded-full font-bold text-white select-none',
+        size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-9 w-9 text-[13px]',
+      )}
+      style={{ background: 'var(--primary, #000080)' }}
+    >
+      {initials || '?'}
+    </span>
+  )
 }
 
 export function Sidebar({
@@ -61,53 +81,55 @@ export function Sidebar({
   }, [pathname, navGroups])
 
   const activeStyle = {
-    background: 'linear-gradient(to right, var(--primary, #000080), color-mix(in srgb, var(--primary, #000080) 80%, transparent))',
+    background: 'linear-gradient(135deg, var(--primary, #000080) 0%, color-mix(in srgb, var(--primary, #000080) 80%, #1e3a8a) 100%)',
     color: '#fff',
+    boxShadow: '0 2px 8px color-mix(in srgb, var(--primary, #000080) 30%, transparent)',
   }
 
   const SidebarBody = (
     <aside
       className={cn(
         'flex flex-col h-full bg-white border-r border-separator-opaque overflow-hidden transition-all duration-300',
-        collapsed ? 'w-16' : 'w-64',
+        collapsed ? 'w-[72px]' : 'w-72',
         className,
       )}
     >
-      <TricolorBar />
-
-      {/* Brand header */}
-      <div className={cn(
-        'flex-shrink-0 flex items-center border-b border-separator-opaque',
-        collapsed ? 'justify-center p-3' : 'gap-3 px-6 py-5',
-      )}>
-        <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'md'} />
-        {!collapsed && (
-          <div>
-            <h1 className="text-callout font-bold" style={{ color: 'var(--primary, #000080)' }}>
-              {projectName}
-            </h1>
-            <p className="text-footnote text-label-secondary">{user.role}</p>
+      {/* ── Header ──────────────────────────────────────────────────────── */}
+      <div className="flex-shrink-0">
+        <TricolorBar />
+        <div
+          className={cn(
+            'flex items-center border-b border-separator-opaque',
+            collapsed ? 'justify-center px-0 py-4' : 'gap-3 px-5 py-4',
+          )}
+        >
+          <div
+            className={cn(
+              'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden ring-2',
+              collapsed ? 'w-9 h-9' : 'w-10 h-10',
+            )}
+            style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}
+          >
+            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'md'} />
           </div>
-        )}
-      </div>
-
-      {/* User role chip */}
-      <div className={cn('flex-shrink-0 border-b border-separator-opaque px-4 py-3', collapsed && 'px-2 py-2')}>
-        <div className={cn(
-          'flex items-center rounded gap-2 px-3 py-2',
-          collapsed && 'justify-center',
-        )} style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}>
-          <Shield className="h-4 w-4 flex-shrink-0" style={{ color: 'var(--primary, #000080)' }} />
           {!collapsed && (
-            <span className="truncate text-callout font-medium" style={{ color: 'var(--primary, #000080)' }}>
-              {user.role}
-            </span>
+            <div className="min-w-0">
+              <h1 className="text-subhead font-bold truncate leading-tight" style={{ color: 'var(--primary, #000080)' }}>
+                {projectName}
+              </h1>
+              <p className="text-[10px] font-medium text-label-tertiary uppercase tracking-wider mt-0.5">Admin Portal</p>
+            </div>
           )}
         </div>
       </div>
 
-      {/* Nav */}
-      <nav className={cn('flex-1 overflow-y-auto overflow-x-hidden py-2', collapsed ? 'px-2' : 'px-3')}>
+      {/* ── Nav ─────────────────────────────────────────────────────────── */}
+      <nav
+        className={cn(
+          'flex-1 overflow-y-auto overflow-x-hidden',
+          collapsed ? 'py-3 px-2' : 'py-3 px-3',
+        )}
+      >
         {navGroups.map((group, gi) => {
           const isMulti = group.items.length > 1
           const expanded = openSection === group.heading
@@ -116,25 +138,25 @@ export function Sidebar({
             const item = group.items[0]
             const active = isActive(pathname, item.href)
             return (
-              <div key={group.heading} className={gi > 0 ? 'mt-2' : ''}>
+              <div key={group.heading} className={gi > 0 ? 'mt-1' : ''}>
                 <a
                   href={item.href}
                   onClick={() => setIsMobileOpen(false)}
                   onMouseEnter={(e) => showTooltip(e, item.label)}
                   onMouseLeave={hideTooltip}
                   className={cn(
-                    'relative flex items-center gap-2.5 rounded text-callout font-medium transition-all duration-200',
-                    collapsed ? 'h-9 w-9 justify-center p-0' : 'px-3 py-2',
-                    !active && 'text-label-secondary hover:bg-surface-secondary hover:text-label-primary',
+                    'relative flex items-center rounded-xl text-callout font-medium transition-all duration-200',
+                    collapsed ? 'h-10 w-10 justify-center mx-auto p-0' : 'gap-3 px-3 py-2.5',
+                    !active && 'text-label-secondary hover:bg-surface-secondary/80 hover:text-label-primary',
                   )}
                   style={active ? activeStyle : undefined}
                 >
-                  <span className={cn('flex-shrink-0', active ? 'text-white' : 'text-label-tertiary')}>
+                  <span className={cn('flex-shrink-0 w-[18px] h-[18px]', active ? 'text-white' : 'text-label-tertiary')}>
                     {item.icon}
                   </span>
                   {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
                   {!collapsed && item.badge != null && (
-                    <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-caption1 text-white">
+                    <span className="ml-auto rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-semibold text-white leading-none">
                       {item.badge}
                     </span>
                   )}
@@ -144,34 +166,50 @@ export function Sidebar({
           }
 
           return (
-            <div key={group.heading} className={gi > 0 ? 'mt-2' : ''}>
+            <div key={group.heading} className={gi > 0 ? 'mt-3' : ''}>
               {!collapsed && (
                 <button
                   type="button"
                   onClick={() => setOpenSection((p) => p === group.heading ? null : group.heading)}
-                  className="mb-0.5 flex w-full items-center gap-2 rounded px-2 py-1.5 text-left transition-colors hover:bg-surface-secondary/80"
+                  className="mb-1 flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface-secondary/60"
                 >
                   <span
-                    className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-sm"
+                    className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md"
                     style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))', color: 'var(--primary, #000080)' }}
                   >
                     {group.groupIcon}
                   </span>
-                  <span className="min-w-0 flex-1 truncate text-caption1 font-semibold uppercase tracking-wider text-label-secondary">
+                  <span className="min-w-0 flex-1 truncate text-[10px] font-bold uppercase tracking-widest text-label-tertiary">
                     {group.heading}
                   </span>
-                  <ChevronDown className={cn('h-3.5 w-3.5 flex-shrink-0 text-label-tertiary transition-transform duration-200', expanded && 'rotate-180')} />
+                  <ChevronDown
+                    className={cn(
+                      'h-3 w-3 flex-shrink-0 text-label-quaternary transition-transform duration-200',
+                      expanded && 'rotate-180',
+                    )}
+                  />
                 </button>
               )}
               {collapsed && (
-                <div className="my-1.5 flex justify-center">
-                  <span className="block h-px w-5 bg-separator-opaque" />
+                <div className="my-2 flex justify-center">
+                  <span className="block h-px w-6 bg-separator-opaque" />
                 </div>
               )}
 
-              <div className={cn(
-                !collapsed && expanded ? 'space-y-0.5 border-l-2 pl-2.5 ml-3.5' : !collapsed ? 'hidden' : 'space-y-0.5',
-              )} style={!collapsed && expanded ? { borderColor: 'var(--accent-soft, rgba(255,153,51,0.35))' } : undefined}>
+              <div
+                className={cn(
+                  !collapsed && expanded
+                    ? 'space-y-0.5 border-l-2 pl-3 ml-4'
+                    : !collapsed
+                    ? 'hidden'
+                    : 'space-y-1',
+                )}
+                style={
+                  !collapsed && expanded
+                    ? { borderColor: 'var(--accent-soft, rgba(255,153,51,0.4))' }
+                    : undefined
+                }
+              >
                 {group.items.map((item) => {
                   const active = isActive(pathname, item.href)
                   return (
@@ -182,17 +220,19 @@ export function Sidebar({
                         onMouseEnter={(e) => showTooltip(e, item.label)}
                         onMouseLeave={hideTooltip}
                         className={cn(
-                          'relative flex items-center gap-2 rounded text-subhead font-medium transition-all duration-200',
-                          collapsed ? 'h-9 w-9 justify-center p-0' : 'px-2.5 py-1.5',
-                          !active && 'text-label-secondary hover:bg-surface-secondary hover:text-label-primary',
+                          'relative flex items-center rounded-xl text-subhead font-medium transition-all duration-200',
+                          collapsed ? 'h-10 w-10 justify-center p-0' : 'gap-3 px-3 py-2',
+                          !active && 'text-label-secondary hover:bg-surface-secondary/80 hover:text-label-primary',
                         )}
                         style={active ? activeStyle : undefined}
                       >
-                        <span className={cn('flex-shrink-0 h-4 w-4', active ? 'text-white' : 'text-label-tertiary')}>
+                        <span className={cn('flex-shrink-0 w-4 h-4', active ? 'text-white' : 'text-label-tertiary')}>
                           {item.icon}
                         </span>
                         {!collapsed && <span className="flex-1 truncate">{item.label}</span>}
-                        {!collapsed && active && <ChevronRight className="h-3 w-3 flex-shrink-0 opacity-80 text-white" />}
+                        {!collapsed && active && (
+                          <ChevronRight className="h-3 w-3 flex-shrink-0 text-white/70" />
+                        )}
                       </a>
                     </div>
                   )
@@ -203,53 +243,83 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* Logout */}
-      <div className={cn('flex-shrink-0 border-t border-separator-opaque', collapsed ? 'px-2 py-2' : 'px-4 py-3')}>
-        <button
-          type="button"
-          onClick={onLogout}
-          onMouseEnter={(e) => showTooltip(e, 'Log out')}
-          onMouseLeave={hideTooltip}
-          className={cn(
-            'group relative flex w-full items-center rounded text-callout font-medium text-red-500 transition-colors hover:bg-red-50',
-            collapsed ? 'h-10 w-10 justify-center p-0' : 'gap-3 px-4 py-2.5',
-          )}
-        >
-          <LogOut className="h-5 w-5 flex-shrink-0" />
-          {!collapsed && <span className="whitespace-nowrap">Log out</span>}
-        </button>
+      {/* ── Footer (user card + logout) ─────────────────────────────────── */}
+      <div className="flex-shrink-0 border-t border-separator-opaque">
+        {collapsed ? (
+          /* Collapsed footer: just logout icon */
+          <div className="flex flex-col items-center gap-2 py-3 px-2">
+            <UserAvatar name={user.name} size="sm" />
+            <button
+              type="button"
+              onClick={onLogout}
+              onMouseEnter={(e) => showTooltip(e, 'Sign out')}
+              onMouseLeave={hideTooltip}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-red-400 hover:bg-red-50 hover:text-red-500 transition-colors"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+        ) : (
+          /* Expanded footer: user card */
+          <div className="px-3 py-3">
+            <div
+              className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+              style={{ background: 'var(--primary-soft, rgba(0,0,128,0.06))' }}
+            >
+              <UserAvatar name={user.name} />
+              <div className="min-w-0 flex-1">
+                <p className="text-callout font-semibold text-label-primary truncate leading-tight">{user.name}</p>
+                <p className="text-[11px] text-label-tertiary truncate mt-0.5">{user.role}</p>
+              </div>
+              <button
+                type="button"
+                onClick={onLogout}
+                title="Sign out"
+                className="flex-shrink-0 p-1.5 rounded-lg text-red-400 hover:text-red-500 hover:bg-red-50/80 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        )}
+        <TricolorBar />
       </div>
-
-      <TricolorBar />
     </aside>
   )
 
   return (
     <>
-      {/* Mobile top bar */}
+      {/* ── Mobile top bar ─────────────────────────────────────────────── */}
       <div className="fixed left-0 right-0 top-0 z-50 border-b border-separator-opaque bg-white/95 shadow-sm backdrop-blur-sm lg:hidden">
         <TricolorBar />
-        <div className="flex items-center justify-between px-4 py-2">
+        <div className="flex items-center justify-between px-4 py-2.5">
           <button
             type="button"
             onClick={() => setIsMobileOpen((v) => !v)}
-            className="rounded p-2 text-label-secondary transition-colors hover:bg-surface-secondary"
+            className="rounded-lg p-2 text-label-secondary transition-colors hover:bg-surface-secondary"
           >
             {isMobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
-          <div className="flex items-center gap-2">
-            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="sm" />
-            <span className="text-callout font-semibold" style={{ color: 'var(--primary, #000080)' }}>
+          <div className="flex items-center gap-2.5">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}
+            >
+              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="sm" />
+            </div>
+            <span className="text-callout font-bold" style={{ color: 'var(--primary, #000080)' }}>
               {projectName}
             </span>
           </div>
+          <UserAvatar name={user.name} size="sm" />
         </div>
       </div>
 
       {/* Mobile backdrop */}
       {isMobileOpen && (
         <div
-          className="fixed inset-0 z-30 bg-black/50 lg:hidden"
+          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-[2px] lg:hidden"
           onClick={() => setIsMobileOpen(false)}
         />
       )}
@@ -257,7 +327,7 @@ export function Sidebar({
       {/* Mobile drawer */}
       <div
         className={cn(
-          'fixed top-0 left-0 z-40 h-screen pt-14 lg:hidden transition-transform duration-300 ease-in-out',
+          'fixed top-0 left-0 z-40 h-screen pt-[52px] lg:hidden transition-transform duration-300 ease-in-out',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
@@ -273,11 +343,19 @@ export function Sidebar({
       {tooltip && typeof document !== 'undefined' &&
         createPortal(
           <div
-            className="pointer-events-none fixed z-[9999] whitespace-nowrap rounded px-2.5 py-1.5 text-caption1 font-medium text-white shadow"
-            style={{ top: tooltip.top, left: tooltip.left, transform: 'translateY(-50%)', background: 'var(--primary, #000080)' }}
+            className="pointer-events-none fixed z-[9999] whitespace-nowrap rounded-lg px-2.5 py-1.5 text-caption1 font-semibold text-white shadow-lg"
+            style={{
+              top: tooltip.top,
+              left: tooltip.left,
+              transform: 'translateY(-50%)',
+              background: 'var(--primary, #000080)',
+            }}
           >
             {tooltip.label}
-            <div className="absolute top-1/2 -left-1 h-2 w-2 -translate-y-1/2 rotate-45" style={{ background: 'var(--primary, #000080)' }} />
+            <div
+              className="absolute top-1/2 -left-1 h-2 w-2 -translate-y-1/2 rotate-45"
+              style={{ background: 'var(--primary, #000080)' }}
+            />
           </div>,
           document.body,
         )

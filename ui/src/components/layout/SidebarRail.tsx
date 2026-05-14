@@ -24,12 +24,29 @@ function isActive(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(href + '/')
 }
 
+function UserAvatar({ name }: { name: string }) {
+  const initials = name
+    .split(' ')
+    .map((w) => w[0] ?? '')
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
+  return (
+    <span
+      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-[11px] font-bold text-white select-none"
+      style={{ background: 'var(--primary, #000080)' }}
+    >
+      {initials || '?'}
+    </span>
+  )
+}
+
 export function SidebarRail({
   navGroups,
   logoSrc,
   logoAlt,
   projectName,
-  user: _user,
+  user,
   pathname,
   onLogout,
   className,
@@ -44,8 +61,9 @@ export function SidebarRail({
   const hideTooltip = useCallback(() => setTooltip(null), [])
 
   const activeStyle = {
-    background: 'var(--primary, #000080)',
+    background: 'linear-gradient(135deg, var(--primary, #000080) 0%, color-mix(in srgb, var(--primary, #000080) 80%, #1e3a8a) 100%)',
     color: '#fff',
+    boxShadow: '0 2px 8px color-mix(in srgb, var(--primary, #000080) 30%, transparent)',
   }
 
   const allItems = navGroups.flatMap((g) => g.items)
@@ -54,17 +72,25 @@ export function SidebarRail({
     <>
       <aside
         className={cn(
-          'flex flex-col h-screen sticky top-0 bg-white border-r border-separator-opaque w-16',
+          'flex flex-col h-screen sticky top-0 bg-white border-r border-separator-opaque w-[72px]',
           className,
         )}
       >
-        <TricolorBar />
-
-        <div className="flex-shrink-0 flex justify-center py-3 border-b border-separator-opaque">
-          <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="sm" />
+        {/* Header */}
+        <div className="flex-shrink-0">
+          <TricolorBar />
+          <div className="flex justify-center py-4 border-b border-separator-opaque">
+            <div
+              className="w-9 h-9 rounded-xl flex items-center justify-center"
+              style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}
+            >
+              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="sm" />
+            </div>
+          </div>
         </div>
 
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-2 px-2 space-y-1">
+        {/* Nav */}
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-3 px-2 space-y-1">
           {allItems.map((item) => {
             const active = isActive(pathname, item.href)
             return (
@@ -74,13 +100,13 @@ export function SidebarRail({
                 onMouseEnter={(e) => showTooltip(e, item.label)}
                 onMouseLeave={hideTooltip}
                 className={cn(
-                  'flex h-9 w-9 items-center justify-center rounded transition-all duration-200 mx-auto',
-                  !active && 'text-label-secondary hover:bg-surface-secondary hover:text-label-primary',
+                  'flex h-10 w-10 items-center justify-center rounded-xl transition-all duration-200 mx-auto',
+                  !active && 'text-label-tertiary hover:bg-surface-secondary hover:text-label-secondary',
                 )}
                 style={active ? activeStyle : undefined}
                 aria-label={item.label}
               >
-                <span className={cn('h-4 w-4', active ? 'text-white' : 'text-label-tertiary')}>
+                <span className={cn('h-[18px] w-[18px]', active ? 'text-white' : '')}>
                   {item.icon}
                 </span>
               </a>
@@ -88,30 +114,41 @@ export function SidebarRail({
           })}
         </nav>
 
-        <div className="flex-shrink-0 flex justify-center border-t border-separator-opaque py-2">
-          <button
-            type="button"
-            onClick={onLogout}
-            onMouseEnter={(e) => showTooltip(e, 'Log out')}
-            onMouseLeave={hideTooltip}
-            className="flex h-10 w-10 items-center justify-center rounded text-red-500 transition-colors hover:bg-red-50"
-            aria-label="Log out"
-          >
-            <LogOut className="h-5 w-5" />
-          </button>
+        {/* Footer */}
+        <div className="flex-shrink-0 border-t border-separator-opaque">
+          <div className="flex flex-col items-center gap-2 py-3 px-2">
+            <UserAvatar name={user.name} />
+            <button
+              type="button"
+              onClick={onLogout}
+              onMouseEnter={(e) => showTooltip(e, 'Sign out')}
+              onMouseLeave={hideTooltip}
+              className="flex h-9 w-9 items-center justify-center rounded-xl text-red-400 transition-colors hover:bg-red-50 hover:text-red-500"
+              aria-label="Sign out"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </div>
+          <TricolorBar />
         </div>
-
-        <TricolorBar />
       </aside>
 
       {tooltip && typeof document !== 'undefined' &&
         createPortal(
           <div
-            className="pointer-events-none fixed z-[9999] whitespace-nowrap rounded px-2.5 py-1.5 text-caption1 font-medium text-white shadow"
-            style={{ top: tooltip.top, left: tooltip.left, transform: 'translateY(-50%)', background: 'var(--primary, #000080)' }}
+            className="pointer-events-none fixed z-[9999] whitespace-nowrap rounded-lg px-2.5 py-1.5 text-caption1 font-semibold text-white shadow-lg"
+            style={{
+              top: tooltip.top,
+              left: tooltip.left,
+              transform: 'translateY(-50%)',
+              background: 'var(--primary, #000080)',
+            }}
           >
             {tooltip.label}
-            <div className="absolute top-1/2 -left-1 h-2 w-2 -translate-y-1/2 rotate-45" style={{ background: 'var(--primary, #000080)' }} />
+            <div
+              className="absolute top-1/2 -left-1 h-2 w-2 -translate-y-1/2 rotate-45"
+              style={{ background: 'var(--primary, #000080)' }}
+            />
           </div>,
           document.body,
         )
