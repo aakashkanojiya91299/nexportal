@@ -1871,7 +1871,7 @@ export default function OnboardingPage() {
 
   if (submitted) {
     return (
-      <div className="p-4 sm:p-6 max-w-2xl mx-auto">
+      <div className="p-4 sm:p-6 max-w-4xl mx-auto">
         <Card className="overflow-hidden">
           <div className="h-1" style={{ background: 'var(--primary, #000080)' }} />
           <div className="flex flex-col items-center gap-4 px-8 py-12 text-center">
@@ -1893,7 +1893,7 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="p-4 sm:p-6 max-w-3xl mx-auto pb-10">
+    <div className="p-4 sm:p-6 max-w-5xl mx-auto pb-10">
       {/* Header */}
       <div className="mb-5">
         <Breadcrumbs items={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Onboarding' }]} />
