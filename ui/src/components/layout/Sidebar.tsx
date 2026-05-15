@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, ChevronRight, LogOut, Menu, X, Settings } from 'lucide-react'
+import { ChevronDown, ChevronRight, LogOut, Menu, X, Settings, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { BrandLogo } from './BrandLogo'
 import { TricolorBar } from './TricolorBar'
@@ -16,6 +16,7 @@ export interface SidebarProps {
   user: UserInfo
   pathname: string
   collapsed?: boolean
+  onToggleCollapse?: () => void
   onLogout: () => void
   className?: string
   style?: React.CSSProperties
@@ -54,6 +55,7 @@ export function Sidebar({
   user,
   pathname,
   collapsed = false,
+  onToggleCollapse,
   onLogout,
   className,
   style,
@@ -113,24 +115,43 @@ export function Sidebar({
         <div
           className={cn(
             'flex items-center border-b border-separator-opaque',
-            collapsed ? 'justify-center px-0 py-4' : 'gap-3 px-5 py-4',
+            collapsed ? 'flex-col justify-center px-2 py-3 gap-2' : 'gap-3 px-4 py-3',
           )}
         >
-          <div
-            className={cn(
-              'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden',
-              collapsed ? 'w-10 h-10' : 'w-14 h-14',
-            )}
-          >
-            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'lg'} />
-          </div>
-          {!collapsed && (
-            <div className="min-w-0">
-              <h1 className="text-subhead font-bold truncate leading-tight" style={{ color: 'var(--primary, #000080)' }}>
-                {projectName}
-              </h1>
-              <p className="text-[10px] font-medium text-label-tertiary uppercase tracking-wider mt-0.5">Admin Portal</p>
+          <div className={cn('flex items-center gap-3 min-w-0', collapsed ? 'justify-center w-full' : 'flex-1')}>
+            <div
+              className={cn(
+                'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden',
+                collapsed ? 'w-10 h-10' : 'w-14 h-14',
+              )}
+            >
+              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'lg'} />
             </div>
+            {!collapsed && (
+              <div className="min-w-0 flex-1">
+                <h1 className="text-subhead font-bold truncate leading-tight" style={{ color: 'var(--primary, #000080)' }}>
+                  {projectName}
+                </h1>
+                <p className="text-[10px] font-medium text-label-tertiary uppercase tracking-wider mt-0.5">Admin Portal</p>
+              </div>
+            )}
+          </div>
+          {/* Collapse toggle — desktop only, shown when onToggleCollapse is provided */}
+          {onToggleCollapse && (
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className={cn(
+                'flex-shrink-0 rounded-lg p-1.5 text-label-tertiary hover:bg-surface-secondary hover:text-label-primary transition-colors focus:outline-none',
+                collapsed ? 'w-full flex justify-center' : '',
+              )}
+              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            >
+              {collapsed
+                ? <PanelLeftOpen className="h-4 w-4" />
+                : <PanelLeftClose className="h-4 w-4" />
+              }
+            </button>
           )}
         </div>
       </div>

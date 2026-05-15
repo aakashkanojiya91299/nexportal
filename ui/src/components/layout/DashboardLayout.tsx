@@ -1,7 +1,7 @@
 'use client'
 
 import React, { type ReactNode, useState, useRef, useEffect } from 'react'
-import { LogOut, Settings, ChevronDown } from 'lucide-react'
+import { LogOut, Settings, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Sidebar } from './Sidebar'
 import { SidebarRail } from './SidebarRail'
@@ -21,6 +21,8 @@ export interface DashboardLayoutProps {
   onLogout: () => void
   poweredBy?: PoweredByConfig
   children: ReactNode
+  /** Start the sidebar in collapsed state (persisted to localStorage) */
+  defaultCollapsed?: boolean
   className?: string
   style?: React.CSSProperties
 }
@@ -152,9 +154,24 @@ export function DashboardLayout({
   onLogout,
   poweredBy,
   children,
+  defaultCollapsed = false,
   className,
   style,
 }: DashboardLayoutProps) {
+  const [collapsed, setCollapsed] = useState(defaultCollapsed)
+
+  // Persist + restore collapse state from localStorage (client-only)
+  useEffect(() => {
+    const saved = localStorage.getItem('ui-sidebar-collapsed')
+    if (saved !== null) setCollapsed(saved === 'true')
+  }, [])
+
+  const toggleCollapsed = () => {
+    const next = !collapsed
+    setCollapsed(next)
+    localStorage.setItem('ui-sidebar-collapsed', String(next))
+  }
+
   const commonProps = { navGroups, logoSrc, logoAlt, projectName, user, pathname, onLogout }
 
   /* ── Header layout ──────────────────────────────────────────────────────── */
@@ -181,11 +198,11 @@ export function DashboardLayout({
     <div className={cn('flex min-h-screen bg-surface-secondary', className)} style={style}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      {sidebar === 'full' && <Sidebar {...commonProps} />}
+      {sidebar === 'full' && <Sidebar {...commonProps} collapsed={collapsed} onToggleCollapse={toggleCollapsed} />}
       {sidebar === 'rail' && <SidebarRail {...commonProps} />}
       {sidebar === 'both' && (
         <>
-          <div className="hidden lg:flex"><Sidebar {...commonProps} /></div>
+          <div className="hidden lg:flex"><Sidebar {...commonProps} collapsed={collapsed} onToggleCollapse={toggleCollapsed} /></div>
           <div className="flex lg:hidden"><SidebarRail {...commonProps} /></div>
         </>
       )}
@@ -194,9 +211,22 @@ export function DashboardLayout({
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
 
         {/* Desktop top header bar */}
-        <header className="flex-shrink-0 hidden lg:flex items-center justify-between h-14 px-6 bg-white border-b border-separator-opaque">
-          {/* Left: current section name */}
-          <div className="flex items-center gap-2 min-w-0">
+        <header className="flex-shrink-0 hidden lg:flex items-center justify-between h-14 px-4 bg-white border-b border-separator-opaque">
+          {/* Left: collapse toggle + current section name */}
+          <div className="flex items-center gap-3 min-w-0">
+            {(sidebar === 'full' || sidebar === 'both') && (
+              <button
+                type="button"
+                onClick={toggleCollapsed}
+                className="flex-shrink-0 rounded-lg p-2 text-label-tertiary hover:bg-surface-secondary hover:text-label-primary transition-colors focus:outline-none"
+                title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+              >
+                {collapsed
+                  ? <PanelLeftOpen className="h-[18px] w-[18px]" />
+                  : <PanelLeftClose className="h-[18px] w-[18px]" />
+                }
+              </button>
+            )}
             <span className="text-callout font-semibold text-label-primary capitalize">
               {pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || 'Dashboard'}
             </span>
