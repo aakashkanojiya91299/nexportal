@@ -262,6 +262,12 @@ See the full component and theming documentation at:
 
 ## Changelog
 
+### v1.1.9
+- **Components showcase** — generated `components/page.tsx` now demonstrates `error` prop for every form component (Input, Textarea, Select, DatePicker, DateTimePicker, Switch, Checkbox, RadioGroup)
+- **Select section** — separate full Select section with single, disabled, multi-select, grouped, and error demos
+- **DateTimePicker** — added to imports and scaffold; 4-demo section (24h, 12h, constraints, error)
+- Bumps generated project to use `@lucifer91299/ui@^1.1.16`
+
 ### v1.1.8
 - **Interactive CLI** — replaced raw readline with `@clack/prompts`: arrow-key selection for all choice prompts, password masking for DB credentials, grouped prompts (JWT config, DB config, brand colours), live spinner during file creation, bordered next-steps box on completion
 - **Windows fix** — `p.cancel()` / `p.isCancel()` replace `readline.close()`, eliminating terminal-hang on completion
