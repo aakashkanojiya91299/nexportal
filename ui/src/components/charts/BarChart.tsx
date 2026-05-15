@@ -3,7 +3,7 @@
 import React from 'react'
 import {
   BarChart as ReBarChart, Bar, XAxis, YAxis, CartesianGrid,
-  Tooltip, Legend, ResponsiveContainer, Cell,
+  Tooltip, Legend, ResponsiveContainer,
 } from 'recharts'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -51,7 +51,7 @@ export function PortalBarChart({
 
   return (
     <div className={className} style={{ width: '100%', height }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 100, height }}>
         <ReBarChart data={data} barCategoryGap="28%" barGap={4}
           margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
           {showGrid && (

@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { MultiRoleMiddlewareConfig } from './types'
 
@@ -22,7 +23,6 @@ export function multiRoleMiddleware({
   loginPath = '/login',
 }: MultiRoleMiddlewareConfig) {
   return async function middleware(request: NextRequest) {
-    const { NextResponse } = await import('next/server')
     const { pathname } = request.nextUrl
 
     const isProtected = protectedPaths.some(

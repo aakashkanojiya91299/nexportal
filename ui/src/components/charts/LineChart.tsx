@@ -44,7 +44,7 @@ export function PortalLineChart({
 
   return (
     <div className={className} style={{ width: '100%', height }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 100, height }}>
         <ReLineChart data={data} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
           {showGrid && (
             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />

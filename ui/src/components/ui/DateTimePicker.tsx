@@ -7,16 +7,17 @@ import {
   isToday as fnsIsToday, getDay, getDaysInMonth, getMonth, getYear,
   endOfMonth,
 } from 'date-fns'
-import { CalendarIcon, ChevronLeft, ChevronRight } from 'lucide-react'
+import { CalendarIcon, Clock, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Surface = 'days' | 'months' | 'years'
 
-export interface DatePickerProps {
+export interface DateTimePickerProps {
+  /** Combined date+time value. Format: 'yyyy-MM-dd HH:mm' (or 'yyyy-MM-dd HH:mm:ss' if showSeconds) */
   value?: string
-  onChange?: (iso: string) => void
+  onChange?: (value: string) => void
   label?: React.ReactNode
   labelRight?: React.ReactNode
   placeholder?: string
@@ -24,12 +25,19 @@ export interface DatePickerProps {
   helperText?: string
   disabled?: boolean
   required?: boolean
+  // Date constraints
   disableFuture?: boolean
   disablePast?: boolean
   minDate?: string
   maxDate?: string
   excludeWeekends?: boolean
   excludeDates?: string[]
+  // Time options
+  timeFormat?: '12h' | '24h'
+  minuteStep?: number
+  showSeconds?: boolean
+  minTime?: string
+  maxTime?: string
   className?: string
   containerClassName?: string
 }
@@ -37,38 +45,73 @@ export interface DatePickerProps {
 const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 const DAY_NAMES   = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa']
 
-// ── DatePicker ────────────────────────────────────────────────────────────────
+function pad2(n: number) { return String(n).padStart(2, '0') }
 
-export function DatePicker({
+// ── DateTimePicker ─────────────────────────────────────────────────────────────
+
+export function DateTimePicker({
   value: valueProp, onChange: onChangeProp,
   label, labelRight,
-  placeholder = 'DD/MM/YYYY',
+  placeholder,
   error, helperText,
   disabled = false, required,
   disableFuture, disablePast,
   minDate, maxDate,
   excludeWeekends, excludeDates,
+  timeFormat = '24h',
+  minuteStep = 1,
+  showSeconds = false,
+  minTime, maxTime,
   className, containerClassName,
-}: DatePickerProps) {
-  // Support uncontrolled mode: when no value/onChange are passed, manage state internally
+}: DateTimePickerProps) {
+  const resolvedPlaceholder = placeholder ?? (showSeconds ? 'DD/MM/YYYY HH:MM:SS' : 'DD/MM/YYYY HH:MM')
+  const valueFormat = showSeconds ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd HH:mm'
+
+  // Uncontrolled support
   const isControlled = valueProp !== undefined
   const [internalValue, setInternalValue] = useState<string>('')
-  const value = isControlled ? valueProp : internalValue
-  const onChange = isControlled
-    ? onChangeProp
-    : (iso: string) => { setInternalValue(iso); onChangeProp?.(iso) }
+  const value = isControlled ? valueProp! : internalValue
 
-  const [open, setOpen]             = useState(false)
-  const [surface, setSurface]       = useState<Surface>('days')
-  const [visibleMonth, setVisible]  = useState<Date>(() => new Date())
-  const [yearBase, setYearBase]     = useState(() => Math.floor(new Date().getFullYear() / 12) * 12)
+  function emitChange(v: string) {
+    if (!isControlled) setInternalValue(v)
+    onChangeProp?.(v)
+  }
+
+  // Parse committed value
+  const parsedDate = useMemo(() => {
+    if (!value) return undefined
+    const d = parse(value, valueFormat, new Date())
+    return isValid(d) ? d : undefined
+  }, [value, valueFormat])
+
+  // ── Calendar state ─────────────────────────────────────────────────────────
+  const [open, setOpen]            = useState(false)
+  const [surface, setSurface]      = useState<Surface>('days')
+  const [visibleMonth, setVisible] = useState<Date>(() => new Date())
+  const [yearBase, setYearBase]    = useState(() => Math.floor(new Date().getFullYear() / 12) * 12)
+
+  // ── Draft time state (local while picker is open) ──────────────────────────
+  const [draftDate, setDraftDate]     = useState<Date | undefined>(undefined)
+  const [draftHours, setDraftHours]   = useState(0)
+  const [draftMinutes, setDraftMin]   = useState(0)
+  const [draftSeconds, setDraftSec]   = useState(0)
+  const [ampm, setAmpm]               = useState<'AM' | 'PM'>('AM')
+
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const date = useMemo(() => {
-    if (!value) return undefined
-    const d = parse(value, 'yyyy-MM-dd', new Date())
-    return isValid(d) ? d : undefined
-  }, [value])
+  // Init drafts when picker opens
+  useEffect(() => {
+    if (!open) return
+    setSurface('days')
+    const base = parsedDate ?? new Date()
+    setVisible(startOfMonth(base))
+    setYearBase(Math.floor(getYear(base) / 12) * 12)
+    setDraftDate(parsedDate)
+    setDraftHours(base.getHours())
+    setDraftMin(base.getMinutes())
+    setDraftSec(base.getSeconds())
+    setAmpm(base.getHours() >= 12 ? 'PM' : 'AM')
+  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Close on outside click
   useEffect(() => {
@@ -79,15 +122,6 @@ export function DatePicker({
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
   }, [open])
-
-  // Reset surface when opened
-  useEffect(() => {
-    if (!open) return
-    setSurface('days')
-    const base = date ?? new Date()
-    setVisible(startOfMonth(base))
-    setYearBase(Math.floor(getYear(base) / 12) * 12)
-  }, [open]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Disable logic ──────────────────────────────────────────────────────────
   const isDayDisabled = useCallback((d: Date): boolean => {
@@ -102,10 +136,7 @@ export function DatePicker({
       const max = parse(maxDate, 'yyyy-MM-dd', new Date())
       if (isValid(max) && isAfter(startOfDay(d), startOfDay(max))) return true
     }
-    if (excludeWeekends) {
-      const dow = getDay(d)
-      if (dow === 0 || dow === 6) return true
-    }
+    if (excludeWeekends && (getDay(d) === 0 || getDay(d) === 6)) return true
     if (excludeDates) {
       for (const s of excludeDates) {
         const ex = parse(s, 'yyyy-MM-dd', new Date())
@@ -131,40 +162,129 @@ export function DatePicker({
     return false
   }, [disableFuture, disablePast])
 
-  // ── Calendar grid cells ────────────────────────────────────────────────────
+  // ── Calendar grid ──────────────────────────────────────────────────────────
   const cells = useMemo(() => {
-    const firstDow = getDay(startOfMonth(visibleMonth)) // 0=Sun
+    const firstDow  = getDay(startOfMonth(visibleMonth))
     const totalDays = getDaysInMonth(visibleMonth)
-    const blanks: null[] = Array(firstDow).fill(null)
-    const days = Array.from({ length: totalDays }, (_, i) => i + 1)
-    return [...blanks, ...days] as (null | number)[]
+    return [...Array<null>(firstDow).fill(null), ...Array.from({ length: totalDays }, (_, i) => i + 1)] as (null | number)[]
   }, [visibleMonth])
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
-  const handleSelectDay = (day: number) => {
-    const d = new Date(getYear(visibleMonth), getMonth(visibleMonth), day)
-    if (isDayDisabled(d)) return
-    onChange?.(format(d, 'yyyy-MM-dd'))
-    setOpen(false)
+  // ── Time helpers ───────────────────────────────────────────────────────────
+  const displayHours = timeFormat === '12h' ? (draftHours % 12 || 12) : draftHours
+
+  function adjustHours(delta: number) {
+    if (timeFormat === '12h') {
+      const display12 = draftHours % 12 || 12
+      let next12 = display12 + delta
+      if (next12 < 1) next12 = 12
+      if (next12 > 12) next12 = 1
+      const next24 = ampm === 'PM' ? (next12 === 12 ? 12 : next12 + 12) : (next12 === 12 ? 0 : next12)
+      setDraftHours(next24)
+    } else {
+      setDraftHours((h) => (h + delta + 24) % 24)
+    }
   }
 
-  const handleSelectMonth = (monthIdx: number) => {
+  function adjustMinutes(delta: number) {
+    const step = minuteStep > 0 ? minuteStep : 1
+    setDraftMin((m) => ((m + delta * step) % 60 + 60) % 60)
+  }
+
+  function adjustSeconds(delta: number) {
+    setDraftSec((s) => (s + delta + 60) % 60)
+  }
+
+  function toggleAmPm() {
+    setAmpm((a) => {
+      const next = a === 'AM' ? 'PM' : 'AM'
+      setDraftHours((h) => {
+        if (next === 'PM' && h < 12) return h + 12
+        if (next === 'AM' && h >= 12) return h - 12
+        return h
+      })
+      return next
+    })
+  }
+
+  // ── Build value string ─────────────────────────────────────────────────────
+  function buildValue(d: Date, h: number, m: number, s: number): string {
+    const dateStr = format(d, 'yyyy-MM-dd')
+    if (showSeconds) return `${dateStr} ${pad2(h)}:${pad2(m)}:${pad2(s)}`
+    return `${dateStr} ${pad2(h)}:${pad2(m)}`
+  }
+
+  // ── Handlers ───────────────────────────────────────────────────────────────
+  function handleSelectDay(day: number) {
+    const d = new Date(getYear(visibleMonth), getMonth(visibleMonth), day)
+    if (isDayDisabled(d)) return
+    setDraftDate(d)
+  }
+
+  function handleSelectMonth(monthIdx: number) {
     const year = getYear(visibleMonth)
     if (isMonthDisabled(year, monthIdx)) return
     setVisible(startOfMonth(new Date(year, monthIdx, 1)))
     setSurface('days')
   }
 
-  const handleSelectYear = (year: number) => {
+  function handleSelectYear(year: number) {
     if (isYearDisabled(year)) return
     setVisible((prev) => startOfMonth(setYear(setMonth(prev, getMonth(prev)), year)))
     setYearBase(Math.floor(year / 12) * 12)
     setSurface('months')
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
+  function handleNow() {
+    const now = new Date()
+    const step = minuteStep > 0 ? minuteStep : 1
+    const h = now.getHours()
+    const m = Math.round(now.getMinutes() / step) * step % 60
+    const s = now.getSeconds()
+    setDraftDate(now)
+    setDraftHours(h)
+    setDraftMin(m)
+    setDraftSec(s)
+    setAmpm(h >= 12 ? 'PM' : 'AM')
+    setVisible(startOfMonth(now))
+  }
+
+  function handleDone() {
+    if (draftDate) {
+      emitChange(buildValue(draftDate, draftHours, draftMinutes, draftSeconds))
+    }
+    setOpen(false)
+  }
+
+  function handleClear() {
+    emitChange('')
+    setOpen(false)
+  }
+
+  // ── Display ────────────────────────────────────────────────────────────────
+  const displayValue = useMemo(() => {
+    if (!parsedDate) return ''
+    const dateStr = format(parsedDate, 'dd/MM/yyyy')
+    const h = parsedDate.getHours()
+    const m = parsedDate.getMinutes()
+    const s = parsedDate.getSeconds()
+    if (timeFormat === '12h') {
+      const h12 = h % 12 || 12
+      const ap  = h >= 12 ? 'PM' : 'AM'
+      return showSeconds
+        ? `${dateStr}  ${pad2(h12)}:${pad2(m)}:${pad2(s)} ${ap}`
+        : `${dateStr}  ${pad2(h12)}:${pad2(m)} ${ap}`
+    }
+    return showSeconds
+      ? `${dateStr}  ${pad2(h)}:${pad2(m)}:${pad2(s)}`
+      : `${dateStr}  ${pad2(h)}:${pad2(m)}`
+  }, [parsedDate, timeFormat, showSeconds])
+
+  // Draft date string for day-cell selection highlight
+  const draftDateStr = draftDate ? format(draftDate, 'yyyy-MM-dd') : ''
+
   const inputId = typeof label === 'string' ? label.toLowerCase().replace(/\s+/g, '-') : undefined
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className={cn('flex flex-col gap-1.5', containerClassName)} ref={containerRef}>
       {(label || labelRight) && (
@@ -179,7 +299,6 @@ export function DatePicker({
         </div>
       )}
 
-      {/* Trigger button */}
       <div className="relative">
         <button
           id={inputId}
@@ -189,24 +308,25 @@ export function DatePicker({
           className={cn(
             'input-base w-full flex items-center justify-between text-left',
             error && 'input-base-error',
-            !date && 'text-label-tertiary',
-            date && 'text-label-primary',
+            !parsedDate && 'text-label-tertiary',
+            parsedDate && 'text-label-primary',
             disabled && 'opacity-50 cursor-not-allowed',
             className,
           )}
         >
-          <span>{date ? format(date, 'dd/MM/yyyy') : placeholder}</span>
-          <CalendarIcon className="h-4 w-4 text-label-tertiary flex-shrink-0 ml-2" />
+          <span>{displayValue || resolvedPlaceholder}</span>
+          <div className="flex items-center gap-1 text-label-tertiary flex-shrink-0 ml-2">
+            <CalendarIcon className="h-4 w-4" />
+            <Clock className="h-3.5 w-3.5" />
+          </div>
         </button>
 
-        {/* Dropdown */}
         {open && (
           <div className="absolute top-full left-0 mt-1.5 z-50 bg-white rounded-2xl border border-separator shadow-lg overflow-hidden w-72">
 
-            {/* Days surface */}
+            {/* ── Days surface ── */}
             {surface === 'days' && (
               <div className="p-3">
-                {/* Month/Year navigation */}
                 <div className="flex items-center justify-between mb-3">
                   <button type="button" onClick={() => setVisible((v) => subMonths(v, 1))}
                     className="p-1.5 rounded-lg hover:bg-surface-secondary text-label-secondary transition-colors">
@@ -231,21 +351,19 @@ export function DatePicker({
                   </button>
                 </div>
 
-                {/* Day-of-week headers */}
                 <div className="grid grid-cols-7 mb-1">
                   {DAY_NAMES.map((n) => (
                     <span key={n} className="text-caption1 font-semibold text-label-tertiary text-center py-1">{n}</span>
                   ))}
                 </div>
 
-                {/* Day cells */}
                 <div className="grid grid-cols-7 gap-y-0.5">
                   {cells.map((day, idx) => {
                     if (day === null) return <span key={`b-${idx}`} />
                     const d = new Date(getYear(visibleMonth), getMonth(visibleMonth), day)
-                    const isSelected  = date ? isSameDay(d, date) : false
-                    const isDisabled  = isDayDisabled(d)
-                    const isTodayDay  = fnsIsToday(d)
+                    const isSelected = draftDateStr === format(d, 'yyyy-MM-dd')
+                    const isDisabled = isDayDisabled(d)
+                    const isTodayDay = fnsIsToday(d)
                     return (
                       <button
                         key={day}
@@ -273,25 +391,12 @@ export function DatePicker({
                     )
                   })}
                 </div>
-
-                {/* Clear + Today shortcuts */}
-                <div className="flex items-center justify-between mt-3 pt-2 border-t border-separator">
-                  <button type="button" onClick={() => { onChange?.(''); setOpen(false) }}
-                    className="text-caption1 text-label-tertiary hover:text-label-secondary transition-colors">
-                    Clear
-                  </button>
-                  <button type="button" onClick={() => { onChange?.(format(new Date(), 'yyyy-MM-dd')); setOpen(false) }}
-                    className="text-caption1 font-medium transition-colors"
-                    style={{ color: 'var(--primary, #000080)' }}>
-                    Today
-                  </button>
-                </div>
               </div>
             )}
 
-            {/* Months surface */}
+            {/* ── Months surface ── */}
             {surface === 'months' && (
-              <div className="p-3 w-72">
+              <div className="p-3">
                 <div className="flex items-center justify-between mb-3">
                   <button type="button" onClick={() => setSurface('days')}
                     className="text-caption1 font-medium transition-colors hover:underline"
@@ -303,11 +408,9 @@ export function DatePicker({
                 <div className="grid grid-cols-3 gap-2">
                   {MONTH_SHORT.map((m, i) => {
                     const dis = isMonthDisabled(getYear(visibleMonth), i)
-                    const sel = date && getMonth(date) === i && getYear(date) === getYear(visibleMonth)
+                    const sel = draftDate && getMonth(draftDate) === i && getYear(draftDate) === getYear(visibleMonth)
                     return (
-                      <button
-                        key={m} type="button"
-                        disabled={dis}
+                      <button key={m} type="button" disabled={dis}
                         onClick={() => handleSelectMonth(i)}
                         className={cn(
                           'py-2.5 rounded-xl text-callout font-medium transition-colors',
@@ -315,8 +418,7 @@ export function DatePicker({
                           !sel && !dis && 'text-label-primary hover:bg-surface-secondary border border-transparent hover:border-separator',
                           dis && 'text-[#c0c4cc] bg-[#f4f5f7] cursor-not-allowed line-through opacity-60',
                         )}
-                        style={sel ? { background: 'var(--primary, #000080)' } : undefined}
-                      >
+                        style={sel ? { background: 'var(--primary, #000080)' } : undefined}>
                         {m}
                       </button>
                     )
@@ -325,9 +427,9 @@ export function DatePicker({
               </div>
             )}
 
-            {/* Years surface */}
+            {/* ── Years surface ── */}
             {surface === 'years' && (
-              <div className="p-3 w-72">
+              <div className="p-3">
                 <div className="flex items-center justify-between mb-3">
                   <button type="button" onClick={() => setSurface('months')}
                     className="text-caption1 font-medium transition-colors hover:underline"
@@ -351,11 +453,9 @@ export function DatePicker({
                 <div className="grid grid-cols-3 gap-2">
                   {Array.from({ length: 12 }, (_, k) => yearBase + k).map((year) => {
                     const dis = isYearDisabled(year)
-                    const sel = date && getYear(date) === year
+                    const sel = draftDate && getYear(draftDate) === year
                     return (
-                      <button
-                        key={year} type="button"
-                        disabled={dis}
+                      <button key={year} type="button" disabled={dis}
                         onClick={() => handleSelectYear(year)}
                         className={cn(
                           'py-2.5 rounded-xl text-callout font-medium tabular-nums transition-colors',
@@ -363,8 +463,7 @@ export function DatePicker({
                           !sel && !dis && 'text-label-primary hover:bg-surface-secondary border border-transparent hover:border-separator',
                           dis && 'text-[#c0c4cc] bg-[#f4f5f7] cursor-not-allowed line-through opacity-60',
                         )}
-                        style={sel ? { background: 'var(--primary, #000080)' } : undefined}
-                      >
+                        style={sel ? { background: 'var(--primary, #000080)' } : undefined}>
                         {year}
                       </button>
                     )
@@ -372,12 +471,111 @@ export function DatePicker({
                 </div>
               </div>
             )}
+
+            {/* ── Time section (only on days surface) ── */}
+            {surface === 'days' && (
+              <>
+                <div className="border-t border-separator" />
+                <div className="px-3 pt-2.5 pb-2">
+                  <div className="flex items-center justify-between mb-2.5">
+                    <div className="flex items-center gap-1.5 text-label-secondary">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider">Time</span>
+                    </div>
+                    <button type="button" onClick={handleNow}
+                      className="text-[11px] font-semibold transition-opacity hover:opacity-70"
+                      style={{ color: 'var(--primary, #000080)' }}>
+                      Now
+                    </button>
+                  </div>
+
+                  <div className="flex items-center justify-center gap-1">
+                    <TimeSpinner value={displayHours} onUp={() => adjustHours(1)} onDown={() => adjustHours(-1)} />
+                    <span className="text-label-secondary font-bold text-[18px] leading-none mb-3">:</span>
+                    <TimeSpinner value={draftMinutes} onUp={() => adjustMinutes(1)} onDown={() => adjustMinutes(-1)} />
+                    {showSeconds && (
+                      <>
+                        <span className="text-label-secondary font-bold text-[18px] leading-none mb-3">:</span>
+                        <TimeSpinner value={draftSeconds} onUp={() => adjustSeconds(1)} onDown={() => adjustSeconds(-1)} />
+                      </>
+                    )}
+                    {timeFormat === '12h' && (
+                      <button
+                        type="button"
+                        onClick={toggleAmPm}
+                        className="ml-1.5 self-center px-2.5 py-1.5 rounded-xl text-[12px] font-bold border-2 transition-all hover:opacity-80"
+                        style={{ borderColor: 'var(--primary, #000080)', color: 'var(--primary, #000080)' }}
+                      >
+                        {ampm}
+                      </button>
+                    )}
+                  </div>
+
+                  {(minTime || maxTime) && (
+                    <p className="text-center text-[10px] text-label-tertiary mt-1.5">
+                      {minTime && maxTime ? `${minTime} – ${maxTime}` : minTime ? `From ${minTime}` : `Until ${maxTime}`}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between px-3 py-2 border-t border-separator">
+                  <button type="button" onClick={handleClear}
+                    className="text-caption1 text-label-tertiary hover:text-label-secondary transition-colors">
+                    Clear
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDone}
+                    disabled={!draftDate}
+                    className={cn(
+                      'px-4 py-1.5 rounded-full text-[12px] font-semibold text-white transition-opacity',
+                      draftDate ? 'hover:opacity-85' : 'opacity-40 cursor-not-allowed',
+                    )}
+                    style={{ background: 'var(--primary, #000080)' }}
+                  >
+                    Done
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
 
       {error && <p className="text-footnote text-red-500">{error}</p>}
       {helperText && !error && <p className="text-footnote text-label-secondary">{helperText}</p>}
+    </div>
+  )
+}
+
+// ── TimeSpinner ────────────────────────────────────────────────────────────────
+
+interface TimeSpinnerProps {
+  value: number
+  onUp: () => void
+  onDown: () => void
+}
+
+function TimeSpinner({ value, onUp, onDown }: TimeSpinnerProps) {
+  return (
+    <div className="flex flex-col items-center gap-0.5">
+      <button
+        type="button"
+        onClick={onUp}
+        className="w-9 h-6 flex items-center justify-center rounded-lg hover:bg-surface-secondary text-label-tertiary hover:text-label-primary transition-colors"
+      >
+        <ChevronUp className="w-4 h-4" />
+      </button>
+      <div className="w-10 h-9 flex items-center justify-center rounded-xl bg-surface-secondary text-[16px] font-bold tabular-nums text-label-primary select-none">
+        {pad2(value)}
+      </div>
+      <button
+        type="button"
+        onClick={onDown}
+        className="w-9 h-6 flex items-center justify-center rounded-lg hover:bg-surface-secondary text-label-tertiary hover:text-label-primary transition-colors"
+      >
+        <ChevronDown className="w-4 h-4" />
+      </button>
     </div>
   )
 }

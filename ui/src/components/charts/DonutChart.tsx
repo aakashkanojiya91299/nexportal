@@ -8,7 +8,8 @@ import {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface DonutSlice {
-  name: string
+  name?: string
+  label?: string
   value: number
   color?: string
 }
@@ -67,11 +68,12 @@ export function PortalDonutChart({
   showTooltip = true,
   className = '',
 }: PortalDonutChartProps) {
+  const normalized = data.map((d) => ({ ...d, name: d.name ?? d.label ?? '' }))
   const colors = data.map((d, i) => getSliceColor(d, i))
 
   return (
     <div className={className} style={{ width: '100%', height }}>
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 100, height }}>
         <PieChart margin={{ top: 0, right: 0, bottom: 0, left: 0 }}>
           {showTooltip && (
             <Tooltip
@@ -85,7 +87,7 @@ export function PortalDonutChart({
             />
           )}
           <Pie
-            data={data}
+            data={normalized}
             cx="50%"
             cy={showLegend ? '42%' : '50%'}
             innerRadius={innerRadius}
@@ -95,7 +97,7 @@ export function PortalDonutChart({
             stroke="none"
             label={false}
           >
-            {data.map((entry, i) => (
+            {normalized.map((entry, i) => (
               <Cell key={`cell-${i}`} fill={colors[i]} />
             ))}
             {(centerLabel || centerValue != null) && (

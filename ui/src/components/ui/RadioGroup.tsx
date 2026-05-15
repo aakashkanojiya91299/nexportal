@@ -71,9 +71,8 @@ export function RadioGroup({
               onClick={() => select(opt.value)}
               name={groupName}
               className={cn(
-                'flex items-start gap-2.5 text-left focus:outline-none focus:ring-2 focus:ring-offset-1 rounded-lg',
+                'flex items-start gap-2.5 text-left focus:outline-none rounded-lg',
                 isDisabled && 'cursor-not-allowed opacity-50',
-                isChecked ? 'focus:ring-[color:var(--primary,#000080)]/40' : 'focus:ring-gray-300',
               )}
             >
               <span

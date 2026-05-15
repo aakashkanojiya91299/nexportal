@@ -163,23 +163,19 @@ export function DataTable<T extends Record<string, any>>({
 
   // ── Selection ──────────────────────────────────────────────────────────────
   function toggleRow(id: string | number) {
-    setSelected((prev) => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id); else next.add(id)
-      onSelectionChange?.(data.filter((r) => next.has(keyExtractor(r))))
-      return next
-    })
+    const next = new Set(selected)
+    if (next.has(id)) next.delete(id); else next.add(id)
+    setSelected(next)
+    onSelectionChange?.(data.filter((r) => next.has(keyExtractor(r))))
   }
 
   function toggleAll() {
     const allIds = visibleRows.map(keyExtractor)
     const allSel = allIds.every((id) => selected.has(id))
-    setSelected((prev) => {
-      const next = new Set(prev)
-      allIds.forEach((id) => (allSel ? next.delete(id) : next.add(id)))
-      onSelectionChange?.(data.filter((r) => next.has(keyExtractor(r))))
-      return next
-    })
+    const next = new Set(selected)
+    allIds.forEach((id) => (allSel ? next.delete(id) : next.add(id)))
+    setSelected(next)
+    onSelectionChange?.(data.filter((r) => next.has(keyExtractor(r))))
   }
 
   const allVisibleSelected =

@@ -204,7 +204,7 @@ function scaffold(opts: ScaffoldOptions) {
   write(f('src/providers/index.tsx'),                genProviders(opts))
   write(f('src/lib/api.ts'),                         genApiClient(opts))
   write(f('src/components/layout/nav-config.tsx'),   genNavConfig(opts))
-  write(f('src/middleware.ts'),                      genMiddleware(opts))
+  write(f('src/proxy.ts'),                           genMiddleware(opts))
 
   if (opts.stateManagement === 'redux-query') {
     write(f('src/store/index.ts'),      genReduxStore())

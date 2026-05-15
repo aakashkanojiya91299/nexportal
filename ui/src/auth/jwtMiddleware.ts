@@ -1,4 +1,5 @@
 import { jwtVerify } from 'jose'
+import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import type { JwtMiddlewareConfig } from './types'
 
@@ -24,7 +25,6 @@ export function jwtMiddleware({
   loginPath = '/login',
 }: JwtMiddlewareConfig) {
   return async function middleware(request: NextRequest) {
-    const { NextResponse } = await import('next/server')
     const { pathname } = request.nextUrl
 
     const isProtected = protectedPaths.some(

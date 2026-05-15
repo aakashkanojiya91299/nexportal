@@ -39,6 +39,8 @@ export { MultiSelect } from './components/ui/MultiSelect'
 export type { MultiSelectProps, MultiSelectOption } from './components/ui/MultiSelect'
 export { DatePicker } from './components/ui/DatePicker'
 export type { DatePickerProps } from './components/ui/DatePicker'
+export { DateTimePicker } from './components/ui/DateTimePicker'
+export type { DateTimePickerProps } from './components/ui/DateTimePicker'
 
 // ── New UI components (shadcn-equivalent) ────────────────────────────────────
 export { Textarea } from './components/ui/Textarea'
