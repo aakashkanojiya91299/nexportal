@@ -1,6 +1,6 @@
 # `@lucifer91299/ui`
 
-> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, and full theming out of the box.
+> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 30+ production-ready components.
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
@@ -9,7 +9,7 @@
 **Scaffold a full portal in seconds using the CLI:**
 
 ```bash
-npx @lucifer91299/create-portal-app my-portal --yes
+npx @lucifer91299/create-portal-app my-portal
 ```
 
 ---
@@ -19,21 +19,30 @@ npx @lucifer91299/create-portal-app my-portal --yes
 - [Install](#install)
 - [Setup (5 steps)](#setup-5-steps)
 - [Components](#components)
+  - [Button](#button)
+  - [Input & Textarea](#input--textarea)
+  - [Select](#select)
+  - [DatePicker](#datepicker)
+  - [DateTimePicker](#datetimepicker)
+  - [Switch, Checkbox, RadioGroup](#switch-checkbox-radiogroup)
+  - [Badge & StatusBadge](#badge--statusbadge)
+  - [DataTable](#datatable)
+  - [Card, Separator, AlertBanner](#card-separator-alertbanner)
+  - [Dialog](#dialog)
+  - [Tabs](#tabs)
+  - [Accordion](#accordion)
+  - [Tooltip](#tooltip)
+  - [Avatar & AvatarGroup](#avatar--avatargroup)
+  - [Progress, Skeleton, LoadingSpinner](#progress-skeleton-loadingspinner)
+  - [Toast](#toast)
+  - [Charts](#charts)
   - [LoginPage (Animated)](#loginpage-animated)
   - [LoginPageSimple (Clean)](#loginpagesimple-clean)
   - [DashboardLayout](#dashboardlayout)
-  - [UI Primitives](#ui-primitives)
 - [Auth Hooks](#auth-hooks)
-  - [useJwtAuth](#usejwtauth)
-  - [useMultiRoleAuth](#usemultiroleauth)
-  - [useLaravelSessionAuth](#uselaravelsessionauth)
 - [Auth API routes](#auth-api-routes)
-- [Middleware](#middleware)
+- [Middleware / proxy.ts](#middleware--proxyts)
 - [Theming](#theming)
-  - [createTheme — all options](#createtheme--all-options)
-  - [Built-in presets](#built-in-presets)
-  - [ThemeProvider](#themeprovider)
-  - [Design tokens](#design-tokens)
 - [Server exports](#server-exports)
 - [Local development](#local-development)
 
@@ -43,9 +52,11 @@ npx @lucifer91299/create-portal-app my-portal --yes
 
 ```bash
 npm install @lucifer91299/ui framer-motion jose
+# Charts (optional)
+npm install recharts
 ```
 
-**Required peer deps:** `react >=18`, `next >=14`, `framer-motion ^12`, `jose ^5`, `tailwindcss ^3`, `lucide-react`
+**Required peer deps:** `react >=18`, `next >=14`, `framer-motion >=10`, `tailwindcss >=3`
 
 ---
 
@@ -77,8 +88,6 @@ export default {
   ],
 } satisfies Config
 ```
-
-> Do **not** add brand colours here — they are injected via CSS variables by `ThemeProvider`.
 
 ### 3. `src/theme.config.ts`
 
@@ -123,11 +132,533 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 @tailwind utilities;
 ```
 
-> Import `@lucifer91299/ui/styles/components.css` in `layout.tsx`, not in `globals.css`. Importing SDK source CSS from `node_modules` can trigger Tailwind directive errors.
+> Import `@lucifer91299/ui/styles/components.css` in `layout.tsx`, not in `globals.css`. Importing SDK CSS from `node_modules` can trigger Tailwind directive errors.
 
 ---
 
 ## Components
+
+### Button
+
+```tsx
+import { Button } from '@lucifer91299/ui'
+
+<Button variant="primary">Save</Button>
+<Button variant="accent">Highlight</Button>
+<Button variant="tinted">Tinted</Button>
+<Button variant="outline">Cancel</Button>
+<Button variant="danger">Delete</Button>
+<Button variant="ghost">Link style</Button>
+
+<Button size="sm">Small</Button>
+<Button size="md">Medium</Button>   {/* default */}
+<Button size="lg">Large</Button>
+
+<Button isLoading>Saving…</Button>
+<Button disabled>Disabled</Button>
+```
+
+---
+
+### Input & Textarea
+
+```tsx
+import { Input, Textarea } from '@lucifer91299/ui'
+
+<Input label="Full name" placeholder="Priya Mehta" />
+<Input label="Email" type="email" placeholder="you@example.com" />
+<Input label="Password" type="password" />
+<Input label="With error" error="This field is required" />
+<Input label="Disabled" disabled defaultValue="Read-only" />
+<Input label="With right label" labelRight={<a href="#">Forgot?</a>} />
+
+<Textarea label="Message" placeholder="Type here…" helperText="Max 500 chars" />
+```
+
+---
+
+### Select
+
+Supports single select and multi-select with pill tags, search, grouped options, select-all, and clear.
+
+```tsx
+import { Select } from '@lucifer91299/ui'
+
+const options = [
+  { value: 'admin',   label: 'Administrator' },
+  { value: 'manager', label: 'Manager'       },
+  { value: 'viewer',  label: 'Viewer'        },
+]
+
+{/* Single */}
+<Select
+  label="Role"
+  options={options}
+  value={value}
+  onChange={setValue}
+  searchable
+  clearable
+/>
+
+{/* Multi-select — pill tags, select-all, Done button */}
+<Select
+  label="Roles"
+  multiple
+  options={options}
+  value={values}          // string[]
+  onChange={setValues}    // (values: string[]) => void
+  placeholder="Pick roles…"
+  clearable
+  helperText={values.length ? `${values.length} selected` : ''}
+/>
+
+{/* Grouped */}
+<Select
+  label="Team member"
+  multiple
+  options={[
+    { value: 'admin',   label: 'Admin',   group: 'Management' },
+    { value: 'manager', label: 'Manager', group: 'Management' },
+    { value: 'editor',  label: 'Editor',  group: 'Content'    },
+  ]}
+  value={values}
+  onChange={setValues}
+  searchable
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `options` | `SelectOption[]` | `{ value, label, disabled?, group? }` |
+| `multiple` | `true` | Enable multi-select mode |
+| `value` | `string` or `string[]` | Controlled value |
+| `onChange` | `(v) => void` | `string` for single, `string[]` for multi |
+| `searchable` | `boolean` | Show search input in dropdown |
+| `clearable` | `boolean` | Show clear button |
+| `onAddNew` | `() => void` | Show "Add new…" footer row |
+| `maxTagsShown` | `number` | Max pill tags before "+N more" (default `3`) |
+
+---
+
+### DatePicker
+
+3-level calendar (days → months → years). Supports uncontrolled mode, past/future/weekend/specific date constraints.
+
+```tsx
+import { DatePicker } from '@lucifer91299/ui'
+
+{/* Uncontrolled — no value/onChange needed */}
+<DatePicker label="Pick a date" />
+
+{/* Controlled */}
+<DatePicker
+  label="Start date"
+  value={date}          // 'yyyy-MM-dd'
+  onChange={setDate}
+/>
+
+{/* Constraints */}
+<DatePicker label="No future dates"  disableFuture />
+<DatePicker label="No past dates"    disablePast />
+<DatePicker label="Weekdays only"    excludeWeekends />
+<DatePicker label="Range"            minDate="2024-01-01" maxDate="2024-12-31" />
+
+{/* Specific dates disabled */}
+<DatePicker
+  label="Blocked dates"
+  excludeDates={['2024-12-25', '2024-12-26', '2025-01-01']}
+  helperText="Holidays disabled"
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `string` | `'yyyy-MM-dd'`. Omit for uncontrolled mode |
+| `onChange` | `(iso: string) => void` | Called on day select or Clear |
+| `disableFuture` | `boolean` | Block all dates after today |
+| `disablePast` | `boolean` | Block all dates before today |
+| `minDate` / `maxDate` | `string` | `'yyyy-MM-dd'` range bounds |
+| `excludeWeekends` | `boolean` | Disable Sat + Sun |
+| `excludeDates` | `string[]` | Specific `'yyyy-MM-dd'` dates to block |
+
+Disabled dates render with strikethrough, ash background, and muted colour.
+
+---
+
+### DateTimePicker
+
+All `DatePicker` features plus a time spinner — 12h/24h format, minute step, optional seconds, minTime/maxTime, and a **Now** button.
+
+```tsx
+import { DateTimePicker } from '@lucifer91299/ui'
+
+{/* 24-hour, 5-minute steps (uncontrolled) */}
+<DateTimePicker
+  label="Schedule"
+  minuteStep={5}
+/>
+
+{/* 12-hour format with AM/PM toggle */}
+<DateTimePicker
+  label="Meeting time"
+  value={dt}             // 'yyyy-MM-dd HH:mm'
+  onChange={setDt}
+  timeFormat="12h"
+/>
+
+{/* With seconds */}
+<DateTimePicker
+  label="Exact time"
+  value={dt}
+  onChange={setDt}
+  showSeconds
+  helperText={dt}        // shows 'yyyy-MM-dd HH:mm:ss'
+/>
+
+{/* All date constraints work identically to DatePicker */}
+<DateTimePicker
+  label="Workday only"
+  disableFuture
+  excludeWeekends
+  excludeDates={['2025-05-01']}
+  minTime="09:00"
+  maxTime="18:00"
+  minuteStep={15}
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | — | `'yyyy-MM-dd HH:mm'` or `'yyyy-MM-dd HH:mm:ss'`. Omit for uncontrolled |
+| `onChange` | `(v: string) => void` | — | |
+| `timeFormat` | `'12h' \| '24h'` | `'24h'` | 12h shows AM/PM toggle |
+| `minuteStep` | `number` | `1` | Step size for minute spinner (e.g. 5, 10, 15, 30) |
+| `showSeconds` | `boolean` | `false` | Add seconds spinner; value format becomes `HH:mm:ss` |
+| `minTime` / `maxTime` | `string` | — | `'HH:mm'` allowed time range (shown as helper) |
+| `disableFuture` | `boolean` | — | Same as DatePicker |
+| `disablePast` | `boolean` | — | Same as DatePicker |
+| `minDate` / `maxDate` | `string` | — | Same as DatePicker |
+| `excludeWeekends` | `boolean` | — | Same as DatePicker |
+| `excludeDates` | `string[]` | — | Same as DatePicker |
+
+**UI flow:** Click the trigger → pick a date in the calendar (highlights the selection) → adjust time spinners with ▲/▼ → press **Done** to commit. **Now** button sets both date and time to the current moment. **Clear** resets the value.
+
+---
+
+### Switch, Checkbox, RadioGroup
+
+```tsx
+import { Switch, Checkbox, RadioGroup } from '@lucifer91299/ui'
+
+<Switch label="Email notifications" description="Daily digest" checked={on} onChange={setOn} />
+<Switch label="Disabled" disabled />
+
+<Checkbox label="Accept terms" description="I agree" checked={checked} onChange={setChecked} />
+<Checkbox label="Indeterminate" indeterminate />
+
+<RadioGroup
+  label="Billing cycle"
+  options={[
+    { value: 'monthly',   label: 'Monthly',   description: 'Billed every month' },
+    { value: 'quarterly', label: 'Quarterly', description: 'Save 10%' },
+    { value: 'annual',    label: 'Annual',    description: 'Save 25%' },
+  ]}
+  value={cycle}
+  onChange={setCycle}
+  orientation="vertical"   // 'vertical' | 'horizontal'
+/>
+```
+
+---
+
+### Badge & StatusBadge
+
+```tsx
+import { Badge, StatusBadge } from '@lucifer91299/ui'
+
+<Badge variant="primary">Primary</Badge>
+<Badge variant="active">Active</Badge>
+<Badge variant="pending">Pending</Badge>
+<Badge variant="inactive">Inactive</Badge>
+<Badge variant="rejected">Rejected</Badge>
+
+{/* Auto-styled workflow states */}
+<StatusBadge status="active" />
+<StatusBadge status="pending" />
+<StatusBadge status="approved" />
+<StatusBadge status="rejected" />
+<StatusBadge status="completed" />
+<StatusBadge status="paid" />
+<StatusBadge status="scheduled" />
+<StatusBadge status="cancelled" />
+```
+
+---
+
+### DataTable
+
+Fully-featured table with sorting, global search, per-column filters, row selection, pagination, and a toolbar slot.
+
+```tsx
+import { DataTable, StatusBadge, ActionButtons } from '@lucifer91299/ui'
+
+const columns = [
+  {
+    key: 'name',
+    header: 'Name',
+    sortable: true,
+    searchable: true,
+    render: (row) => <span className="font-medium">{row.name}</span>,
+  },
+  {
+    key: 'status',
+    header: 'Status',
+    sortable: true,
+    filterOptions: [
+      { value: 'active',   label: 'Active' },
+      { value: 'inactive', label: 'Inactive' },
+    ],
+    render: (row) => <StatusBadge status={row.status} />,
+  },
+  {
+    key: 'actions',
+    header: '',
+    align: 'right',
+    render: (row) => (
+      <ActionButtons
+        showEdit
+        showDelete
+        onEdit={() => openEdit(row)}
+        onDelete={() => deleteRow(row.id)}
+      />
+    ),
+  },
+]
+
+<DataTable
+  title="Members"
+  description="All registered users"
+  columns={columns}
+  data={rows}
+  keyExtractor={(r) => r.id}
+  searchable
+  searchPlaceholder="Search by name…"
+  pagination
+  defaultPageSize={10}
+  pageSizeOptions={[5, 10, 25, 50]}
+  selectable
+  onSelectionChange={(selected) => console.log(selected)}
+  striped
+  toolbar={<Button size="sm">Export CSV</Button>}
+/>
+```
+
+**`TableColumn` props:**
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `key` | `string` | Unique identifier, used for sort |
+| `header` | `string` | Column header text |
+| `render` | `(row) => ReactNode` | Cell renderer |
+| `sortable` | `boolean` | Enable sort on this column |
+| `searchable` | `boolean` | Include in global search |
+| `filterOptions` | `{ value, label }[]` | Per-column dropdown filter |
+| `width` | `string` | e.g. `'80px'` |
+| `align` | `'left' \| 'center' \| 'right'` | |
+
+**`ActionButtons` props:** `showView`, `showEdit`, `showDelete`, `showApprove`, `showReject` — each paired with an `on*` handler.
+
+---
+
+### Card, Separator, AlertBanner
+
+```tsx
+import { Card, Separator, AlertBanner } from '@lucifer91299/ui'
+
+<Card className="p-6">Content</Card>
+
+<Separator />
+<Separator label="OR" />
+<Separator orientation="vertical" />   {/* use in a flex row */}
+
+<AlertBanner variant="info">Your session expires in 30 minutes.</AlertBanner>
+<AlertBanner variant="success">Changes saved.</AlertBanner>
+<AlertBanner variant="warning">This action cannot be undone.</AlertBanner>
+<AlertBanner variant="error">Failed to connect to the server.</AlertBanner>
+```
+
+---
+
+### Dialog
+
+```tsx
+import { Dialog } from '@lucifer91299/ui'
+
+<Dialog
+  open={open}
+  onClose={() => setOpen(false)}
+  title="Edit profile"
+  description="Update your name and role."
+  size="md"   // 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  footer={
+    <>
+      <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      <Button variant="primary" onClick={save}>Save</Button>
+    </>
+  }
+>
+  <Input label="Full name" />
+</Dialog>
+```
+
+---
+
+### Tabs
+
+```tsx
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@lucifer91299/ui'
+
+<Tabs defaultValue="overview" variant="line">  {/* 'line' | 'pill' | 'card' */}
+  <TabsList>
+    <TabsTrigger value="overview">Overview</TabsTrigger>
+    <TabsTrigger value="analytics">Analytics</TabsTrigger>
+    <TabsTrigger value="settings">Settings</TabsTrigger>
+    <TabsTrigger value="disabled" disabled>Disabled</TabsTrigger>
+  </TabsList>
+  <TabsContent value="overview">…</TabsContent>
+  <TabsContent value="analytics">…</TabsContent>
+  <TabsContent value="settings">…</TabsContent>
+</Tabs>
+```
+
+---
+
+### Accordion
+
+```tsx
+import { Accordion, AccordionItem } from '@lucifer91299/ui'
+
+<Accordion type="single" defaultValue="q1">
+  <AccordionItem value="q1" trigger="What's included?">
+    Buttons, inputs, selects, date pickers, charts, tables, and more.
+  </AccordionItem>
+  <AccordionItem value="q2" trigger="How do I theme it?">
+    Wrap your app in ThemeProvider with createTheme().
+  </AccordionItem>
+</Accordion>
+```
+
+---
+
+### Tooltip
+
+```tsx
+import { Tooltip } from '@lucifer91299/ui'
+
+<Tooltip content="Helpful hint" placement="top">
+  <Button variant="outline">Hover me</Button>
+</Tooltip>
+```
+
+`placement`: `'top'` | `'bottom'` | `'left'` | `'right'`
+
+---
+
+### Avatar & AvatarGroup
+
+```tsx
+import { Avatar, AvatarGroup } from '@lucifer91299/ui'
+
+<Avatar name="Priya Mehta" size="md" />   {/* xs | sm | md | lg */}
+<Avatar src="/priya.jpg" name="Priya Mehta" />
+
+<AvatarGroup
+  avatars={[{ name: 'Priya' }, { name: 'Arjun' }, { name: 'Neha' }]}
+  max={3}
+/>
+```
+
+---
+
+### Progress, Skeleton, LoadingSpinner
+
+```tsx
+import { Progress, Skeleton, SkeletonCard, SkeletonText, LoadingSpinner } from '@lucifer91299/ui'
+
+<Progress label="Upload" value={68} showValue />
+<Progress value={90} variant="success" size="lg" />
+<Progress value={45} variant="warning" />
+<Progress value={15} variant="danger"  size="sm" />
+
+<SkeletonCard />
+<SkeletonText lines={3} />
+<Skeleton className="h-12 w-12" rounded="full" />
+
+<LoadingSpinner size="sm" />
+<LoadingSpinner size="md" />
+<LoadingSpinner size="lg" />
+```
+
+---
+
+### Toast
+
+```tsx
+import { ToastProvider, useToast } from '@lucifer91299/ui'
+
+// In root layout:
+<ToastProvider>{children}</ToastProvider>
+
+// In any component:
+const { toast } = useToast()
+
+toast({ title: 'Saved!',    variant: 'success' })
+toast({ title: 'Error',     variant: 'error',   description: 'Something went wrong' })
+toast({ title: 'Heads up',  variant: 'warning' })
+toast({ title: 'FYI',       variant: 'info' })
+```
+
+---
+
+### Charts
+
+Requires `recharts` peer dependency (`npm install recharts`).
+
+```tsx
+import { PortalBarChart, PortalLineChart, PortalAreaChart, PortalDonutChart } from '@lucifer91299/ui'
+
+const data = [
+  { month: 'Jan', revenue: 42, expenses: 28 },
+  { month: 'Feb', revenue: 55, expenses: 31 },
+]
+
+<PortalBarChart
+  data={data}
+  xKey="month"
+  series={[
+    { key: 'revenue',  name: 'Revenue'  },
+    { key: 'expenses', name: 'Expenses' },
+  ]}
+  height={240}
+/>
+
+<PortalLineChart  data={data} xKey="month" series={[{ key: 'revenue', name: 'Revenue' }]} height={240} />
+<PortalAreaChart  data={data} xKey="month" series={[{ key: 'revenue', name: 'Revenue' }]} height={240} />
+
+{/* DonutChart accepts both name and label fields */}
+<PortalDonutChart
+  data={[
+    { label: 'Active',   value: 58 },
+    { label: 'Pending',  value: 22 },
+    { label: 'Inactive', value: 20 },
+  ]}
+  centerLabel="Total"
+  centerValue={100}
+  height={240}
+/>
+```
+
+---
 
 ### LoginPage (Animated)
 
@@ -156,16 +687,6 @@ import { LoginPage } from '@lucifer91299/ui'
 
 > The field is called `identifier` in `onSubmit` — not `email`. It accepts both email and username.
 
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `projectName` | `string` | Yes | Shown in the card header |
-| `logoSrc` | `string` | Yes | Logo image path |
-| `onSubmit` | `({ identifier, password }) => Promise<void>` | Yes | Throw to show an error |
-| `isLoading` | `boolean` | No | Shows spinner on button |
-| `error` | `string \| null` | No | Error message below the form |
-| `forgotPasswordHref` | `string` | No | "Forgot password?" link |
-| `poweredBy` | `{ logoSrc, text, href }` | No | Footer powered-by badge |
-
 ---
 
 ### LoginPageSimple (Clean)
@@ -188,20 +709,8 @@ import { User, Shield } from 'lucide-react'
     { key: 'judge', label: 'Continue as Judge', description: 'Score events',   icon: <Shield /> },
   ]}
   onRoleSelect={(role) => router.push(`/dashboard/${role}`)}
-  isLoading={false}
-  error={null}
 />
 ```
-
-| Prop | Type | Required | Description |
-|------|------|----------|-------------|
-| `projectName` | `string` | Yes | |
-| `logoSrc` | `string` | Yes | |
-| `onSubmit` | `({ email, password }) => Promise<{ role?: string }>` | Yes | Return `{ role: 'both' }` to show role splash |
-| `roles` | `RoleOption[]` | No | Role options for splash screen |
-| `onRoleSelect` | `(role: string) => void` | No | Called when user picks a role |
-| `isLoading` | `boolean` | No | |
-| `error` | `string \| null` | No | |
 
 ---
 
@@ -250,68 +759,13 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 }
 ```
 
-**Sidebar variants:**
-
-| Value | Description |
-|-------|-------------|
-| `full` | Wide sidebar with group headings, labels, and collapsible groups |
-| `rail` | Icon-only narrow sidebar |
-| `both` | Full on desktop, rail on mobile |
-
-**`NavGroup` / `NavItem` types:**
-
-```ts
-type NavItem = {
-  label:     string
-  href:      string
-  icon:      React.ReactNode
-  badge?:    string | number  // notification badge
-  children?: NavItem[]        // nested items
-}
-
-type NavGroup = {
-  heading:   string
-  groupIcon: React.ReactNode
-  items:     NavItem[]
-}
-```
-
----
-
-### UI Primitives
-
-```tsx
-import { Button, Input, Badge, Card, AlertBanner, LoadingSpinner } from '@lucifer91299/ui'
-
-<Button variant="primary" size="md">Save</Button>
-<Button variant="secondary">Cancel</Button>
-<Button variant="ghost">Link style</Button>
-<Button variant="danger">Delete</Button>
-
-<Input label="Email" type="email" placeholder="you@example.com" error="Required" />
-
-<Badge variant="primary">Active</Badge>
-<Badge variant="success">Approved</Badge>
-<Badge variant="warning">Pending</Badge>
-<Badge variant="danger">Rejected</Badge>
-
-<Card className="p-6">Content</Card>
-<Card bordered>Bordered card</Card>
-
-<AlertBanner variant="error" message="Something went wrong" />
-<AlertBanner variant="success" message="Saved" />
-
-<LoadingSpinner size="sm" />
-<LoadingSpinner size="md" color="primary" />
-```
-
 ---
 
 ## Auth Hooks
 
 ### useJwtAuth
 
-Validates an `httpOnly` cookie JWT by calling `/api/auth/user`. Auto-redirects on 401. Re-validates every 5 minutes.
+Validates an `httpOnly` cookie JWT by calling `/api/auth/user`. Auto-redirects on 401.
 
 ```ts
 import { useJwtAuth } from '@lucifer91299/ui'
@@ -319,16 +773,9 @@ import { useJwtAuth } from '@lucifer91299/ui'
 const { user, authenticated, loading, logout } = useJwtAuth({
   userApiPath:      '/api/auth/user',  // default
   loginPath:        '/login',          // default
-  validateInterval: 5 * 60 * 1000,    // default — 5 min
+  validateInterval: 5 * 60 * 1000,    // default — re-validates every 5 min
 })
-
-// user            → AuthUser | null  ({ id, name, role, email, ...JWT payload })
-// authenticated   → boolean
-// loading         → boolean (true until first validate resolves)
-// logout()        → clears cookie via POST /api/auth/logout, redirects to loginPath
 ```
-
-> Call this once at the `dashboard/layout.tsx` level, not in individual pages.
 
 ### useMultiRoleAuth
 
@@ -339,14 +786,12 @@ import { useMultiRoleAuth } from '@lucifer91299/ui'
 
 const { activeRoles, currentRole, selectRole, loading } = useMultiRoleAuth({
   roles:        ['coach', 'judge'],
-  cookiePrefix: 'portal_',  // cookies: portal_coach_token, portal_judge_token
+  cookiePrefix: 'portal_',
   loginPath:    '/login',
 })
 ```
 
 ### useLaravelSessionAuth
-
-For Next.js frontends backed by a Laravel API.
 
 ```ts
 import { useLaravelSessionAuth } from '@lucifer91299/ui'
@@ -361,8 +806,6 @@ const { user, authenticated, loading, logout } = useLaravelSessionAuth({
 
 ## Auth API routes
 
-Three routes are required in your Next.js app. Copy and adjust:
-
 **`src/app/api/auth/login/route.ts`**
 
 ```ts
@@ -371,25 +814,18 @@ import { NextResponse } from 'next/server'
 
 export async function POST(request: Request) {
   const { email, password } = await request.json()
-
-  // TODO: replace with real user lookup
   if (email !== 'admin@demo.com' || password !== 'password123') {
     return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 })
   }
-
   const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? 'dev-secret')
   const token = await new SignJWT({ sub: '1', name: 'Admin', role: 'Admin', email })
     .setProtectedHeader({ alg: 'HS256' })
     .setExpirationTime('7d')
     .sign(secret)
-
   const res = NextResponse.json({ ok: true })
   res.cookies.set('access_token', token, {
-    httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    maxAge:   60 * 60 * 24 * 7,
-    path:     '/',
+    httpOnly: true, secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax', maxAge: 60 * 60 * 24 * 7, path: '/',
   })
   return res
 }
@@ -406,7 +842,6 @@ export async function GET() {
   const store = await cookies()
   const token = store.get('access_token')?.value
   if (!token) return NextResponse.json({ error: 'Not authenticated' }, { status: 401 })
-
   try {
     const secret = new TextEncoder().encode(process.env.JWT_SECRET ?? 'dev-secret')
     const { payload } = await jwtVerify(token, secret)
@@ -431,12 +866,12 @@ export async function POST() {
 
 ---
 
-## Middleware
+## Middleware / proxy.ts
 
-Protect routes at the edge — no backend round-trip.
+Protect routes at the edge — no backend round-trip. The file is named `proxy.ts` (Next.js convention).
 
 ```ts
-// src/middleware.ts
+// src/proxy.ts
 import { jwtMiddleware } from '@lucifer91299/ui/server'
 
 export default jwtMiddleware({
@@ -451,7 +886,7 @@ export const config = {
 }
 ```
 
-> Always import from `@lucifer91299/ui/server` in `middleware.ts` — that entry uses only Edge Runtime-compatible APIs.
+> Always import from `@lucifer91299/ui/server` in `proxy.ts` — that entry uses only Edge Runtime-compatible APIs (no dynamic `await import()`).
 
 ---
 
@@ -468,7 +903,7 @@ export default createTheme({
   accent:           '#FF9933',
   success:          '#138808',
 
-  // Soft + hover overrides (optional — auto-derived from base if omitted)
+  // Soft + hover overrides (optional — auto-derived if omitted)
   'primary-soft':   'rgba(0, 0, 128, 0.12)',
   'primary-hover':  'rgba(0, 0, 128, 0.9)',
   'accent-soft':    'rgba(255, 153, 51, 0.12)',
@@ -499,8 +934,6 @@ export default createTheme({
 })
 ```
 
-All fields are optional — unset fields fall back to SDK defaults.
-
 ### Built-in presets
 
 ```ts
@@ -516,19 +949,9 @@ createTheme({ ...builtInThemes.minimal, projectName: 'Corp Tool' })
 | `dark` | `#6366F1` indigo | `#F59E0B` amber | `#10B981` emerald | `rail` | `simple` |
 | `minimal` | `#0F172A` slate | `#3B82F6` blue | `#22C55E` green | `both` | `simple` |
 
-### ThemeProvider
-
-Injects brand CSS variables into the page. Place in root layout, wrapping all children.
-
-```tsx
-<ThemeProvider theme={theme}>{children}</ThemeProvider>
-```
-
-CSS variables injected: `--primary`, `--primary-soft`, `--primary-hover`, `--accent`, `--accent-soft`, `--accent-hover`, `--success`, `--success-soft`, `--success-hover`.
-
 ### Design tokens
 
-**Brand** (powered by CSS variables):
+**Brand (CSS variables):**
 
 | Class | Variable |
 |-------|----------|
@@ -552,6 +975,7 @@ CSS variables injected: `--primary`, `--primary-soft`, `--primary-hover`, `--acc
 | `text-label-primary` | Main text |
 | `text-label-secondary` | Supporting |
 | `text-label-tertiary` | Placeholder |
+| `text-label-quaternary` | Muted |
 
 **Typography:**
 
@@ -564,54 +988,38 @@ CSS variables injected: `--primary`, `--primary-soft`, `--primary-hover`, `--acc
 | `text-callout` | 14px 500 |
 | `text-subhead` | 13px 400 |
 | `text-footnote` | 12px 400 |
+| `text-caption1` | 11px 400 |
 
-**Border radius** (`borderRadius` preset in theme):
+**Border radius** (`borderRadius` in theme):
 
 | Class | `apple` | `rounded` | `sharp` |
 |-------|---------|-----------|---------|
-| `rounded-sm` | 8px | 4px | 2px |
-| `rounded` | 12px | 8px | 4px |
-| `rounded-md` | 14px | 10px | 4px |
 | `rounded-lg` | 16px | 12px | 6px |
 | `rounded-xl` | 20px | 14px | 6px |
 | `rounded-2xl` | 28px | 16px | 8px |
-
-**Shadows:** `shadow-sm` `shadow` `shadow-md` `shadow-lg` `shadow-xl`
 
 ---
 
 ## Server exports
 
 ```ts
-// Only import from this path in middleware.ts (Edge Runtime safe)
-import { jwtMiddleware } from '@lucifer91299/ui/server'
+// Only import from this path in proxy.ts (Edge Runtime safe)
+import { jwtMiddleware, multiRoleMiddleware } from '@lucifer91299/ui/server'
 ```
-
-| Export | Description |
-|--------|-------------|
-| `jwtMiddleware(options)` | Verifies httpOnly cookie JWT, redirects to login on 401 |
 
 ---
 
 ## Local development
 
 ```bash
-# In the SDK repo
 cd packages/ui
 npm run build
-npm link
 
-# In your app
-npm link @lucifer91299/ui
+# Patch directly into an app's node_modules (no publish needed)
+cp -r dist path/to/my-app/node_modules/@lucifer91299/ui/
 
-# Rebuild SDK after changes
-cd packages/ui && npm run build
-```
-
-Or scaffold with a local path reference:
-
-```bash
-npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../ui
+# Or scaffold with a local path reference
+npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 ```
 
 ---
@@ -623,25 +1031,23 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../ui
 
 ## Changelog
 
+### v1.1.15
+- **`DateTimePicker`** — new component combining the full DatePicker calendar with a time spinner (12h/24h, minuteStep, showSeconds, Now button). All DatePicker constraints work identically (`disableFuture`, `excludeWeekends`, `excludeDates`, etc.)
+- **`Select` rewrite** — proper multiselect with pill tags, select-all, Done button, grouped options, round dropdown (`rounded-2xl`), round option rows (`rounded-xl`)
+- **`DatePicker`** — uncontrolled mode (works without `value`/`onChange`), improved disabled-date styling (strikethrough + ash background), `excludeDates` for specific date blocking
+- **`DataTable`** — fixed `setState`-in-render crash when `onSelectionChange` was provided; added pagination, selectable rows
+- **`RadioGroup`** — removed blue focus ring outline on selected option
+- **`DonutChart`** — accepts both `name` and `label` fields in `DonutSlice`
+- **Auth middleware** — fixed Edge Runtime crash: `jwtMiddleware` and `multiRoleMiddleware` now use static `import { NextResponse }` instead of dynamic `await import('next/server')`
+- **`proxy.ts`** — scaffolded file renamed from `middleware.ts` to match Next.js convention
+
 ### v1.0.7
-- Removed `PageFooter` from `DashboardLayout` wrapper — footer no longer renders in every page automatically
-- Completely redesigned components showcase with stats cards, all Badge variants, live DataTable with search, PageShell preview, and TricolorBar section
-- Fixed component page to use correct Button / Badge variant names
+- Removed `PageFooter` from `DashboardLayout` wrapper
+- Redesigned components showcase with stats cards, all Badge variants, live DataTable
 
 ### v1.0.6
-- Added `DataTable<T>`, `StatusBadge`, `ActionButtons`, `Select`, `PageShell`, `Breadcrumbs`, `PageFooter`
-- Improved `Input`: `labelRight`, `suffix`, number sanitisation, required asterisk
-- CLI: Windows folder creation fix, `npx @lucifer91299/create-portal-app` docs corrected
-- Added Users and Settings pages to generated template
-
-### v1.0.3
-- Added `workflow_dispatch` to GitHub Actions — manual publish trigger from Actions tab
-- README improvements: badges, local dev guide
-
-### v1.0.2
-- Renamed scope from `@nexportal` → `@lucifer91299`
-- Added per-package README files (shown on npm)
-- CLI: `--local-ui` flag, animated login default, all flags documented
+- Added `DataTable`, `StatusBadge`, `ActionButtons`, `Select`, `PageShell`, `Breadcrumbs`, `PageFooter`
+- Improved `Input`: `labelRight`, `suffix`, required asterisk
 
 ### v1.0.1
 - Initial public release
