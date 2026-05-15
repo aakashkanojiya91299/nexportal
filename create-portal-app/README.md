@@ -264,6 +264,12 @@ See the full component and theming documentation at:
 
 ## Changelog
 
+### v1.1.14
+- **UI version bump** — generated projects now use `@lucifer91299/ui@^1.1.22` (NumberInput redesign, Input password toggle, HeaderNav, Drawer animation)
+
+### v1.1.13
+- **Onboarding page wider layout** — form container expanded from `max-w-3xl` to `max-w-5xl` to remove excess left/right negative space on wider screens; success screen expanded from `max-w-2xl` to `max-w-4xl` to match
+
 ### v1.1.12
 - **Onboarding page redesigned** — replaced multi-step stepper with a single full-form using every component: `Input`, `Textarea`, `DatePicker`, `DateTimePicker`, `FileUpload`, `Select` (searchable), `NumberInput`, `Slider`, `TagInput`, `RadioGroup`, `Switch` ×3, `Checkbox` ×3, `OTPInput` — organised into 4 card sections (Personal, Professional, Plan & Preferences, Security) with validation and success state
 

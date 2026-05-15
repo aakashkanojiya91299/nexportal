@@ -41,22 +41,32 @@ export function NumberInput({
     onChange?.(v)
   }
 
+  const btnBase = cn(
+    'flex items-center justify-center w-8 h-8 rounded-lg transition-colors flex-shrink-0',
+    'border border-separator-opaque bg-surface-secondary text-label-secondary',
+    'hover:bg-surface-tertiary hover:text-label-primary',
+    'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-secondary',
+  )
+
   return (
     <div className={cn('flex flex-col gap-1.5', className)}>
-      {label && <span className="text-footnote font-medium text-label-primary">{label}</span>}
-      <div className={cn(
-        'inline-flex items-center rounded-xl border-2 overflow-hidden transition-colors',
-        error ? 'border-red-300' : 'border-gray-200 focus-within:border-[color:var(--primary,#000080)]',
-        disabled && 'opacity-50',
-      )}>
+      {label && (
+        <span className={cn('text-subhead font-medium', error ? 'text-red-500' : 'text-label-primary')}>
+          {label}
+        </span>
+      )}
+
+      <div className="flex items-center gap-2 w-fit">
         <button
           type="button"
           onClick={() => set(value - step)}
           disabled={disabled || value <= min}
-          className="px-3 py-2.5 text-label-secondary hover:bg-gray-50 disabled:opacity-40 transition-colors border-r border-gray-200 flex-shrink-0"
+          className={btnBase}
+          aria-label="Decrease"
         >
           <Minus className="w-3.5 h-3.5" />
         </button>
+
         <input
           type="number"
           value={value}
@@ -65,19 +75,31 @@ export function NumberInput({
           step={step}
           disabled={disabled}
           onChange={e => { const n = parseFloat(e.target.value); if (!isNaN(n)) set(n) }}
-          className="w-16 text-center text-sm font-semibold text-label-primary bg-transparent outline-none py-2 px-1 tabular-nums [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+          className={cn(
+            'w-16 h-8 text-center text-sm font-semibold text-label-primary bg-surface-primary',
+            'border rounded-lg outline-none transition-colors tabular-nums',
+            'focus:ring-2 focus:ring-[color:var(--primary,#000080)]/20',
+            '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
+            error
+              ? 'border-red-400 focus:border-red-400'
+              : 'border-separator-opaque focus:border-[color:var(--primary,#000080)]',
+            disabled && 'opacity-50 cursor-not-allowed',
+          )}
         />
+
         <button
           type="button"
           onClick={() => set(value + step)}
           disabled={disabled || value >= max}
-          className="px-3 py-2.5 text-label-secondary hover:bg-gray-50 disabled:opacity-40 transition-colors border-l border-gray-200 flex-shrink-0"
+          className={btnBase}
+          aria-label="Increase"
         >
           <Plus className="w-3.5 h-3.5" />
         </button>
       </div>
+
       {(error || helperText) && (
-        <p className={cn('text-[11px]', error ? 'text-red-500' : 'text-label-tertiary')}>
+        <p className={cn('text-footnote', error ? 'text-red-500' : 'text-label-tertiary')}>
           {error || helperText}
         </p>
       )}

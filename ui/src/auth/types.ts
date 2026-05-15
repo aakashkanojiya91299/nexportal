@@ -13,8 +13,14 @@ export interface JwtMiddlewareConfig {
   jwtSecret: string
   /** Paths that require authentication. Supports prefix matching. */
   protectedPaths: string[]
-  /** Where to redirect unauthenticated users */
+  /** Where to redirect unauthenticated users. Default: '/login' */
   loginPath?: string
+  /**
+   * Where to redirect an already-authenticated user who lands on `loginPath`.
+   * Respects the `?redirect=` query param when present.
+   * If omitted, authenticated users on the login page are not redirected.
+   */
+  redirectAuthenticatedTo?: string
 }
 
 export interface MultiRoleMiddlewareConfig {
@@ -22,7 +28,14 @@ export interface MultiRoleMiddlewareConfig {
   /** Cookie will be `${cookiePrefix}${role}_token`. Default: '' */
   cookiePrefix?: string
   protectedPaths: string[]
+  /** Where to redirect unauthenticated users. Default: '/login' */
   loginPath?: string
+  /**
+   * Where to redirect an already-authenticated user who lands on `loginPath`.
+   * Respects the `?redirect=` query param when present.
+   * If omitted, authenticated users on the login page are not redirected.
+   */
+  redirectAuthenticatedTo?: string
 }
 
 export interface UseJwtAuthOptions {

@@ -4,7 +4,7 @@ import * as p from '@clack/prompts'
 import type { ScaffoldOptions } from '../templates'
 import {
   genPackageJson, genTailwindConfig, genThemeConfig, genEnvLocal,
-  genGlobalsCSS, genRootLayout, genProviders, genLoginPage,
+  genNextConfig, genGlobalsCSS, genRootLayout, genProviders, genLoginPage,
   genLoginRoute, genUserRoute,
   genMiddleware, genSessionRoute, genLogoutRoute, genApiClient,
   genNavConfig, genDashboardLayout, genReduxStore, genAuthSlice,
@@ -258,7 +258,7 @@ function scaffold(opts: ScaffoldOptions): number {
   w(f('.env.local'),             genEnvLocal(opts))
   w(f('.env.example'),           genEnvLocal(opts).replace(/=.+/g, '='))
   w(f('postcss.config.mjs'),     `export default { plugins: { tailwindcss: {}, autoprefixer: {} } }\n`)
-  w(f('next.config.ts'),         `import type { NextConfig } from 'next'\nconst config: NextConfig = {\n  transpilePackages: ['@lucifer91299/ui'],\n}\nexport default config\n`)
+  w(f('next.config.ts'),         genNextConfig(opts))
   w(f('tsconfig.json'), JSON.stringify({
     compilerOptions: {
       target: 'ES2017', lib: ['dom', 'dom.iterable', 'esnext'], allowJs: true,

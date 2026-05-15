@@ -1,6 +1,6 @@
 # `@lucifer91299/ui`
 
-> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 30+ production-ready components.
+> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 40+ production-ready components.
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
@@ -29,22 +29,32 @@ npx @lucifer91299/create-portal-app my-portal
   - [DataTable](#datatable)
   - [Card, Separator, AlertBanner](#card-separator-alertbanner)
   - [Dialog](#dialog)
+  - [Drawer](#drawer)
   - [Tabs](#tabs)
   - [Accordion](#accordion)
-  - [Tooltip](#tooltip)
+  - [Tooltip & Popover](#tooltip--popover)
   - [Avatar & AvatarGroup](#avatar--avatargroup)
   - [Progress, Skeleton, LoadingSpinner](#progress-skeleton-loadingspinner)
   - [Toast](#toast)
+  - [StatsCard & EmptyState](#statscard--emptystate)
+  - [FileUpload](#fileupload)
+  - [OTPInput](#otpinput)
+  - [NumberInput](#numberinput)
+  - [Slider](#slider)
+  - [TagInput](#taginput)
+  - [Timeline](#timeline)
   - [Charts](#charts)
   - [LoginPage (Animated)](#loginpage-animated)
   - [LoginPageSimple (Clean)](#loginpagesimple-clean)
   - [DashboardLayout](#dashboardlayout)
+  - [HeaderNav](#headernav)
 - [Auth Hooks](#auth-hooks)
 - [Auth API routes](#auth-api-routes)
 - [Middleware / proxy.ts](#middleware--proxyts)
 - [Theming](#theming)
 - [Server exports](#server-exports)
 - [Local development](#local-development)
+- [Changelog](#changelog)
 
 ---
 
@@ -100,7 +110,7 @@ export default createTheme({
   success:     '#138808',
   projectName: 'My Portal',
   logoSrc:     '/brand/logo.svg',
-  sidebar:     'full',      // 'full' | 'rail' | 'both'
+  sidebar:     'full',      // 'full' | 'rail' | 'both' | 'header'
   loginStyle:  'animated',  // 'animated' | 'simple'
 })
 ```
@@ -162,19 +172,35 @@ import { Button } from '@lucifer91299/ui'
 
 ### Input & Textarea
 
+`type="password"` automatically renders an Eye / EyeOff toggle button — no extra props needed.
+
 ```tsx
 import { Input, Textarea } from '@lucifer91299/ui'
 
 <Input label="Full name" placeholder="Priya Mehta" />
 <Input label="Email" type="email" placeholder="you@example.com" />
+
+{/* Password — toggle button appears automatically */}
 <Input label="Password" type="password" />
+<Input label="Confirm password" type="password" />
+
 <Input label="With error" error="This field is required" />
 <Input label="Disabled" disabled defaultValue="Read-only" />
 <Input label="With right label" labelRight={<a href="#">Forgot?</a>} />
+<Input label="With suffix icon" suffix={<SearchIcon className="w-4 h-4" />} />
 
 <Textarea label="Message" placeholder="Type here…" helperText="Max 500 chars" />
 <Textarea label="With error" error="Message is required" />
 ```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `type` | `string` | `"password"` auto-shows Eye/EyeOff toggle |
+| `suffix` | `ReactNode` | Icon/element rendered on the right (ignored when `type="password"`) |
+| `label` | `ReactNode` | Field label |
+| `labelRight` | `ReactNode` | Right-aligned label slot (e.g. "Forgot password?") |
+| `error` | `string` | Red border + error message below |
+| `helperText` | `string` | Helper text (hidden when `error` is set) |
 
 ---
 
@@ -337,7 +363,7 @@ import { DateTimePicker } from '@lucifer91299/ui'
 | `timeFormat` | `'12h' \| '24h'` | `'24h'` | 12h shows AM/PM toggle |
 | `minuteStep` | `number` | `1` | Step size for minute spinner (e.g. 5, 10, 15, 30) |
 | `showSeconds` | `boolean` | `false` | Add seconds spinner; value format becomes `HH:mm:ss` |
-| `minTime` / `maxTime` | `string` | — | `'HH:mm'` allowed time range (shown as helper) |
+| `minTime` / `maxTime` | `string` | — | `'HH:mm'` allowed time range |
 | `disableFuture` | `boolean` | — | Same as DatePicker |
 | `disablePast` | `boolean` | — | Same as DatePicker |
 | `minDate` / `maxDate` | `string` | — | Same as DatePicker |
@@ -345,7 +371,7 @@ import { DateTimePicker } from '@lucifer91299/ui'
 | `excludeDates` | `string[]` | — | Same as DatePicker |
 | `error` | `string` | — | Red border + error message below |
 
-**UI flow:** Click the trigger → pick a date in the calendar (highlights the selection) → adjust time spinners with ▲/▼ → press **Done** to commit. **Now** button sets both date and time to the current moment. **Clear** resets the value.
+**UI flow:** Click trigger → pick date → adjust time spinners with ▲/▼ → press **Done**. **Now** sets both to current moment. **Clear** resets.
 
 ---
 
@@ -529,6 +555,51 @@ import { Dialog } from '@lucifer91299/ui'
 
 ---
 
+### Drawer
+
+Side-panel overlay with smooth slide-in/out animation. Opens from left or right, supports header, scrollable body, and sticky footer.
+
+```tsx
+import { Drawer } from '@lucifer91299/ui'
+
+const [open, setOpen] = useState(false)
+
+<Button onClick={() => setOpen(true)}>Open drawer</Button>
+
+<Drawer
+  open={open}
+  onClose={() => setOpen(false)}
+  title="Edit user"
+  description="Update details and save."
+  side="right"   // 'left' | 'right'
+  size="md"      // 'sm' | 'md' | 'lg' | 'full'
+  footer={
+    <>
+      <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
+      <Button variant="primary" onClick={save}>Save</Button>
+    </>
+  }
+>
+  <Input label="Full name" />
+  <Input label="Email" type="email" />
+</Drawer>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `open` | `boolean` | — | Controls visibility |
+| `onClose` | `() => void` | — | Called on backdrop click or Escape |
+| `title` | `string` | — | Panel header title |
+| `description` | `string` | — | Subtitle below title |
+| `side` | `'left' \| 'right'` | `'right'` | Which edge the panel slides from |
+| `size` | `'sm' \| 'md' \| 'lg' \| 'full'` | `'md'` | Panel width (`w-72` / `w-96` / `w-[32rem]` / `w-screen`) |
+| `footer` | `ReactNode` | — | Sticky footer content |
+| `className` | `string` | — | Extra classes on the panel |
+
+Escape key closes the drawer. Backdrop click also closes.
+
+---
+
 ### Tabs
 
 ```tsx
@@ -566,14 +637,26 @@ import { Accordion, AccordionItem } from '@lucifer91299/ui'
 
 ---
 
-### Tooltip
+### Tooltip & Popover
 
 ```tsx
-import { Tooltip } from '@lucifer91299/ui'
+import { Tooltip, Popover } from '@lucifer91299/ui'
 
 <Tooltip content="Helpful hint" placement="top">
   <Button variant="outline">Hover me</Button>
 </Tooltip>
+
+{/* Popover — click-triggered, outside-click dismiss */}
+<Popover
+  placement="bottom"   // 'top' | 'bottom' | 'left' | 'right'
+  trigger={<Button variant="outline" size="sm">More info</Button>}
+  content={
+    <div className="space-y-1">
+      <p className="text-callout font-medium">Details</p>
+      <p className="text-footnote text-label-tertiary">Some extra context here.</p>
+    </div>
+  }
+/>
 ```
 
 `placement`: `'top'` | `'bottom'` | `'left'` | `'right'`
@@ -632,6 +715,229 @@ toast({ title: 'Saved!',    variant: 'success' })
 toast({ title: 'Error',     variant: 'error',   description: 'Something went wrong' })
 toast({ title: 'Heads up',  variant: 'warning' })
 toast({ title: 'FYI',       variant: 'info' })
+```
+
+---
+
+### StatsCard & EmptyState
+
+```tsx
+import { StatsCard, EmptyState } from '@lucifer91299/ui'
+import { Users, TrendingUp } from 'lucide-react'
+
+<StatsCard
+  title="Total Users"
+  value="1,284"
+  subtitle="Registered accounts"
+  trend={{ direction: 'up', value: '+12%', label: 'vs last month' }}
+  icon={<Users className="w-5 h-5" />}
+  variant="primary"   // 'default' | 'primary' | 'success' | 'warning' | 'danger'
+/>
+
+<EmptyState
+  icon={<Users className="w-8 h-8" />}
+  title="No users yet"
+  description="Invite team members to get started."
+  action={<Button variant="primary">Invite user</Button>}
+/>
+```
+
+---
+
+### FileUpload
+
+Drag-and-drop file picker with size validation, file list with remove buttons, accept filter, and error state.
+
+```tsx
+import { FileUpload } from '@lucifer91299/ui'
+
+<FileUpload
+  label="Profile photo"
+  accept="image/*"
+  maxSizeMB={2}
+  helperText="PNG or JPG, max 2 MB"
+  onChange={(files) => setFiles(files)}
+/>
+
+<FileUpload
+  label="Documents"
+  multiple
+  accept=".pdf,.doc,.docx"
+  maxSizeMB={10}
+  error="File too large"
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `accept` | `string` | MIME types or extensions (e.g. `"image/*"`, `".pdf"`) |
+| `multiple` | `boolean` | Allow multiple files |
+| `maxSizeMB` | `number` | Max file size in MB — shows error if exceeded |
+| `onChange` | `(files: File[]) => void` | Called when file list changes |
+| `error` | `string` | Red border + error message |
+
+---
+
+### OTPInput
+
+4 or 6-digit code boxes with auto-advance, backspace navigation, paste support, and error state.
+
+```tsx
+import { OTPInput } from '@lucifer91299/ui'
+
+{/* 6-digit (default) */}
+<OTPInput
+  label="Verification code"
+  length={6}
+  value={otp}
+  onChange={setOtp}
+  helperText="Enter the code sent to your email"
+/>
+
+{/* 4-digit with error */}
+<OTPInput
+  label="PIN"
+  length={4}
+  value={pin}
+  onChange={setPin}
+  error="Incorrect PIN — try again"
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `length` | `4 \| 6` | `6` | Number of digit boxes |
+| `value` | `string` | — | Controlled value |
+| `onChange` | `(v: string) => void` | — | Called on each digit change |
+| `error` | `string` | — | Red boxes + error message |
+
+---
+
+### NumberInput
+
++/− stepper input with min/max/step constraints, controlled and uncontrolled modes, error state.
+
+```tsx
+import { NumberInput } from '@lucifer91299/ui'
+
+<NumberInput
+  label="Quantity"
+  value={qty}
+  onChange={setQty}
+  min={1}
+  max={100}
+  step={1}
+/>
+
+<NumberInput
+  label="Budget (₹ thousands)"
+  value={budget}
+  onChange={setBudget}
+  min={0}
+  max={500}
+  step={10}
+  helperText="0 – 500"
+/>
+
+<NumberInput label="Disabled" value={5} disabled />
+<NumberInput label="With error" value={0} error="Must be at least 1" />
+```
+
+---
+
+### Slider
+
+Range slider with track fill, custom thumb, value format callback, min/max labels, and show-value toggle.
+
+```tsx
+import { Slider } from '@lucifer91299/ui'
+
+<Slider
+  label="Volume"
+  value={volume}
+  onChange={setVolume}
+  min={0}
+  max={100}
+  step={1}
+  showValue
+/>
+
+<Slider
+  label="Price range"
+  value={price}
+  onChange={setPrice}
+  min={0}
+  max={1000}
+  step={50}
+  valueFormat={(v) => `₹${v.toLocaleString()}`}
+  showValue
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `value` | `number` | Controlled value |
+| `onChange` | `(v: number) => void` | |
+| `min` / `max` | `number` | Range bounds |
+| `step` | `number` | Increment size |
+| `showValue` | `boolean` | Show current value above thumb |
+| `valueFormat` | `(v: number) => string` | Custom value display (e.g. currency) |
+
+---
+
+### TagInput
+
+Free-text tag entry — press Enter or comma to add, Backspace to remove last, optional `maxTags` limit.
+
+```tsx
+import { TagInput } from '@lucifer91299/ui'
+
+<TagInput
+  label="Skills"
+  value={tags}
+  onChange={setTags}
+  placeholder="Add a skill…"
+  helperText="Press Enter or comma to add"
+/>
+
+<TagInput
+  label="Keywords"
+  value={keywords}
+  onChange={setKeywords}
+  maxTags={5}
+  helperText="Max 5 keywords"
+  error={keywords.length === 0 ? 'Add at least one keyword' : undefined}
+/>
+```
+
+---
+
+### Timeline
+
+Activity feed with dot/icon, 5 colour variants, timestamps, and descriptions.
+
+```tsx
+import { Timeline, TimelineItem } from '@lucifer91299/ui'
+
+<Timeline>
+  <TimelineItem
+    title="Account created"
+    description="Welcome to the portal"
+    time="2025-01-15 09:00"
+    variant="success"   // 'default' | 'primary' | 'success' | 'warning' | 'danger'
+  />
+  <TimelineItem
+    title="Profile updated"
+    description="Name and role changed"
+    time="2025-01-16 14:30"
+    variant="primary"
+  />
+  <TimelineItem
+    title="Password reset"
+    time="2025-01-18 11:00"
+    variant="warning"
+  />
+</Timeline>
 ```
 
 ---
@@ -732,7 +1038,7 @@ import { User, Shield } from 'lucide-react'
 
 ### DashboardLayout
 
-Responsive sidebar + topbar. Handles navigation, user info, logout, and mobile drawer automatically.
+Responsive layout supporting four sidebar variants. Handles navigation, user info, logout, and mobile drawer automatically.
 
 ```tsx
 'use client'
@@ -762,7 +1068,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <DashboardLayout
       navGroups={navGroups}
-      sidebar="full"
+      sidebar="full"   // 'full' | 'rail' | 'both' | 'header'
       projectName="My Portal"
       logoSrc="/brand/logo.svg"
       user={{ name: String(user?.name ?? 'User'), role: String(user?.role ?? '') }}
@@ -772,6 +1078,56 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       {children}
     </DashboardLayout>
   )
+}
+```
+
+**Sidebar variants:**
+
+| Value | Description |
+|-------|-------------|
+| `full` | Wide sidebar with group headings, nav labels, and collapsible sections |
+| `rail` | Icon-only narrow sidebar |
+| `both` | Full on desktop, rail on mobile/tablet |
+| `header` | Horizontal top nav bar — see [HeaderNav](#headernav) |
+
+> `icon` and `groupIcon` accept **pre-rendered JSX** (`ReactNode`), not component types. Always pass `<Icon className="w-4 h-4" />`, not `Icon`.
+
+---
+
+### HeaderNav
+
+Horizontal top navigation bar — logo + brand name, scrollable pill links, dropdown groups, and a profile menu. Used automatically when `sidebar="header"` is passed to `DashboardLayout`.
+
+```tsx
+import { HeaderNav } from '@lucifer91299/ui'
+
+<HeaderNav
+  navGroups={navGroups}
+  projectName="My Portal"
+  logoSrc="/brand/logo.svg"
+  user={{ name: 'Admin User', role: 'Admin' }}
+  pathname={pathname}
+  onLogout={logout}
+/>
+```
+
+**Layout behaviour:**
+- **Desktop** (`lg+`): Logo | brand name | divider | scrollable pill links (groups with one item → direct pill; groups with multiple items → dropdown button with portaled menu) | profile avatar + dropdown
+- **Mobile** (`< lg`): Compact top bar with hamburger → slide-in drawer with collapsible group sections
+
+**`NavGroup` and `NavItem` types:**
+
+```ts
+type NavItem = {
+  label: string
+  href: string
+  icon?: ReactNode        // pre-rendered JSX, e.g. <LayoutDashboard className="w-4 h-4" />
+}
+
+type NavGroup = {
+  heading?: string
+  groupIcon?: ReactNode   // pre-rendered JSX
+  items: NavItem[]
 }
 ```
 
@@ -928,7 +1284,7 @@ export default createTheme({
   'success-hover':  'rgba(19, 136, 8, 0.9)',
 
   // Layout
-  sidebar:          'full',      // 'full' | 'rail' | 'both'
+  sidebar:          'full',      // 'full' | 'rail' | 'both' | 'header'
   loginStyle:       'animated',  // 'animated' | 'simple'
 
   // Identity
@@ -1047,7 +1403,23 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 
 ## Changelog
 
-### v1.1.18
+### v1.1.23
+- **`jwtMiddleware`** — new `redirectAuthenticatedTo` option: authenticated users who land on `loginPath` are automatically redirected to this path (or the `?redirect=` query param when present). Eliminates the need for manual wrapper logic in `proxy.ts`
+- **`multiRoleMiddleware`** — same `redirectAuthenticatedTo` support as `jwtMiddleware`
+- **`ToastProvider`** — fixed hydration mismatch caused by `typeof document !== 'undefined'` guard; portal now renders after mount via `useEffect` so server and client HTML always match
+
+### v1.1.22
+- **`NumberInput` redesign** — replaced wide single-pill layout with three separate compact elements: `−` button | value input | `+` button. Buttons are 32×32 px rounded squares with independent border, background, and hover states. Input is a fixed-width `64px` bordered field. Label now uses `text-subhead` to match all other form components. Component uses `w-fit` so it never stretches to fill the container
+
+### v1.1.21
+- **`Input` password toggle** — `type="password"` now automatically renders an Eye / EyeOff visibility button inside the input. No extra props required; works in all existing password fields
+
+### v1.1.20
+- **`HeaderNav`** — new horizontal top nav bar component for `sidebar="header"` layout: logo + brand, scrollable pill links, portaled dropdown groups, mobile hamburger drawer
+- **`Drawer` animation** — smooth slide-in/out transitions (translate + opacity, 280 ms cubic-bezier ease) on both open and close
+- **`SidebarVariant`** extended — `'full' | 'rail' | 'both' | 'header'`; `DashboardLayout` renders `HeaderNav` when `sidebar="header"`
+
+### v1.1.19
 - **`Drawer`** — side-panel overlay (left/right, sm/md/lg/full sizes, header, footer, Escape-to-close)
 - **`OTPInput`** — 4 or 6-digit code boxes with auto-advance, backspace nav, paste support, error state
 - **`NumberInput`** — +/− stepper input with min/max/step, controlled/uncontrolled, error state
@@ -1055,7 +1427,6 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 - **`TagInput`** — free-text tag entry (Enter/comma to add, Backspace to remove last, maxTags limit)
 - **`Timeline`** — activity feed with dot/icon, 5 colour variants, timestamps, descriptions
 - **`Popover`** — click-triggered floating panel, 4 placements, outside-click dismiss
-- **Onboarding page** — full redesign: single card with integrated stepper + form + nav footer, `FileUpload`, `TagInput`, `NumberInput`, `Slider` in form steps, review blocks with per-section Edit buttons, dot-progress footer, success screen
 
 ### v1.1.17
 - **`StatsCard`** — KPI metric card with value, subtitle, trend indicator (up/down/flat), icon slot, 5 colour variants
@@ -1067,14 +1438,13 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 - **All form components** now consistently support `error` prop: `Input`, `Textarea`, `Select`, `DatePicker`, `DateTimePicker`, `Switch`, `Checkbox`, `RadioGroup`
 
 ### v1.1.15
-- **`DateTimePicker`** — new component combining the full DatePicker calendar with a time spinner (12h/24h, minuteStep, showSeconds, Now button). All DatePicker constraints work identically (`disableFuture`, `excludeWeekends`, `excludeDates`, etc.)
-- **`Select` rewrite** — proper multiselect with pill tags, select-all, Done button, grouped options, round dropdown (`rounded-2xl`), round option rows (`rounded-xl`)
-- **`DatePicker`** — uncontrolled mode (works without `value`/`onChange`), improved disabled-date styling (strikethrough + ash background), `excludeDates` for specific date blocking
-- **`DataTable`** — fixed `setState`-in-render crash when `onSelectionChange` was provided; added pagination, selectable rows
+- **`DateTimePicker`** — new component combining the full DatePicker calendar with a time spinner (12h/24h, minuteStep, showSeconds, Now button). All DatePicker constraints work identically
+- **`Select` rewrite** — proper multiselect with pill tags, select-all, Done button, grouped options, round dropdown
+- **`DatePicker`** — uncontrolled mode, improved disabled-date styling, `excludeDates` for specific date blocking
+- **`DataTable`** — fixed `setState`-in-render crash; added pagination, selectable rows
 - **`RadioGroup`** — removed blue focus ring outline on selected option
 - **`DonutChart`** — accepts both `name` and `label` fields in `DonutSlice`
-- **Auth middleware** — fixed Edge Runtime crash: `jwtMiddleware` and `multiRoleMiddleware` now use static `import { NextResponse }` instead of dynamic `await import('next/server')`
-- **`proxy.ts`** — scaffolded file renamed from `middleware.ts` to match Next.js convention
+- **Auth middleware** — fixed Edge Runtime crash with static `import { NextResponse }`
 
 ### v1.0.7
 - Removed `PageFooter` from `DashboardLayout` wrapper

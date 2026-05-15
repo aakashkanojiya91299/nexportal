@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.19',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.22',
     'next': '^16.2.6',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
@@ -129,6 +129,35 @@ export function genEnvLocal(o: ScaffoldOptions): string {
     lines.push(`SESSION_DB_PASS=${o.dbPassword ?? ''}`)
   }
   return lines.join('\n') + '\n'
+}
+
+export function genNextConfig(o: ScaffoldOptions): string {
+  const apiHost = o.apiUrl
+    ? (() => {
+        try { return new URL(o.apiUrl).hostname } catch { return 'localhost' }
+      })()
+    : 'localhost'
+
+  return `import type { NextConfig } from 'next'
+
+const config: NextConfig = {
+  transpilePackages: ['@lucifer91299/ui'],
+  images: {
+    remotePatterns: [
+      // Add remote image domains here, e.g.:
+      // { protocol: 'https', hostname: 'example.com' },
+    ],
+  },
+  allowedDevOrigins: [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://${apiHost}:3000',
+    'http://${apiHost}:3001',
+  ],
+}
+
+export default config
+`
 }
 
 export function genGlobalsCSS(): string {

@@ -1,6 +1,7 @@
 'use client'
 
-import React, { forwardRef, type InputHTMLAttributes } from 'react'
+import React, { forwardRef, useState, type InputHTMLAttributes } from 'react'
+import { Eye, EyeOff } from 'lucide-react'
 import { cn } from '../../lib/cn'
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
@@ -15,6 +16,8 @@ export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, labelRight, error, helperText, suffix, containerClassName, className, id, required, type, onChange, ...rest }, ref) => {
     const inputId = id ?? (typeof label === 'string' ? label.toLowerCase().replace(/\s+/g, '-') : undefined)
+    const isPassword = type === 'password'
+    const [showPassword, setShowPassword] = useState(false)
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (type === 'number') {
@@ -25,6 +28,19 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
       }
       onChange?.(e)
     }
+
+    const resolvedType = isPassword ? (showPassword ? 'text' : 'password') : type === 'number' ? 'text' : type
+    const rightSlot = isPassword ? (
+      <button
+        type="button"
+        tabIndex={-1}
+        onClick={() => setShowPassword(v => !v)}
+        className="flex items-center justify-center text-label-tertiary hover:text-label-primary transition-colors"
+        aria-label={showPassword ? 'Hide password' : 'Show password'}
+      >
+        {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+      </button>
+    ) : suffix
 
     return (
       <div className={cn('flex flex-col gap-1.5', containerClassName)}>
@@ -44,20 +60,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             required={required}
-            type={type === 'number' ? 'text' : type}
+            type={resolvedType}
             inputMode={type === 'number' ? (rest.inputMode ?? 'numeric') : rest.inputMode}
             onChange={handleChange}
             className={cn(
               'input-base',
               error && 'input-base-error',
-              suffix && 'pr-10',
+              rightSlot && 'pr-10',
               className,
             )}
             {...rest}
           />
-          {suffix && (
+          {rightSlot && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center text-label-tertiary">
-              {suffix}
+              {rightSlot}
             </div>
           )}
         </div>
