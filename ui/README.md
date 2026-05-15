@@ -1047,6 +1047,16 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 
 ## Changelog
 
+### v1.1.18
+- **`Drawer`** — side-panel overlay (left/right, sm/md/lg/full sizes, header, footer, Escape-to-close)
+- **`OTPInput`** — 4 or 6-digit code boxes with auto-advance, backspace nav, paste support, error state
+- **`NumberInput`** — +/− stepper input with min/max/step, controlled/uncontrolled, error state
+- **`Slider`** — range slider with track fill, custom thumb, `valueFormat`, `showValue`, min/max labels
+- **`TagInput`** — free-text tag entry (Enter/comma to add, Backspace to remove last, maxTags limit)
+- **`Timeline`** — activity feed with dot/icon, 5 colour variants, timestamps, descriptions
+- **`Popover`** — click-triggered floating panel, 4 placements, outside-click dismiss
+- **Onboarding page** — full redesign: single card with integrated stepper + form + nav footer, `FileUpload`, `TagInput`, `NumberInput`, `Slider` in form steps, review blocks with per-section Edit buttons, dot-progress footer, success screen
+
 ### v1.1.17
 - **`StatsCard`** — KPI metric card with value, subtitle, trend indicator (up/down/flat), icon slot, 5 colour variants
 - **`EmptyState`** — zero-data placeholder with icon, title, description, and optional action button
