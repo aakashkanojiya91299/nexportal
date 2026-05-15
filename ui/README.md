@@ -1047,6 +1047,11 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 
 ## Changelog
 
+### v1.1.17
+- **`StatsCard`** — KPI metric card with value, subtitle, trend indicator (up/down/flat), icon slot, 5 colour variants
+- **`EmptyState`** — zero-data placeholder with icon, title, description, and optional action button
+- **`FileUpload`** — drag-and-drop file picker with size validation, file list with remove, accept filter, error state
+
 ### v1.1.16
 - **`Switch`** — added `error` prop: red toggle track, red label, error message below (matching Checkbox / RadioGroup behaviour)
 - **All form components** now consistently support `error` prop: `Input`, `Textarea`, `Select`, `DatePicker`, `DateTimePicker`, `Switch`, `Checkbox`, `RadioGroup`

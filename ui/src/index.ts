@@ -71,6 +71,12 @@ export { Tooltip } from './components/ui/Tooltip'
 export type { TooltipProps, TooltipPlacement } from './components/ui/Tooltip'
 export { Stepper } from './components/ui/Stepper'
 export type { StepperProps, StepItem } from './components/ui/Stepper'
+export { StatsCard } from './components/ui/StatsCard'
+export type { StatsCardProps } from './components/ui/StatsCard'
+export { EmptyState } from './components/ui/EmptyState'
+export type { EmptyStateProps } from './components/ui/EmptyState'
+export { FileUpload } from './components/ui/FileUpload'
+export type { FileUploadProps } from './components/ui/FileUpload'
 
 // ── Charts (requires recharts peer dependency) ────────────────────────────────
 export { PortalBarChart } from './components/charts/BarChart'
