@@ -69,6 +69,8 @@ export { Avatar, AvatarGroup } from './components/ui/Avatar'
 export type { AvatarProps, AvatarGroupProps, AvatarSize } from './components/ui/Avatar'
 export { Tooltip } from './components/ui/Tooltip'
 export type { TooltipProps, TooltipPlacement } from './components/ui/Tooltip'
+export { Stepper } from './components/ui/Stepper'
+export type { StepperProps, StepItem } from './components/ui/Stepper'
 
 // ── Charts (requires recharts peer dependency) ────────────────────────────────
 export { PortalBarChart } from './components/charts/BarChart'

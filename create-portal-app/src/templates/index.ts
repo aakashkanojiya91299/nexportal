@@ -869,7 +869,7 @@ import {
   Button, Input, Select, Textarea, Switch, Checkbox, RadioGroup, DatePicker, DateTimePicker,
   Dialog, Tooltip, Tabs, TabsList, TabsTrigger, TabsContent,
   Accordion, AccordionItem, Progress, Skeleton, SkeletonCard, SkeletonText,
-  Separator, Avatar, AvatarGroup, DataTable, ActionButtons,
+  Separator, Avatar, AvatarGroup, DataTable, ActionButtons, Stepper,
   PortalBarChart, PortalLineChart, PortalAreaChart, PortalDonutChart,
 } from '@lucifer91299/ui'
 
@@ -964,6 +964,7 @@ export default function ComponentsPage() {
   const [dtVal,    setDtVal]    = useState('')
   const [dtVal12h, setDtVal12h] = useState('')
   const [dtValSec, setDtValSec] = useState('')
+  const [stepperStep, setStepperStep] = useState(1)
 
   return (
     <div className="p-6 space-y-14 max-w-5xl pb-20">
@@ -1230,6 +1231,43 @@ export default function ComponentsPage() {
             label="With error"
             error="Schedule is required"
           />
+        </div>
+      </Section>
+
+      {/* ── Stepper ─────────────────────────────────────────────────────── */}
+      <Section id="stepper" title="Stepper" subtitle="Multi-step progress indicator — horizontal and vertical, complete / current / upcoming states.">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <Card className="p-6 space-y-5">
+            <Label>Horizontal (interactive)</Label>
+            <Stepper
+              steps={[
+                { label: 'Personal Info',   description: 'Name & contact'   },
+                { label: 'Organization',    description: 'Company details'  },
+                { label: 'Preferences',     description: 'Notifications'    },
+                { label: 'Review',          description: 'Confirm & submit' },
+              ]}
+              current={stepperStep}
+            />
+            <Separator />
+            <div className="flex items-center gap-3">
+              <Button variant="outline" size="sm" disabled={stepperStep === 0} onClick={() => setStepperStep(s => s - 1)}>← Back</Button>
+              <span className="text-xs text-label-tertiary flex-1 text-center">Step {stepperStep + 1} of 4</span>
+              <Button variant="primary" size="sm" disabled={stepperStep === 4} onClick={() => setStepperStep(s => s + 1)}>Next →</Button>
+            </div>
+          </Card>
+          <Card className="p-6 space-y-4">
+            <Label>Vertical</Label>
+            <Stepper
+              orientation="vertical"
+              steps={[
+                { label: 'Personal Info',   description: 'Name, email & phone' },
+                { label: 'Organization',    description: 'Company & role'      },
+                { label: 'Preferences',     description: 'Notifications'       },
+                { label: 'Review & Submit', description: 'Confirm details'     },
+              ]}
+              current={stepperStep}
+            />
+          </Card>
         </div>
       </Section>
 
