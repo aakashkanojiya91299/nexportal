@@ -10,6 +10,7 @@ export interface SwitchProps {
   disabled?: boolean
   label?: string
   description?: string
+  error?: string
   size?: 'sm' | 'md'
   className?: string
   id?: string
@@ -22,6 +23,7 @@ export function Switch({
   disabled,
   label,
   description,
+  error,
   size = 'md',
   className,
   id,
@@ -39,46 +41,55 @@ export function Switch({
   }
 
   return (
-    <div className={cn('flex items-start gap-3', className)}>
-      <button
-        type="button"
-        role="switch"
-        id={switchId}
-        aria-checked={isOn}
-        disabled={disabled}
-        onClick={toggle}
-        className={cn(
-          'relative flex-shrink-0 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1',
-          size === 'sm' ? 'h-5 w-9' : 'h-6 w-11',
-          isOn
-            ? 'focus:ring-[color:var(--primary,#000080)]/40'
-            : 'focus:ring-gray-300',
-          disabled && 'cursor-not-allowed opacity-50',
-        )}
-        style={{
-          background: isOn ? 'var(--primary, #000080)' : '#D1D5DB',
-        }}
-      >
-        <span
+    <div className={cn('flex flex-col gap-1', className)}>
+      <div className="flex items-start gap-3">
+        <button
+          type="button"
+          role="switch"
+          id={switchId}
+          aria-checked={isOn}
+          disabled={disabled}
+          onClick={toggle}
           className={cn(
-            'absolute top-0.5 block rounded-full bg-white shadow-sm transition-transform duration-200',
-            size === 'sm' ? 'h-4 w-4' : 'h-5 w-5',
-            isOn
-              ? size === 'sm' ? 'translate-x-4' : 'translate-x-5'
-              : 'translate-x-0.5',
+            'relative flex-shrink-0 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1',
+            size === 'sm' ? 'h-5 w-9' : 'h-6 w-11',
+            error
+              ? 'focus:ring-red-300'
+              : isOn
+              ? 'focus:ring-[color:var(--primary,#000080)]/40'
+              : 'focus:ring-gray-300',
+            disabled && 'cursor-not-allowed opacity-50',
           )}
-        />
-      </button>
-      {(label || description) && (
-        <label htmlFor={switchId} className={cn('flex flex-col', !disabled && 'cursor-pointer')}>
-          {label && (
-            <span className="text-callout font-medium text-label-primary leading-tight">{label}</span>
-          )}
-          {description && (
-            <span className="text-[11px] text-label-tertiary mt-0.5">{description}</span>
-          )}
-        </label>
-      )}
+          style={{
+            background: error
+              ? (isOn ? '#ef4444' : '#FCA5A5')
+              : (isOn ? 'var(--primary, #000080)' : '#D1D5DB'),
+          }}
+        >
+          <span
+            className={cn(
+              'absolute top-0.5 block rounded-full bg-white shadow-sm transition-transform duration-200',
+              size === 'sm' ? 'h-4 w-4' : 'h-5 w-5',
+              isOn
+                ? size === 'sm' ? 'translate-x-4' : 'translate-x-5'
+                : 'translate-x-0.5',
+            )}
+          />
+        </button>
+        {(label || description) && (
+          <label htmlFor={switchId} className={cn('flex flex-col', !disabled && 'cursor-pointer')}>
+            {label && (
+              <span className={cn('text-callout font-medium leading-tight', error ? 'text-red-500' : 'text-label-primary')}>
+                {label}
+              </span>
+            )}
+            {description && (
+              <span className="text-[11px] text-label-tertiary mt-0.5">{description}</span>
+            )}
+          </label>
+        )}
+      </div>
+      {error && <p className="text-[11px] text-red-500 ml-0">{error}</p>}
     </div>
   )
 }

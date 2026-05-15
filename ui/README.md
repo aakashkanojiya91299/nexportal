@@ -173,6 +173,7 @@ import { Input, Textarea } from '@lucifer91299/ui'
 <Input label="With right label" labelRight={<a href="#">Forgot?</a>} />
 
 <Textarea label="Message" placeholder="Type here…" helperText="Max 500 chars" />
+<Textarea label="With error" error="Message is required" />
 ```
 
 ---
@@ -235,6 +236,7 @@ const options = [
 | `onChange` | `(v) => void` | `string` for single, `string[]` for multi |
 | `searchable` | `boolean` | Show search input in dropdown |
 | `clearable` | `boolean` | Show clear button |
+| `error` | `string` | Red border + error message below |
 | `onAddNew` | `() => void` | Show "Add new…" footer row |
 | `maxTagsShown` | `number` | Max pill tags before "+N more" (default `3`) |
 
@@ -280,6 +282,7 @@ import { DatePicker } from '@lucifer91299/ui'
 | `minDate` / `maxDate` | `string` | `'yyyy-MM-dd'` range bounds |
 | `excludeWeekends` | `boolean` | Disable Sat + Sun |
 | `excludeDates` | `string[]` | Specific `'yyyy-MM-dd'` dates to block |
+| `error` | `string` | Red border + error message below |
 
 Disabled dates render with strikethrough, ash background, and muted colour.
 
@@ -340,6 +343,7 @@ import { DateTimePicker } from '@lucifer91299/ui'
 | `minDate` / `maxDate` | `string` | — | Same as DatePicker |
 | `excludeWeekends` | `boolean` | — | Same as DatePicker |
 | `excludeDates` | `string[]` | — | Same as DatePicker |
+| `error` | `string` | — | Red border + error message below |
 
 **UI flow:** Click the trigger → pick a date in the calendar (highlights the selection) → adjust time spinners with ▲/▼ → press **Done** to commit. **Now** button sets both date and time to the current moment. **Clear** resets the value.
 
@@ -347,14 +351,18 @@ import { DateTimePicker } from '@lucifer91299/ui'
 
 ### Switch, Checkbox, RadioGroup
 
+All three support an `error` prop — renders the label/indicator in red with an error message below.
+
 ```tsx
 import { Switch, Checkbox, RadioGroup } from '@lucifer91299/ui'
 
 <Switch label="Email notifications" description="Daily digest" checked={on} onChange={setOn} />
 <Switch label="Disabled" disabled />
+<Switch label="Required" error="You must enable notifications" />
 
 <Checkbox label="Accept terms" description="I agree" checked={checked} onChange={setChecked} />
 <Checkbox label="Indeterminate" indeterminate />
+<Checkbox label="Required" error="You must accept the terms" />
 
 <RadioGroup
   label="Billing cycle"
@@ -366,6 +374,14 @@ import { Switch, Checkbox, RadioGroup } from '@lucifer91299/ui'
   value={cycle}
   onChange={setCycle}
   orientation="vertical"   // 'vertical' | 'horizontal'
+/>
+
+{/* RadioGroup with validation error */}
+<RadioGroup
+  options={options}
+  value=""
+  onChange={setCycle}
+  error="Please select a billing cycle"
 />
 ```
 
@@ -1030,6 +1046,10 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 ---
 
 ## Changelog
+
+### v1.1.16
+- **`Switch`** — added `error` prop: red toggle track, red label, error message below (matching Checkbox / RadioGroup behaviour)
+- **All form components** now consistently support `error` prop: `Input`, `Textarea`, `Select`, `DatePicker`, `DateTimePicker`, `Switch`, `Checkbox`, `RadioGroup`
 
 ### v1.1.15
 - **`DateTimePicker`** — new component combining the full DatePicker calendar with a time spinner (12h/24h, minuteStep, showSeconds, Now button). All DatePicker constraints work identically (`disableFuture`, `excludeWeekends`, `excludeDates`, etc.)

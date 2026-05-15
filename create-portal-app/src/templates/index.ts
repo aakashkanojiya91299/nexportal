@@ -866,7 +866,7 @@ import React, { useState } from 'react'
 import {
   PageShell, Breadcrumbs, Card, TricolorBar,
   Badge, StatusBadge, AlertBanner, LoadingSpinner,
-  Button, Input, Select, Textarea, Switch, Checkbox, RadioGroup, DatePicker,
+  Button, Input, Select, Textarea, Switch, Checkbox, RadioGroup, DatePicker, DateTimePicker,
   Dialog, Tooltip, Tabs, TabsList, TabsTrigger, TabsContent,
   Accordion, AccordionItem, Progress, Skeleton, SkeletonCard, SkeletonText,
   Separator, Avatar, AvatarGroup, DataTable, ActionButtons,
@@ -953,12 +953,17 @@ export default function ComponentsPage() {
   const [dialogOpen,  setDialogOpen]  = useState(false)
   const [confirmOpen, setConfirmOpen] = useState(false)
   const [tabVariant,  setTabVariant]  = useState<'line' | 'pill' | 'card'>('line')
-  const [selectVal,   setSelectVal]   = useState('admin')
-  const [radioVal,    setRadioVal]    = useState('monthly')
+  const [selectVal,    setSelectVal]    = useState('admin')
+  const [multiVal,     setMultiVal]     = useState<string[]>([])
+  const [multiGrouped, setMultiGrouped] = useState<string[]>([])
+  const [radioVal,     setRadioVal]     = useState('monthly')
   const [sw1, setSw1] = useState(true)
   const [sw2, setSw2] = useState(false)
   const [cb1, setCb1] = useState(true)
   const [cb2, setCb2] = useState(false)
+  const [dtVal,    setDtVal]    = useState('')
+  const [dtVal12h, setDtVal12h] = useState('')
+  const [dtValSec, setDtValSec] = useState('')
 
   return (
     <div className="p-6 space-y-14 max-w-5xl pb-20">
@@ -1080,14 +1085,65 @@ export default function ComponentsPage() {
           <Input label="Email"      type="email" placeholder="priya@example.com" />
           <Input label="With error" error="This field is required" placeholder="..." />
           <Input label="Disabled"   disabled defaultValue="Read-only value" />
-          <Select label="Role" options={SELECT_OPTS} value={selectVal} onChange={setSelectVal} />
           <Input label="Password" type="password" placeholder="••••••••" />
-          <div className="sm:col-span-2">
-            <Textarea label="Message" placeholder="Type your message here…" helperText="Max 500 characters." />
-          </div>
-          <div className="sm:col-span-2">
-            <Textarea label="Textarea with error" error="Message cannot be empty." />
-          </div>
+          <Textarea label="Message" placeholder="Type your message here…" helperText="Max 500 characters." />
+          <Textarea label="Message — error" error="Message is required" placeholder="..." />
+        </div>
+      </Section>
+
+      {/* ── Select ──────────────────────────────────────────────────────── */}
+      <Section id="select" title="Select" subtitle="Single and multi-select dropdowns with search, filters, and pill tags.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Select
+            label="Single select"
+            options={SELECT_OPTS}
+            value={selectVal}
+            onChange={setSelectVal}
+            searchable
+            clearable
+            helperText="Searchable · clearable"
+          />
+          <Select
+            label="Single select — disabled"
+            options={SELECT_OPTS}
+            value="manager"
+            onChange={() => {}}
+            disabled
+          />
+          <Select
+            label="Multi-select"
+            multiple
+            options={SELECT_OPTS}
+            value={multiVal}
+            onChange={setMultiVal}
+            placeholder="Pick one or more roles…"
+            clearable
+            helperText={multiVal.length ? \`Selected: \${multiVal.join(', ')}\` : 'Round pill tags · select-all · Done button'}
+          />
+          <Select
+            label="Multi-select — with groups"
+            multiple
+            options={[
+              { value: 'admin',     label: 'Administrator', group: 'Management' },
+              { value: 'manager',   label: 'Manager',       group: 'Management' },
+              { value: 'editor',    label: 'Editor',        group: 'Content'    },
+              { value: 'viewer',    label: 'Viewer',        group: 'Content'    },
+              { value: 'moderator', label: 'Moderator',     group: 'Content'    },
+            ]}
+            value={multiGrouped}
+            onChange={setMultiGrouped}
+            placeholder="Pick roles by group…"
+            searchable
+            clearable
+          />
+          <Select
+            label="Select — error"
+            options={SELECT_OPTS}
+            value=""
+            onChange={() => {}}
+            placeholder="Choose a role…"
+            error="Please select a role"
+          />
         </div>
       </Section>
 
@@ -1099,6 +1155,8 @@ export default function ComponentsPage() {
             <Switch label="Email notifications" description="Receive daily digest emails" checked={sw1} onChange={setSw1} />
             <Switch label="SMS alerts"          description="Critical alerts only"        checked={sw2} onChange={setSw2} />
             <Switch label="Disabled"            disabled />
+            <Separator />
+            <Switch label="Error state" description="Toggle is required" error="You must enable notifications" />
           </Card>
           <Card className="p-5 space-y-4">
             <Label>Checkbox</Label>
@@ -1106,20 +1164,72 @@ export default function ComponentsPage() {
             <Checkbox label="Subscribe"     description="Newsletter opt-in"    checked={cb2} onChange={setCb2} />
             <Checkbox label="Disabled"      disabled />
             <Checkbox label="Indeterminate" indeterminate />
+            <Separator />
+            <Checkbox label="Error state" error="You must accept the terms" />
           </Card>
           <Card className="p-5">
             <Label>RadioGroup</Label>
             <RadioGroup options={RADIO_OPTS} value={radioVal} onChange={setRadioVal} />
+            <Separator className="my-4" />
+            <Label>RadioGroup — error</Label>
+            <RadioGroup options={RADIO_OPTS} value="" onChange={() => {}} error="Please select a billing cycle" />
           </Card>
         </div>
       </Section>
 
       {/* ── DatePicker ──────────────────────────────────────────────────── */}
-      <Section id="datepicker" title="DatePicker" subtitle="3-level calendar (days → months → years) with past/future/weekend constraints.">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <Section id="datepicker" title="DatePicker" subtitle="3-level calendar (days → months → years) with past/future/weekend/specific-date constraints.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <DatePicker label="Default"         placeholder="DD/MM/YYYY" />
           <DatePicker label="No future dates" disableFuture  helperText="Past dates only" />
           <DatePicker label="Weekdays only"   excludeWeekends helperText="Weekends disabled" />
+          <DatePicker
+            label="Specific dates disabled"
+            excludeDates={[
+              new Date(new Date().getFullYear(), new Date().getMonth(), 10).toISOString().slice(0, 10),
+              new Date(new Date().getFullYear(), new Date().getMonth(), 15).toISOString().slice(0, 10),
+              new Date(new Date().getFullYear(), new Date().getMonth(), 20).toISOString().slice(0, 10),
+            ]}
+            helperText="10th, 15th, 20th blocked"
+          />
+          <DatePicker
+            label="With error"
+            error="Date is required"
+            placeholder="DD/MM/YYYY"
+          />
+        </div>
+      </Section>
+
+      {/* ── DateTimePicker ──────────────────────────────────────────────── */}
+      <Section id="datetimepicker" title="DateTimePicker" subtitle="Full date + time picker — 12h/24h, minute steps, seconds, Now button, all date constraints.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <DateTimePicker
+            label="Date & Time (24h)"
+            value={dtVal}
+            onChange={setDtVal}
+            helperText={dtVal ? \`Value: \${dtVal}\` : '24-hour format · minute step 5'}
+            minuteStep={5}
+          />
+          <DateTimePicker
+            label="12-hour format"
+            value={dtVal12h}
+            onChange={setDtVal12h}
+            timeFormat="12h"
+            helperText={dtVal12h ? \`Value: \${dtVal12h}\` : 'AM / PM toggle'}
+          />
+          <DateTimePicker
+            label="No future · weekdays only"
+            value={dtValSec}
+            onChange={setDtValSec}
+            showSeconds
+            disableFuture
+            excludeWeekends
+            helperText={dtValSec ? \`Value: \${dtValSec}\` : 'disableFuture + excludeWeekends + showSeconds'}
+          />
+          <DateTimePicker
+            label="With error"
+            error="Schedule is required"
+          />
         </div>
       </Section>
 
