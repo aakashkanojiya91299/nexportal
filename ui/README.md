@@ -1403,6 +1403,9 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 
 ## Changelog
 
+### v1.1.25
+- **Logo sizes increased** — `LoginHeader` bumped to `xl` (80 px); `Sidebar` expanded header container `w-14 h-14` with `size="lg"`, mobile top bar `w-10 h-10` with `size="md"`; `HeaderNav` desktop, mobile top bar, and mobile drawer all bumped from `sm` (32 px) to `md` (48 px)
+
 ### v1.1.23
 - **`jwtMiddleware`** — new `redirectAuthenticatedTo` option: authenticated users who land on `loginPath` are automatically redirected to this path (or the `?redirect=` query param when present). Eliminates the need for manual wrapper logic in `proxy.ts`
 - **`multiRoleMiddleware`** — same `redirectAuthenticatedTo` support as `jwtMiddleware`

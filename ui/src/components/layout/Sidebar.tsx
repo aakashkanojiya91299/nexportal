@@ -116,11 +116,11 @@ export function Sidebar({
           <div
             className={cn(
               'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden ring-2',
-              collapsed ? 'w-9 h-9' : 'w-10 h-10',
+              collapsed ? 'w-10 h-10' : 'w-14 h-14',
             )}
             style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}
           >
-            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'md'} />
+            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'lg'} />
           </div>
           {!collapsed && (
             <div className="min-w-0">
@@ -295,10 +295,10 @@ export function Sidebar({
           </button>
           <div className="flex items-center gap-2.5">
             <div
-              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
               style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}
             >
-              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="sm" />
+              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="md" />
             </div>
             <span className="text-callout font-bold" style={{ color: 'var(--primary, #000080)' }}>
               {projectName}

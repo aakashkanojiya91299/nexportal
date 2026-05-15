@@ -219,7 +219,7 @@ function MobileDrawer({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-separator-opaque px-4 py-3">
           <div className="flex items-center gap-2.5">
-            <BrandLogo src="/brand/logo.svg" alt="Logo" size="sm" />
+            <BrandLogo src="/brand/logo.svg" alt="Logo" size="md" />
             <span className="text-[13px] font-bold text-label-primary">{user.name}</span>
           </div>
           <button
@@ -353,7 +353,7 @@ export function HeaderNav({
         <TricolorBar />
         <div className="flex items-center justify-between px-4 py-2.5">
           <div className="flex items-center gap-2.5">
-            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="sm" />
+            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="md" />
             <span className="text-[13px] font-bold text-label-primary">{projectName}</span>
           </div>
           <button
@@ -385,12 +385,12 @@ export function HeaderNav({
           {/* Logo + brand */}
           <a
             href="/dashboard"
-            className="group flex flex-shrink-0 items-center gap-2 rounded-xl py-1 pl-1 pr-3 transition-all duration-200 hover:bg-black/[0.04] mr-1"
+            className="group flex flex-shrink-0 items-center gap-2.5 rounded-xl py-1 pl-1 pr-3 transition-all duration-200 hover:bg-black/[0.04] mr-1"
           >
             <span className="rounded-xl bg-white p-1 shadow-[0_2px_8px_rgba(0,0,0,0.06),0_0_0_1px_rgba(0,0,0,0.05)_inset] ring-1 ring-black/[0.04] transition-all duration-200 group-hover:shadow-[0_4px_14px_rgba(0,0,0,0.08),0_0_0_1px_rgba(var(--primary-rgb,0,0,128),0.25)]">
-              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="sm" />
+              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="md" />
             </span>
-            <span className="text-[13px] font-bold tracking-tight text-label-primary">{projectName}</span>
+            <span className="text-[14px] font-bold tracking-tight text-label-primary">{projectName}</span>
           </a>
 
           {/* Divider */}

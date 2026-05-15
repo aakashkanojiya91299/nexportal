@@ -15,7 +15,7 @@ interface LoginHeaderProps {
 export function LoginHeader({ logoSrc, logoAlt, projectName, projectSubtitle, className }: LoginHeaderProps) {
   return (
     <div className={cn('flex flex-row items-center justify-center gap-4 mb-8 login-stagger-1', className)}>
-      <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="lg" className="flex-shrink-0" />
+      <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="xl" className="flex-shrink-0" />
       <div className="flex flex-col">
         <h1 className="text-title1 font-semibold text-label-primary login-stagger-2 leading-tight"
             style={{ color: 'var(--primary, #000080)' }}>
