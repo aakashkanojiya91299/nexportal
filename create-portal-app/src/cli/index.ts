@@ -18,6 +18,20 @@ function write(filePath: string, content: string) {
   writeFileSync(filePath, content, 'utf-8')
 }
 
+function handleFsError(err: unknown, context: string): never {
+  const e = err as NodeJS.ErrnoException
+  if (e.code === 'EACCES' || e.code === 'EPERM') {
+    log(`\nError: Permission denied — ${context}`)
+    log('Try running from a directory where you have write access.\n')
+  } else if (e.code === 'ENAMETOOLONG') {
+    log(`\nError: Path too long — ${context}`)
+    log('On Windows, enable long path support or use a shorter project name / working directory.\n')
+  } else {
+    log(`\nError creating project: ${e.message ?? String(err)}\n`)
+  }
+  process.exit(1)
+}
+
 function log(msg: string) { process.stdout.write(msg + '\n') }
 
 function parseArgs(argv: string[]) {
@@ -169,14 +183,19 @@ function scaffold(opts: ScaffoldOptions) {
 
   const f = (rel: string) => join(outDir, rel)
 
-  write(f('package.json'),           genPackageJson(opts))
-  write(f('tailwind.config.ts'),     genTailwindConfig(opts))
-  write(f('src/theme.config.ts'),    genThemeConfig(opts))
-  write(f('.env.local'),             genEnvLocal(opts))
-  write(f('.env.example'),           genEnvLocal(opts).replace(/=.+/g, '='))
-  write(f('postcss.config.mjs'),     `export default { plugins: { tailwindcss: {}, autoprefixer: {} } }\n`)
-  write(f('next.config.ts'),         `import type { NextConfig } from 'next'\nconst config: NextConfig = {\n  transpilePackages: ['@lucifer91299/ui'],\n}\nexport default config\n`)
-  write(f('tsconfig.json'), JSON.stringify({
+  function w(filePath: string, content: string) {
+    try { write(filePath, content) }
+    catch (err) { handleFsError(err, filePath) }
+  }
+
+  w(f('package.json'),           genPackageJson(opts))
+  w(f('tailwind.config.ts'),     genTailwindConfig(opts))
+  w(f('src/theme.config.ts'),    genThemeConfig(opts))
+  w(f('.env.local'),             genEnvLocal(opts))
+  w(f('.env.example'),           genEnvLocal(opts).replace(/=.+/g, '='))
+  w(f('postcss.config.mjs'),     `export default { plugins: { tailwindcss: {}, autoprefixer: {} } }\n`)
+  w(f('next.config.ts'),         `import type { NextConfig } from 'next'\nconst config: NextConfig = {\n  transpilePackages: ['@lucifer91299/ui'],\n}\nexport default config\n`)
+  w(f('tsconfig.json'), JSON.stringify({
     compilerOptions: {
       target: 'ES2017', lib: ['dom', 'dom.iterable', 'esnext'], allowJs: true,
       skipLibCheck: true, strict: true, noEmit: true, esModuleInterop: true,
@@ -188,33 +207,33 @@ function scaffold(opts: ScaffoldOptions) {
     exclude: ['node_modules'],
   }, null, 2))
 
-  write(f('src/app/globals.css'),                    genGlobalsCSS())
-  write(f('src/app/layout.tsx'),                     genRootLayout(opts))
-  write(f('src/app/page.tsx'),                       genRootPage())
-  write(f('src/app/login/page.tsx'),                 genLoginPage(opts))
-  write(f('src/app/dashboard/layout.tsx'),           genDashboardLayout(opts))
-  write(f('src/app/dashboard/page.tsx'),             genDashboardHomePage(opts))
-  write(f('src/app/dashboard/users/page.tsx'),            genUsersPage(opts))
-  write(f('src/app/dashboard/settings/page.tsx'),         genSettingsPage(opts))
-  write(f('src/app/dashboard/components/page.tsx'),       genComponentsShowcasePage())
-  write(f('src/app/api/auth/login/route.ts'),         genLoginRoute(opts))
-  write(f('src/app/api/auth/user/route.ts'),          genUserRoute(opts))
-  write(f('src/app/api/auth/session/route.ts'),       genSessionRoute(opts))
-  write(f('src/app/api/auth/logout/route.ts'),        genLogoutRoute(opts))
-  write(f('src/providers/index.tsx'),                genProviders(opts))
-  write(f('src/lib/api.ts'),                         genApiClient(opts))
-  write(f('src/components/layout/nav-config.tsx'),   genNavConfig(opts))
-  write(f('src/proxy.ts'),                           genMiddleware(opts))
+  w(f('src/app/globals.css'),                    genGlobalsCSS())
+  w(f('src/app/layout.tsx'),                     genRootLayout(opts))
+  w(f('src/app/page.tsx'),                       genRootPage())
+  w(f('src/app/login/page.tsx'),                 genLoginPage(opts))
+  w(f('src/app/dashboard/layout.tsx'),           genDashboardLayout(opts))
+  w(f('src/app/dashboard/page.tsx'),             genDashboardHomePage(opts))
+  w(f('src/app/dashboard/users/page.tsx'),            genUsersPage(opts))
+  w(f('src/app/dashboard/settings/page.tsx'),         genSettingsPage(opts))
+  w(f('src/app/dashboard/components/page.tsx'),       genComponentsShowcasePage())
+  w(f('src/app/api/auth/login/route.ts'),         genLoginRoute(opts))
+  w(f('src/app/api/auth/user/route.ts'),          genUserRoute(opts))
+  w(f('src/app/api/auth/session/route.ts'),       genSessionRoute(opts))
+  w(f('src/app/api/auth/logout/route.ts'),        genLogoutRoute(opts))
+  w(f('src/providers/index.tsx'),                genProviders(opts))
+  w(f('src/lib/api.ts'),                         genApiClient(opts))
+  w(f('src/components/layout/nav-config.tsx'),   genNavConfig(opts))
+  w(f('src/proxy.ts'),                           genMiddleware(opts))
 
   if (opts.stateManagement === 'redux-query') {
-    write(f('src/store/index.ts'),      genReduxStore())
-    write(f('src/store/auth.slice.ts'), genAuthSlice())
+    w(f('src/store/index.ts'),      genReduxStore())
+    w(f('src/store/auth.slice.ts'), genAuthSlice())
   }
 
   const initial = opts.projectName.charAt(0).toUpperCase()
-  write(f('public/brand/logo.svg'),
+  w(f('public/brand/logo.svg'),
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><circle cx="32" cy="32" r="32" fill="${opts.primaryColor}"/><text x="32" y="40" font-size="24" text-anchor="middle" fill="#fff" font-family="system-ui">${initial}</text></svg>`)
-  write(f('public/brand/powered-by-logo.svg'),
+  w(f('public/brand/powered-by-logo.svg'),
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 24"><text y="18" font-size="12" font-family="system-ui" fill="#888">powered</text></svg>`)
 
   const cmds = {
@@ -280,34 +299,36 @@ async function main() {
 
   // ── --yes mode: skip all prompts ──────────────────────────────────────────
   if (flags['yes'] || flags['y']) {
+    closePrompt()
     const name = projectNameArg || 'my-portal'
     const opts: ScaffoldOptions = {
       projectName:        name,
       projectDescription: DEFAULTS.projectDescription,
-      authMode:           (flags['auth']    as ScaffoldOptions['authMode'])        ?? DEFAULTS.authMode,
-      loginStyle:         (flags['login']   as ScaffoldOptions['loginStyle'])      ?? DEFAULTS.loginStyle,
-      sidebarStyle:       (flags['sidebar'] as ScaffoldOptions['sidebarStyle'])    ?? DEFAULTS.sidebarStyle,
-      primaryColor:       (flags['primary'] as string)                             ?? DEFAULTS.primaryColor,
-      accentColor:        (flags['accent']  as string)                             ?? DEFAULTS.accentColor,
-      successColor:       (flags['success'] as string)                             ?? DEFAULTS.successColor,
+      authMode:           (flags['auth']    as ScaffoldOptions['authMode'])     ?? DEFAULTS.authMode,
+      loginStyle:         (flags['login']   as ScaffoldOptions['loginStyle'])   ?? DEFAULTS.loginStyle,
+      sidebarStyle:       (flags['sidebar'] as ScaffoldOptions['sidebarStyle']) ?? DEFAULTS.sidebarStyle,
+      primaryColor:       (flags['primary'] as string)                          ?? DEFAULTS.primaryColor,
+      accentColor:        (flags['accent']  as string)                          ?? DEFAULTS.accentColor,
+      successColor:       (flags['success'] as string)                          ?? DEFAULTS.successColor,
       brandLogoPath:      DEFAULTS.brandLogoPath,
-      apiUrl:             (flags['api-url'] as string)                             ?? DEFAULTS.apiUrl,
+      apiUrl:             (flags['api-url'] as string)                          ?? DEFAULTS.apiUrl,
       jwtCookieName:      DEFAULTS.jwtCookieName,
       jwtSecret:          DEFAULTS.jwtSecret,
       includeI18n:        false,
-      stateManagement:    (flags['pm'] as ScaffoldOptions['stateManagement'])      ?? DEFAULTS.stateManagement,
-      packageManager:     (flags['pm'] as ScaffoldOptions['packageManager'])       ?? DEFAULTS.packageManager,
-      localUiPath:        (flags['local-ui'] as string)                            ?? undefined,
+      stateManagement:    DEFAULTS.stateManagement,
+      packageManager:     (flags['pm'] as ScaffoldOptions['packageManager'])    ?? DEFAULTS.packageManager,
+      localUiPath:        (flags['local-ui'] as string)                         ?? undefined,
     }
     log('create-portal-app — using defaults (--yes)')
     scaffold(opts)
-    return
+    process.exit(0)
   }
 
   // ── Interactive mode: ask everything ─────────────────────────────────────
   const opts = await runPrompts(projectNameArg)
   opts.localUiPath = (flags['local-ui'] as string) ?? undefined
   scaffold(opts)
+  process.exit(0)
 }
 
 main().catch((err) => {
