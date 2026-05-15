@@ -1,6 +1,6 @@
-import { existsSync, mkdirSync, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, writeFileSync, readdirSync, statSync } from 'fs'
 import { join, dirname } from 'path'
-import { ask, select, closePrompt } from './prompt'
+import * as p from '@clack/prompts'
 import type { ScaffoldOptions } from '../templates'
 import {
   genPackageJson, genTailwindConfig, genThemeConfig, genEnvLocal,
@@ -12,6 +12,8 @@ import {
   genComponentsShowcasePage,
 } from '../templates'
 
+// ── File helpers ───────────────────────────────────────────────────────────────
+
 function write(filePath: string, content: string) {
   const dir = dirname(filePath)
   if (dir) mkdirSync(dir, { recursive: true })
@@ -21,18 +23,25 @@ function write(filePath: string, content: string) {
 function handleFsError(err: unknown, context: string): never {
   const e = err as NodeJS.ErrnoException
   if (e.code === 'EACCES' || e.code === 'EPERM') {
-    log(`\nError: Permission denied — ${context}`)
-    log('Try running from a directory where you have write access.\n')
+    p.cancel(`Permission denied — try a directory where you have write access.\n  Path: ${context}`)
   } else if (e.code === 'ENAMETOOLONG') {
-    log(`\nError: Path too long — ${context}`)
-    log('On Windows, enable long path support or use a shorter project name / working directory.\n')
+    p.cancel(`Path too long — use a shorter project name or working directory.\n  Path: ${context}`)
   } else {
-    log(`\nError creating project: ${e.message ?? String(err)}\n`)
+    p.cancel(`Failed to create project: ${e.message ?? String(err)}`)
   }
   process.exit(1)
 }
 
-function log(msg: string) { process.stdout.write(msg + '\n') }
+function countFiles(dir: string): number {
+  let n = 0
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry)
+    n += statSync(full).isDirectory() ? countFiles(full) : 1
+  }
+  return n
+}
+
+// ── Arg parsing ────────────────────────────────────────────────────────────────
 
 function parseArgs(argv: string[]) {
   const flags: Record<string, string | boolean> = {}
@@ -48,11 +57,13 @@ function parseArgs(argv: string[]) {
   return { flags, positional }
 }
 
+// ── Defaults ───────────────────────────────────────────────────────────────────
+
 const DEFAULTS = {
   projectDescription: 'My portal application',
-  authMode:           'jwt'        as ScaffoldOptions['authMode'],
-  loginStyle:         'animated'   as ScaffoldOptions['loginStyle'],
-  sidebarStyle:       'full'       as ScaffoldOptions['sidebarStyle'],
+  authMode:           'jwt'          as ScaffoldOptions['authMode'],
+  loginStyle:         'animated'     as ScaffoldOptions['loginStyle'],
+  sidebarStyle:       'full'         as ScaffoldOptions['sidebarStyle'],
   primaryColor:       '#000080',
   accentColor:        '#FF9933',
   successColor:       '#138808',
@@ -60,27 +71,51 @@ const DEFAULTS = {
   apiUrl:             'http://localhost:3000',
   jwtCookieName:      'access_token',
   jwtSecret:          'change-me-in-production',
-  includeI18n:        false,
-  stateManagement:    'redux-query' as ScaffoldOptions['stateManagement'],
-  packageManager:     'npm'         as ScaffoldOptions['packageManager'],
+  stateManagement:    'redux-query'  as ScaffoldOptions['stateManagement'],
+  packageManager:     'npm'          as ScaffoldOptions['packageManager'],
 }
 
+// ── Cancel guard ───────────────────────────────────────────────────────────────
+
+function noCancel<T>(value: T | symbol): T {
+  if (p.isCancel(value)) {
+    p.cancel('Operation cancelled.')
+    process.exit(0)
+  }
+  return value
+}
+
+const onCancel = () => { p.cancel('Operation cancelled.'); process.exit(0) }
+
+// ── Interactive prompts ────────────────────────────────────────────────────────
+
 async function runPrompts(projectNameArg?: string): Promise<ScaffoldOptions> {
-  process.stderr.write('\n  create-portal-app — Next.js authenticated portal scaffolder\n')
-  process.stderr.write('  ─────────────────────────────────────────────────────────\n\n')
+  p.intro(' create-portal-app ')
 
   // ── Project ────────────────────────────────────────────────────────────────
-  const projectName = projectNameArg?.trim()
-    || await ask('Project name', 'my-portal')
+  const projectName = projectNameArg?.trim() ||
+    noCancel(await p.text({
+      message:      'Project name',
+      placeholder:  'my-portal',
+      defaultValue: 'my-portal',
+      validate:     (v) => (v ?? '').trim() ? undefined : 'Project name cannot be empty',
+    }))
 
-  const projectDescription = await ask('Project description', DEFAULTS.projectDescription)
+  const projectDescription = noCancel(await p.text({
+    message:      'Project description',
+    placeholder:  DEFAULTS.projectDescription,
+    defaultValue: DEFAULTS.projectDescription,
+  }))
 
-  // ── Auth mode ──────────────────────────────────────────────────────────────
-  const authMode = await select('Auth mode?', [
-    { value: 'jwt',        label: 'JWT cookie',      hint: 'NestJS / Express / any backend' },
-    { value: 'multi-role', label: 'Multi-role JWT',  hint: 'Separate cookies per role (coach + judge etc.)' },
-    { value: 'laravel',    label: 'Laravel session', hint: 'PHP Laravel backend' },
-  ])
+  // ── Auth ───────────────────────────────────────────────────────────────────
+  const authMode = noCancel(await p.select({
+    message: 'Auth mode',
+    options: [
+      { value: 'jwt',        label: 'JWT cookie',      hint: 'NestJS / Express / any backend' },
+      { value: 'multi-role', label: 'Multi-role JWT',  hint: 'Separate cookies per role (coach + judge…)' },
+      { value: 'laravel',    label: 'Laravel session', hint: 'PHP Laravel backend' },
+    ],
+  }))
 
   let apiUrl        = DEFAULTS.apiUrl
   let jwtCookieName = DEFAULTS.jwtCookieName
@@ -94,92 +129,120 @@ async function runPrompts(projectNameArg?: string): Promise<ScaffoldOptions> {
   let dbPassword: string | undefined
 
   if (authMode === 'jwt') {
-    apiUrl        = await ask('Backend API URL',    DEFAULTS.apiUrl)
-    jwtCookieName = await ask('Cookie name',        DEFAULTS.jwtCookieName)
-    jwtSecret     = await ask('JWT secret',         DEFAULTS.jwtSecret)
+    const r = await p.group({
+      apiUrl:        () => p.text({ message: 'Backend API URL', placeholder: DEFAULTS.apiUrl,        defaultValue: DEFAULTS.apiUrl }),
+      jwtCookieName: () => p.text({ message: 'Cookie name',     placeholder: DEFAULTS.jwtCookieName, defaultValue: DEFAULTS.jwtCookieName }),
+      jwtSecret:     () => p.text({ message: 'JWT secret',      placeholder: DEFAULTS.jwtSecret,     defaultValue: DEFAULTS.jwtSecret }),
+    }, { onCancel })
+    apiUrl        = r.apiUrl        as string
+    jwtCookieName = r.jwtCookieName as string
+    jwtSecret     = r.jwtSecret     as string
   }
 
   if (authMode === 'multi-role') {
-    const raw = await ask('Role names (comma separated)', 'coach, judge')
-    roles = raw.split(',').map((r) => r.trim()).filter(Boolean)
+    const r = await p.group({
+      rolesRaw: () => p.text({ message: 'Role names (comma separated)', placeholder: 'coach, judge', defaultValue: 'coach, judge' }),
+      apiUrl:   () => p.text({ message: 'Backend API URL', placeholder: DEFAULTS.apiUrl, defaultValue: DEFAULTS.apiUrl }),
+    }, { onCancel })
+    roles  = (r.rolesRaw as string).split(',').map((s) => s.trim()).filter(Boolean)
     if (!roles.length) roles = ['admin']
-    apiUrl = await ask('Backend API URL', DEFAULTS.apiUrl)
+    apiUrl = r.apiUrl as string
   }
 
   if (authMode === 'laravel') {
-    laravelUrl = await ask('Laravel URL',     'http://localhost:8000')
-    dbHost     = await ask('Database host',   '127.0.0.1')
-    dbPort     = await ask('Database port',   '3306')
-    dbName     = await ask('Database name',   'laravel')
-    dbUser     = await ask('Database user',   'root')
-    dbPassword = await ask('Database password', '')
+    const r = await p.group({
+      laravelUrl: () => p.text({ message: 'Laravel URL',       placeholder: 'http://localhost:8000', defaultValue: 'http://localhost:8000' }),
+      dbHost:     () => p.text({ message: 'Database host',     placeholder: '127.0.0.1',             defaultValue: '127.0.0.1' }),
+      dbPort:     () => p.text({ message: 'Database port',     placeholder: '3306',                  defaultValue: '3306' }),
+      dbName:     () => p.text({ message: 'Database name',     placeholder: 'laravel',               defaultValue: 'laravel' }),
+      dbUser:     () => p.text({ message: 'Database user',     placeholder: 'root',                  defaultValue: 'root' }),
+      dbPassword: () => p.password({ message: 'Database password' }),
+    }, { onCancel })
+    laravelUrl = r.laravelUrl as string
+    dbHost     = r.dbHost     as string
+    dbPort     = r.dbPort     as string
+    dbName     = r.dbName     as string
+    dbUser     = r.dbUser     as string
+    dbPassword = r.dbPassword as string
   }
 
   // ── Design ─────────────────────────────────────────────────────────────────
-  const loginStyle = await select('Login page style?', [
-    { value: 'animated', label: 'Animated', hint: 'floating orbs + particle background + tricolor bar' },
-    { value: 'simple',   label: 'Simple',   hint: 'clean gradient card (minimal)' },
-  ])
+  const loginStyle = noCancel(await p.select({
+    message: 'Login page style',
+    options: [
+      { value: 'animated', label: 'Animated', hint: 'Floating orbs + particles + tricolor bar' },
+      { value: 'simple',   label: 'Simple',   hint: 'Clean gradient card (minimal)' },
+    ],
+  }))
 
-  const sidebarStyle = await select('Sidebar style?', [
-    { value: 'full', label: 'Full',  hint: 'wide sidebar with labels and collapsible groups' },
-    { value: 'rail', label: 'Rail',  hint: 'icon-only narrow sidebar' },
-    { value: 'both', label: 'Both',  hint: 'full on desktop, rail on mobile' },
-  ])
+  const sidebarStyle = noCancel(await p.select({
+    message: 'Sidebar style',
+    options: [
+      { value: 'full', label: 'Full', hint: 'Wide sidebar with labels and collapsible groups' },
+      { value: 'rail', label: 'Rail', hint: 'Icon-only narrow sidebar' },
+      { value: 'both', label: 'Both', hint: 'Full on desktop, rail on mobile' },
+    ],
+  }))
 
   // ── Brand colours ──────────────────────────────────────────────────────────
-  process.stderr.write('\nBrand colours (press Enter to keep default):\n')
-  const primaryColor  = await ask('Primary colour  ', DEFAULTS.primaryColor)
-  const accentColor   = await ask('Accent colour   ', DEFAULTS.accentColor)
-  const successColor  = await ask('Success colour  ', DEFAULTS.successColor)
-  const brandLogoPath = await ask('Logo path in public/', DEFAULTS.brandLogoPath)
+  p.log.info('Brand colours — press Enter to keep defaults')
+  const colours = await p.group({
+    primaryColor:  () => p.text({ message: 'Primary colour',       placeholder: DEFAULTS.primaryColor,  defaultValue: DEFAULTS.primaryColor }),
+    accentColor:   () => p.text({ message: 'Accent colour',        placeholder: DEFAULTS.accentColor,   defaultValue: DEFAULTS.accentColor }),
+    successColor:  () => p.text({ message: 'Success colour',       placeholder: DEFAULTS.successColor,  defaultValue: DEFAULTS.successColor }),
+    brandLogoPath: () => p.text({ message: 'Logo path in public/', placeholder: DEFAULTS.brandLogoPath, defaultValue: DEFAULTS.brandLogoPath }),
+  }, { onCancel })
 
   // ── Options ────────────────────────────────────────────────────────────────
-  const includeI18nRaw = await select('Include i18n (translations)?', [
-    { value: 'no',  label: 'No'  },
-    { value: 'yes', label: 'Yes' },
-  ])
+  const includeI18n = noCancel(await p.confirm({
+    message:      'Include i18n (translations)?',
+    initialValue: false,
+  }))
 
-  const stateManagement = await select('State management?', [
-    { value: 'redux-query', label: 'Redux Toolkit + React Query' },
-    { value: 'query-only',  label: 'React Query only' },
-  ])
+  const stateManagement = noCancel(await p.select({
+    message: 'State management',
+    options: [
+      { value: 'redux-query', label: 'Redux Toolkit + React Query', hint: 'recommended' },
+      { value: 'query-only',  label: 'React Query only' },
+    ],
+  }))
 
-  const packageManager = await select('Package manager?', [
-    { value: 'npm',  label: 'npm'  },
-    { value: 'pnpm', label: 'pnpm' },
-    { value: 'yarn', label: 'yarn' },
-  ])
-
-  closePrompt()
+  const packageManager = noCancel(await p.select({
+    message: 'Package manager',
+    options: [
+      { value: 'npm',  label: 'npm' },
+      { value: 'pnpm', label: 'pnpm', hint: 'faster installs' },
+      { value: 'yarn', label: 'yarn' },
+    ],
+  }))
 
   return {
-    projectName,
-    projectDescription,
-    authMode,
-    loginStyle,
-    sidebarStyle,
-    primaryColor,
-    accentColor,
-    successColor,
-    brandLogoPath,
+    projectName:        projectName        as string,
+    projectDescription: projectDescription as string,
+    authMode:           authMode           as ScaffoldOptions['authMode'],
+    loginStyle:         loginStyle         as ScaffoldOptions['loginStyle'],
+    sidebarStyle:       sidebarStyle       as ScaffoldOptions['sidebarStyle'],
+    primaryColor:       colours.primaryColor  as string,
+    accentColor:        colours.accentColor   as string,
+    successColor:       colours.successColor  as string,
+    brandLogoPath:      colours.brandLogoPath as string,
     apiUrl, jwtCookieName, jwtSecret, roles,
     laravelUrl, dbHost, dbPort, dbName, dbUser, dbPassword,
-    includeI18n:     includeI18nRaw === 'yes',
+    includeI18n:     includeI18n     as boolean,
     stateManagement: stateManagement as ScaffoldOptions['stateManagement'],
     packageManager:  packageManager  as ScaffoldOptions['packageManager'],
   }
 }
 
-function scaffold(opts: ScaffoldOptions) {
+// ── Scaffold ───────────────────────────────────────────────────────────────────
+
+function scaffold(opts: ScaffoldOptions): number {
   const outDir = join(process.cwd(), opts.projectName)
 
   if (existsSync(outDir)) {
-    log(`\nError: directory "${opts.projectName}" already exists.\n`)
+    p.cancel(`Directory "${opts.projectName}" already exists.`)
     process.exit(1)
   }
-
-  log(`\nCreating ${opts.projectName}/ ...\n`)
 
   const f = (rel: string) => join(outDir, rel)
 
@@ -207,23 +270,23 @@ function scaffold(opts: ScaffoldOptions) {
     exclude: ['node_modules'],
   }, null, 2))
 
-  w(f('src/app/globals.css'),                    genGlobalsCSS())
-  w(f('src/app/layout.tsx'),                     genRootLayout(opts))
-  w(f('src/app/page.tsx'),                       genRootPage())
-  w(f('src/app/login/page.tsx'),                 genLoginPage(opts))
-  w(f('src/app/dashboard/layout.tsx'),           genDashboardLayout(opts))
-  w(f('src/app/dashboard/page.tsx'),             genDashboardHomePage(opts))
-  w(f('src/app/dashboard/users/page.tsx'),            genUsersPage(opts))
-  w(f('src/app/dashboard/settings/page.tsx'),         genSettingsPage(opts))
-  w(f('src/app/dashboard/components/page.tsx'),       genComponentsShowcasePage())
-  w(f('src/app/api/auth/login/route.ts'),         genLoginRoute(opts))
-  w(f('src/app/api/auth/user/route.ts'),          genUserRoute(opts))
-  w(f('src/app/api/auth/session/route.ts'),       genSessionRoute(opts))
-  w(f('src/app/api/auth/logout/route.ts'),        genLogoutRoute(opts))
-  w(f('src/providers/index.tsx'),                genProviders(opts))
-  w(f('src/lib/api.ts'),                         genApiClient(opts))
-  w(f('src/components/layout/nav-config.tsx'),   genNavConfig(opts))
-  w(f('src/proxy.ts'),                           genMiddleware(opts))
+  w(f('src/app/globals.css'),                          genGlobalsCSS())
+  w(f('src/app/layout.tsx'),                           genRootLayout(opts))
+  w(f('src/app/page.tsx'),                             genRootPage())
+  w(f('src/app/login/page.tsx'),                       genLoginPage(opts))
+  w(f('src/app/dashboard/layout.tsx'),                 genDashboardLayout(opts))
+  w(f('src/app/dashboard/page.tsx'),                   genDashboardHomePage(opts))
+  w(f('src/app/dashboard/users/page.tsx'),             genUsersPage(opts))
+  w(f('src/app/dashboard/settings/page.tsx'),          genSettingsPage(opts))
+  w(f('src/app/dashboard/components/page.tsx'),        genComponentsShowcasePage())
+  w(f('src/app/api/auth/login/route.ts'),              genLoginRoute(opts))
+  w(f('src/app/api/auth/user/route.ts'),               genUserRoute(opts))
+  w(f('src/app/api/auth/session/route.ts'),            genSessionRoute(opts))
+  w(f('src/app/api/auth/logout/route.ts'),             genLogoutRoute(opts))
+  w(f('src/providers/index.tsx'),                      genProviders(opts))
+  w(f('src/lib/api.ts'),                               genApiClient(opts))
+  w(f('src/components/layout/nav-config.tsx'),         genNavConfig(opts))
+  w(f('src/proxy.ts'),                                 genMiddleware(opts))
 
   if (opts.stateManagement === 'redux-query') {
     w(f('src/store/index.ts'),      genReduxStore())
@@ -236,70 +299,69 @@ function scaffold(opts: ScaffoldOptions) {
   w(f('public/brand/powered-by-logo.svg'),
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 24"><text y="18" font-size="12" font-family="system-ui" fill="#888">powered</text></svg>`)
 
+  return countFiles(outDir)
+}
+
+// ── Finish output ──────────────────────────────────────────────────────────────
+
+function showSuccess(opts: ScaffoldOptions, fileCount: number) {
   const cmds = {
     npm:  { install: 'npm install',  dev: 'npm run dev' },
     pnpm: { install: 'pnpm install', dev: 'pnpm dev' },
     yarn: { install: 'yarn',         dev: 'yarn dev' },
   }[opts.packageManager]
 
-  const count = countFiles(outDir)
-  log(`✔  ${opts.projectName}/ — ${count} files created`)
-  log(``)
-  log(`   Theme:   ${opts.primaryColor}  ${opts.accentColor}  ${opts.successColor}`)
-  log(`   Auth:    ${opts.authMode}`)
-  log(`   Login:   ${opts.loginStyle}`)
-  log(`   Sidebar: ${opts.sidebarStyle}`)
-  log(``)
-  log(`Next steps:`)
-  log(`  cd ${opts.projectName}`)
-  log(`  ${cmds.install}`)
-  log(`  ${cmds.dev}`)
-  log(``)
+  p.note(
+    [
+      `cd ${opts.projectName}`,
+      cmds.install,
+      cmds.dev,
+    ].join('\n'),
+    'Next steps',
+  )
+
+  p.outro(
+    `${opts.projectName}/ ready — ${fileCount} files  ·  auth: ${opts.authMode}  ·  ${opts.primaryColor}`,
+  )
 }
 
-function countFiles(dir: string): number {
-  const { readdirSync, statSync } = require('fs') as typeof import('fs')
-  let n = 0
-  for (const e of readdirSync(dir)) {
-    const full = join(dir, e)
-    n += statSync(full).isDirectory() ? countFiles(full) : 1
-  }
-  return n
-}
+// ── Main ───────────────────────────────────────────────────────────────────────
 
 async function main() {
   const { flags, positional } = parseArgs(process.argv.slice(2))
 
+  // ── Help ──────────────────────────────────────────────────────────────────
   if (flags['help'] || flags['h']) {
-    log('Usage:  npx @lucifer91299/create-portal-app [project-name] [options]')
-    log('')
-    log('  Without options  → interactive prompts for all settings')
-    log('')
-    log('  --yes, -y        Skip all prompts, use defaults immediately')
-    log('  --auth=jwt|multi-role|laravel')
-    log('  --login=animated|simple')
-    log('  --sidebar=full|rail|both')
-    log('  --primary=#hex   Primary brand colour')
-    log('  --accent=#hex    Accent colour')
-    log('  --success=#hex   Success colour')
-    log('  --api-url=URL    Backend API URL')
-    log('  --pm=npm|pnpm|yarn')
-    log('  --local-ui=PATH  Use local @lucifer91299/ui (file: reference, for development)')
-    log('')
-    log('Examples:')
-    log('  npx @lucifer91299/create-portal-app')
-    log('  npx @lucifer91299/create-portal-app my-portal')
-    log('  npx @lucifer91299/create-portal-app my-portal --yes')
-    log('  npx @lucifer91299/create-portal-app my-portal --yes --auth=laravel --primary=#E11D48')
-    log('  npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../ui')
+    process.stdout.write([
+      '',
+      '  Usage:  npx @lucifer91299/create-portal-app [project-name] [options]',
+      '',
+      '  No options    → interactive prompts (arrow-key selection)',
+      '',
+      '  --yes, -y     Skip prompts, use defaults',
+      '  --auth=       jwt | multi-role | laravel',
+      '  --login=      animated | simple',
+      '  --sidebar=    full | rail | both',
+      '  --primary=#   Primary brand colour',
+      '  --accent=#    Accent colour',
+      '  --success=#   Success colour',
+      '  --api-url=    Backend API URL',
+      '  --pm=         npm | pnpm | yarn',
+      '  --local-ui=   Path to local @lucifer91299/ui (for development)',
+      '',
+      '  Examples:',
+      '    npx @lucifer91299/create-portal-app',
+      '    npx @lucifer91299/create-portal-app my-portal --yes',
+      '    npx @lucifer91299/create-portal-app my-portal --yes --auth=laravel',
+      '',
+    ].join('\n'))
     process.exit(0)
   }
 
   const projectNameArg = positional[0]
 
-  // ── --yes mode: skip all prompts ──────────────────────────────────────────
+  // ── --yes / non-interactive mode ──────────────────────────────────────────
   if (flags['yes'] || flags['y']) {
-    closePrompt()
     const name = projectNameArg || 'my-portal'
     const opts: ScaffoldOptions = {
       projectName:        name,
@@ -319,20 +381,29 @@ async function main() {
       packageManager:     (flags['pm'] as ScaffoldOptions['packageManager'])    ?? DEFAULTS.packageManager,
       localUiPath:        (flags['local-ui'] as string)                         ?? undefined,
     }
-    log('create-portal-app — using defaults (--yes)')
-    scaffold(opts)
+
+    p.intro(' create-portal-app ')
+    const spin = p.spinner()
+    spin.start(`Scaffolding ${name}/…`)
+    const count = scaffold(opts)
+    spin.stop(`${name}/ — ${count} files created`)
+    showSuccess(opts, count)
     process.exit(0)
   }
 
-  // ── Interactive mode: ask everything ─────────────────────────────────────
+  // ── Interactive mode ──────────────────────────────────────────────────────
   const opts = await runPrompts(projectNameArg)
   opts.localUiPath = (flags['local-ui'] as string) ?? undefined
-  scaffold(opts)
+
+  const spin = p.spinner()
+  spin.start(`Scaffolding ${opts.projectName}/…`)
+  const count = scaffold(opts)
+  spin.stop(`${opts.projectName}/ — ${count} files created`)
+  showSuccess(opts, count)
   process.exit(0)
 }
 
 main().catch((err) => {
-  closePrompt()
-  console.error(err instanceof Error ? err.message : err)
+  p.cancel(err instanceof Error ? err.message : String(err))
   process.exit(1)
 })
