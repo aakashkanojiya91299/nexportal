@@ -3,7 +3,7 @@ export interface ScaffoldOptions {
   projectDescription: string
   authMode: 'jwt' | 'multi-role' | 'laravel'
   loginStyle: 'animated' | 'simple'
-  sidebarStyle: 'full' | 'rail' | 'both'
+  sidebarStyle: 'full' | 'rail' | 'both' | 'header'
   primaryColor: string
   accentColor: string
   successColor: string
@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.6',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.19',
     'next': '^16.2.6',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
@@ -416,7 +416,7 @@ export default api
 }
 
 export function genNavConfig(o: ScaffoldOptions): string {
-  return `import { LayoutDashboard, Settings, Users, Layers } from 'lucide-react'
+  return `import { LayoutDashboard, Settings, Users, Layers, ClipboardList } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
 export const navGroups: NavGroup[] = [
@@ -427,6 +427,7 @@ export const navGroups: NavGroup[] = [
       { label: 'Dashboard',  href: '/dashboard',            icon: <LayoutDashboard className="h-4 w-4" /> },
       { label: 'Users',      href: '/dashboard/users',      icon: <Users className="h-4 w-4" /> },
       { label: 'Components', href: '/dashboard/components', icon: <Layers className="h-4 w-4" /> },
+      { label: 'Onboarding', href: '/dashboard/onboarding', icon: <ClipboardList className="h-4 w-4" /> },
     ],
   },
   {
@@ -793,9 +794,10 @@ import React, { useState } from 'react'
 import { PageShell, Breadcrumbs, Card, Input, Select, Button, AlertBanner } from '@lucifer91299/ui'
 
 const SIDEBAR_OPTIONS = [
-  { value: 'full', label: 'Full — wide sidebar with labels' },
-  { value: 'rail', label: 'Rail — icon-only narrow sidebar' },
-  { value: 'both', label: 'Both — full on desktop, rail on mobile' },
+  { value: 'full',   label: 'Full — wide sidebar with labels' },
+  { value: 'rail',   label: 'Rail — icon-only narrow sidebar' },
+  { value: 'both',   label: 'Both — full on desktop, rail on mobile' },
+  { value: 'header', label: 'Header — horizontal top nav bar' },
 ]
 
 export default function SettingsPage() {
@@ -894,10 +896,18 @@ const DONUT_DATA = [
 ]
 
 const TABLE_DATA = [
-  { id: 1, name: 'Priya Mehta',  role: 'Admin',   status: 'active',   joined: '12 Jan 2024' },
-  { id: 2, name: 'Arjun Sharma', role: 'Manager', status: 'pending',  joined: '03 Feb 2024' },
-  { id: 3, name: 'Neha Gupta',   role: 'Viewer',  status: 'inactive', joined: '22 Mar 2024' },
-  { id: 4, name: 'Ravi Patel',   role: 'Editor',  status: 'active',   joined: '05 Apr 2024' },
+  { id:  1, name: 'Priya Mehta',     role: 'Admin',   status: 'active',   joined: '12 Jan 2024' },
+  { id:  2, name: 'Arjun Sharma',    role: 'Manager', status: 'pending',  joined: '03 Feb 2024' },
+  { id:  3, name: 'Neha Gupta',      role: 'Viewer',  status: 'inactive', joined: '22 Mar 2024' },
+  { id:  4, name: 'Ravi Patel',      role: 'Editor',  status: 'active',   joined: '05 Apr 2024' },
+  { id:  5, name: 'Simran Kaur',     role: 'Manager', status: 'active',   joined: '18 May 2024' },
+  { id:  6, name: 'Vikram Singh',    role: 'Viewer',  status: 'pending',  joined: '29 Jun 2024' },
+  { id:  7, name: 'Ananya Iyer',     role: 'Editor',  status: 'active',   joined: '07 Jul 2024' },
+  { id:  8, name: 'Karan Mehta',     role: 'Admin',   status: 'inactive', joined: '14 Aug 2024' },
+  { id:  9, name: 'Pooja Reddy',     role: 'Viewer',  status: 'active',   joined: '02 Sep 2024' },
+  { id: 10, name: 'Rahul Verma',     role: 'Manager', status: 'pending',  joined: '25 Sep 2024' },
+  { id: 11, name: 'Divya Nair',      role: 'Editor',  status: 'active',   joined: '10 Oct 2024' },
+  { id: 12, name: 'Aditya Joshi',    role: 'Viewer',  status: 'inactive', joined: '01 Nov 2024' },
 ]
 
 const SELECT_OPTS = [
@@ -968,6 +978,7 @@ export default function ComponentsPage() {
   const [dtValSec, setDtValSec] = useState('')
   const [stepperStep, setStepperStep] = useState(1)
   const [drawerOpen,  setDrawerOpen]  = useState(false)
+  const [drawerSide,  setDrawerSide]  = useState<'right' | 'left'>('right')
   const [otpVal,      setOtpVal]      = useState('')
   const [numVal,      setNumVal]      = useState(5)
   const [sliderVal,   setSliderVal]   = useState(40)
@@ -1442,20 +1453,56 @@ export default function ComponentsPage() {
       </Section>
 
       {/* ── DataTable ───────────────────────────────────────────────────── */}
-      <Section id="datatable" title="DataTable & ActionButtons" subtitle="Typed table with search, skeleton loading, and row actions.">
+      <Section id="datatable" title="DataTable & ActionButtons" subtitle="Typed table with global search, per-column filters, sort, pagination, and row actions.">
         <Card className="overflow-hidden">
           <DataTable
             columns={[
-              { key: 'name',   header: 'Name',   render: (r: {name: string}) => <span className="font-medium text-label-primary">{r.name}</span> },
-              { key: 'role',   header: 'Role'   },
-              { key: 'status', header: 'Status', render: (r: {status: string}) => <StatusBadge status={r.status} /> },
-              { key: 'joined', header: 'Joined', render: (r: {joined: string}) => <span className="text-label-tertiary">{r.joined}</span> },
-              { key: 'actions', header: '', render: () => <ActionButtons showView showEdit onView={() => {}} onEdit={() => {}} /> },
+              {
+                key: 'name',
+                header: 'Name',
+                sortable: true,
+                searchable: true,
+                render: (r: {name: string}) => <span className="font-semibold text-label-primary">{r.name}</span>,
+              },
+              {
+                key: 'role',
+                header: 'Role',
+                sortable: true,
+                filterOptions: [
+                  { value: 'Admin',   label: 'Admin'   },
+                  { value: 'Manager', label: 'Manager' },
+                  { value: 'Editor',  label: 'Editor'  },
+                  { value: 'Viewer',  label: 'Viewer'  },
+                ],
+              },
+              {
+                key: 'status',
+                header: 'Status',
+                filterOptions: [
+                  { value: 'active',   label: 'Active'   },
+                  { value: 'pending',  label: 'Pending'  },
+                  { value: 'inactive', label: 'Inactive' },
+                ],
+                render: (r: {status: string}) => <StatusBadge status={r.status} />,
+              },
+              {
+                key: 'joined',
+                header: 'Joined',
+                sortable: true,
+                render: (r: {joined: string}) => <span className="text-label-tertiary text-[13px]">{r.joined}</span>,
+              },
+              {
+                key: 'actions',
+                header: '',
+                render: () => <ActionButtons showView showEdit onView={() => {}} onEdit={() => {}} />,
+              },
             ]}
             data={TABLE_DATA}
             keyExtractor={(r: {id: number}) => r.id}
             searchable
             searchPlaceholder="Search members…"
+            pagination
+            pageSize={5}
           />
         </Card>
       </Section>
@@ -1583,29 +1630,32 @@ export default function ComponentsPage() {
       </Section>
 
       {/* ── Drawer ──────────────────────────────────────────────────────── */}
-      <Section id="drawer" title="Drawer" subtitle="Side-panel overlay — lighter than Dialog for quick edits and detail views.">
+      <Section id="drawer" title="Drawer" subtitle="Animated side-panel overlay — slide in from right or left, three sizes, footer actions.">
         <Card className="p-5">
-          <Row>
-            <Button variant="primary" onClick={() => setDrawerOpen(true)}>Open right drawer</Button>
-          </Row>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="primary" size="sm" onClick={() => { setDrawerSide('right'); setDrawerOpen(true) }}>Right drawer (md)</Button>
+            <Button variant="outline" size="sm" onClick={() => { setDrawerSide('left');  setDrawerOpen(true) }}>Left drawer (md)</Button>
+          </div>
         </Card>
         <Drawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           title="Edit member"
-          description="Update name and role then save."
-          side="right"
+          description="Update the member's name, role and internal notes then save."
+          side={drawerSide}
+          size="md"
           footer={
             <div className="flex gap-2 justify-end">
-              <Button variant="ghost"   onClick={() => setDrawerOpen(false)}>Cancel</Button>
-              <Button variant="primary" onClick={() => setDrawerOpen(false)}>Save changes</Button>
+              <Button variant="ghost"   size="sm" onClick={() => setDrawerOpen(false)}>Cancel</Button>
+              <Button variant="primary" size="sm" onClick={() => setDrawerOpen(false)}>Save changes</Button>
             </div>
           }
         >
           <div className="space-y-4">
-            <Input    label="Full name" defaultValue="Priya Mehta" />
-            <Select   label="Role"      options={SELECT_OPTS} value={selectVal} onChange={setSelectVal} />
-            <Textarea label="Notes"     placeholder="Add internal notes…" />
+            <Input    label="Full name"  defaultValue="Priya Mehta" />
+            <Select   label="Role"       options={SELECT_OPTS} value={selectVal} onChange={setSelectVal} />
+            <Input    label="Email"      defaultValue="priya@example.com" type="email" />
+            <Textarea label="Notes"      placeholder="Add internal notes…" rows={3} />
           </div>
         </Drawer>
       </Section>
@@ -1694,6 +1744,279 @@ export default function ComponentsPage() {
         <TricolorBar />
       </Section>
 
+    </div>
+  )
+}
+`
+}
+
+export function genOnboardingPage(): string {
+  return `'use client'
+
+import React, { useState } from 'react'
+import {
+  Breadcrumbs, Card, Button, Separator,
+  Input, Textarea, Select, DatePicker, DateTimePicker,
+  Switch, Checkbox, RadioGroup, Slider, NumberInput, TagInput, FileUpload, OTPInput,
+} from '@lucifer91299/ui'
+import { CheckCircle2, User, Briefcase, Settings2, ShieldCheck } from 'lucide-react'
+
+// ── Options ──────────────────────────────────────────────────────────────────
+
+const COUNTRY_OPTS = [
+  { value: 'in', label: 'India' },          { value: 'us', label: 'United States' },
+  { value: 'gb', label: 'United Kingdom' }, { value: 'au', label: 'Australia' },
+  { value: 'ca', label: 'Canada' },         { value: 'sg', label: 'Singapore' },
+  { value: 'ae', label: 'UAE' },            { value: 'de', label: 'Germany' },
+]
+
+const ROLE_OPTS = [
+  { value: 'developer',  label: 'Developer'  },
+  { value: 'designer',   label: 'Designer'   },
+  { value: 'manager',    label: 'Manager'    },
+  { value: 'analyst',    label: 'Analyst'    },
+  { value: 'executive',  label: 'Executive'  },
+  { value: 'other',      label: 'Other'      },
+]
+
+const DEPT_OPTS = [
+  { value: 'eng',     label: 'Engineering'  },
+  { value: 'product', label: 'Product'      },
+  { value: 'design',  label: 'Design'       },
+  { value: 'sales',   label: 'Sales'        },
+  { value: 'support', label: 'Support'      },
+]
+
+const LANG_OPTS = [
+  { value: 'en', label: 'English' }, { value: 'hi', label: 'Hindi' },
+  { value: 'fr', label: 'French' },  { value: 'de', label: 'German' },
+  { value: 'ja', label: 'Japanese' },
+]
+
+const PLAN_OPTS = [
+  { value: 'starter', label: 'Starter',      description: 'Up to 5 members · 10 GB storage' },
+  { value: 'growth',  label: 'Growth',        description: 'Up to 25 members · 50 GB storage' },
+  { value: 'scale',   label: 'Scale',         description: 'Unlimited members · 500 GB storage' },
+]
+
+// ── Section heading helper ────────────────────────────────────────────────────
+
+function SectionHead({ icon: Icon, title, subtitle }: { icon: React.ElementType; title: string; subtitle: string }) {
+  return (
+    <div className="flex items-center gap-3 px-5 py-3.5 border-b border-separator-opaque bg-surface-secondary/40">
+      <div className="w-7 h-7 rounded-lg flex items-center justify-center flex-shrink-0" style={{ background: 'var(--primary-soft, rgba(0,0,128,0.07))' }}>
+        <Icon className="w-3.5 h-3.5" style={{ color: 'var(--primary, #000080)' }} />
+      </div>
+      <div>
+        <p className="text-callout font-semibold text-label-primary leading-tight">{title}</p>
+        <p className="text-[11px] text-label-tertiary leading-tight">{subtitle}</p>
+      </div>
+    </div>
+  )
+}
+
+// ── Page ─────────────────────────────────────────────────────────────────────
+
+export default function OnboardingPage() {
+  const [submitted, setSubmitted] = useState(false)
+
+  // Personal
+  const [name,     setName]     = useState('')
+  const [email,    setEmail]    = useState('')
+  const [phone,    setPhone]    = useState('')
+  const [dob,      setDob]      = useState<Date | null>(null)
+  const [apptTime, setApptTime] = useState('')
+  const [bio,      setBio]      = useState('')
+
+  // Professional
+  const [company,  setCompany]  = useState('')
+  const [website,  setWebsite]  = useState('')
+  const [jobRole,  setJobRole]  = useState('')
+  const [dept,     setDept]     = useState('')
+  const [country,  setCountry]  = useState('')
+  const [teamSize, setTeamSize] = useState(10)
+  const [expYears, setExpYears] = useState(3)
+  const [skills,   setSkills]   = useState<string[]>([])
+
+  // Preferences
+  const [plan,       setPlan]       = useState('growth')
+  const [language,   setLanguage]   = useState('en')
+  const [workHours,  setWorkHours]  = useState(8)
+  const [notifs,     setNotifs]     = useState(true)
+  const [newsletter, setNewsletter] = useState(false)
+  const [darkMode,   setDarkMode]   = useState(false)
+  const [terms,      setTerms]      = useState(false)
+  const [privacy,    setPrivacy]    = useState(false)
+  const [marketing,  setMarketing]  = useState(false)
+
+  // Security
+  const [password,  setPassword]  = useState('')
+  const [otpVal,    setOtpVal]    = useState('')
+
+  const [errors, setErrors] = useState<Record<string, string>>({})
+
+  function validate() {
+    const e: Record<string, string> = {}
+    if (!name.trim())     e.name     = 'Full name is required'
+    if (!email.trim())    e.email    = 'Email is required'
+    if (!phone.trim())    e.phone    = 'Phone is required'
+    if (!company.trim())  e.company  = 'Company is required'
+    if (!jobRole)         e.jobRole  = 'Role is required'
+    if (!country)         e.country  = 'Country is required'
+    if (!password)        e.password = 'Password is required'
+    if (!terms)           e.terms    = 'You must accept the terms'
+    setErrors(e)
+    return Object.keys(e).length === 0
+  }
+
+  if (submitted) {
+    return (
+      <div className="p-4 sm:p-6 max-w-2xl mx-auto">
+        <Card className="overflow-hidden">
+          <div className="h-1" style={{ background: 'var(--primary, #000080)' }} />
+          <div className="flex flex-col items-center gap-4 px-8 py-12 text-center">
+            <div className="w-14 h-14 rounded-full flex items-center justify-center" style={{ background: 'var(--primary, #000080)' }}>
+              <CheckCircle2 className="w-7 h-7 text-white" />
+            </div>
+            <div>
+              <h2 className="text-title3 font-bold text-label-primary">Profile saved, {name.split(' ')[0] || 'there'}!</h2>
+              <p className="text-callout text-label-tertiary mt-1">Your account is set up and ready to go.</p>
+            </div>
+            <div className="flex gap-2 mt-2">
+              <Button variant="primary" onClick={() => window.location.href = '/dashboard'}>Go to Dashboard</Button>
+              <Button variant="outline" onClick={() => setSubmitted(false)}>Edit profile</Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  return (
+    <div className="p-4 sm:p-6 max-w-3xl mx-auto pb-10">
+      {/* Header */}
+      <div className="mb-5">
+        <Breadcrumbs items={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Onboarding' }]} />
+        <div className="flex items-center justify-between mt-2">
+          <div>
+            <h1 className="text-title3 font-bold text-label-primary">Account Setup</h1>
+            <p className="text-callout text-label-tertiary mt-0.5">Fill in your details to complete registration</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setErrors({})}>Clear errors</Button>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+
+        {/* ── 1. Personal Information ───────────────────────────────────────── */}
+        <Card className="overflow-hidden">
+          <div className="h-1" style={{ background: 'var(--primary, #000080)' }} />
+          <SectionHead icon={User} title="Personal Information" subtitle="Your basic contact details and identity" />
+          <div className="p-5 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input label="Full name *"  value={name}  onChange={e => setName(e.target.value)}  placeholder="Priya Mehta"        error={errors.name} />
+              <Input label="Email *"      value={email} onChange={e => setEmail(e.target.value)} placeholder="priya@example.com"  error={errors.email} type="email" />
+              <Input label="Phone *"      value={phone} onChange={e => setPhone(e.target.value)} placeholder="+91 98765 43210"    error={errors.phone} />
+              <DatePicker label="Date of birth" value={dob} onChange={setDob} placeholder="DD / MM / YYYY" />
+            </div>
+            <DateTimePicker label="Preferred onboarding call" value={apptTime} onChange={setApptTime} placeholder="Pick date & time" helperText="We'll schedule your welcome call at this time" />
+            <Textarea label="Bio" value={bio} onChange={e => setBio(e.target.value)} placeholder="Tell us a little about yourself — your background, interests, goals…" rows={2} />
+            <FileUpload label="Profile photo" helperText="PNG, JPG or WEBP · max 2 MB" accept="image/*" maxSize={2 * 1024 * 1024} />
+          </div>
+        </Card>
+
+        {/* ── 2. Professional Details ───────────────────────────────────────── */}
+        <Card className="overflow-hidden">
+          <div className="h-1" style={{ background: 'var(--primary, #000080)' }} />
+          <SectionHead icon={Briefcase} title="Professional Details" subtitle="Your work context and expertise" />
+          <div className="p-5 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input  label="Company *"   value={company} onChange={e => setCompany(e.target.value)} placeholder="Acme Corp"            error={errors.company} />
+              <Input  label="Website"     value={website} onChange={e => setWebsite(e.target.value)} placeholder="https://yoursite.com" />
+              <Select label="Job role *"  options={ROLE_OPTS} value={jobRole} onChange={setJobRole} placeholder="Select role…"         error={errors.jobRole} />
+              <Select label="Department"  options={DEPT_OPTS} value={dept}    onChange={setDept}    placeholder="Select department…" />
+              <Select label="Country *"   options={COUNTRY_OPTS} value={country} onChange={setCountry} placeholder="Select country…"   error={errors.country} searchable />
+              <Select label="Language"    options={LANG_OPTS}    value={language} onChange={setLanguage} />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <NumberInput label="Team size"         value={teamSize} onChange={setTeamSize} min={1} max={10000} helperText="Total headcount in your team" />
+              <NumberInput label="Years of experience" value={expYears} onChange={setExpYears} min={0} max={50}   helperText="Professional experience in years" />
+            </div>
+            <Slider label="Availability (hrs/day)" value={workHours} onChange={setWorkHours} min={1} max={12} step={1} showValue valueFormat={v => \`\${v}h\`} helperText="How many hours per day are you available for collaboration?" />
+            <TagInput label="Skills & technologies" value={skills} onChange={setSkills} placeholder="Type a skill & press Enter…" helperText="Add up to 12 skills (e.g. React, Python, Figma)" maxTags={12} />
+          </div>
+        </Card>
+
+        {/* ── 3. Plan & Preferences ─────────────────────────────────────────── */}
+        <Card className="overflow-hidden">
+          <div className="h-1" style={{ background: 'var(--primary, #000080)' }} />
+          <SectionHead icon={Settings2} title="Plan & Preferences" subtitle="Choose your plan and notification settings" />
+          <div className="p-5 space-y-4">
+            <RadioGroup label="Select your plan" options={PLAN_OPTS} value={plan} onChange={setPlan} />
+            <Separator />
+            <div>
+              <p className="text-[12px] font-semibold text-label-secondary uppercase tracking-wider mb-2">Notifications</p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <Switch label="Email alerts"  checked={notifs}     onChange={setNotifs}     helperText="Activity & security" />
+                <Switch label="Newsletter"    checked={newsletter} onChange={setNewsletter} helperText="Monthly updates" />
+                <Switch label="Dark mode"     checked={darkMode}   onChange={setDarkMode}   helperText="Use dark theme" />
+              </div>
+            </div>
+            <Separator />
+            <div>
+              <p className="text-[12px] font-semibold text-label-secondary uppercase tracking-wider mb-2">Agreements</p>
+              <div className="space-y-2">
+                <Checkbox
+                  label="I agree to the Terms of Service *"
+                  checked={terms} onChange={setTerms}
+                  error={errors.terms}
+                />
+                <Checkbox
+                  label="I have read and accept the Privacy Policy"
+                  checked={privacy} onChange={setPrivacy}
+                />
+                <Checkbox
+                  label="I'd like to receive product updates and offers"
+                  checked={marketing} onChange={setMarketing}
+                />
+              </div>
+            </div>
+          </div>
+        </Card>
+
+        {/* ── 4. Security ───────────────────────────────────────────────────── */}
+        <Card className="overflow-hidden">
+          <div className="h-1" style={{ background: 'var(--primary, #000080)' }} />
+          <SectionHead icon={ShieldCheck} title="Security" subtitle="Set your password and verify your identity" />
+          <div className="p-5 space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <Input label="Password *"        value={password} onChange={e => setPassword(e.target.value)} type="password" placeholder="Min 8 characters" error={errors.password} />
+              <Input label="Confirm password"  defaultValue="" type="password" placeholder="Repeat password" />
+            </div>
+            <Separator />
+            <div>
+              <p className="text-[12px] font-semibold text-label-secondary uppercase tracking-wider mb-1">Two-factor verification</p>
+              <p className="text-[12px] text-label-tertiary mb-3">Enter the 6-digit code sent to {email || 'your email'} to verify your address.</p>
+              <OTPInput
+                length={6}
+                value={otpVal}
+                onChange={setOtpVal}
+                helperText={otpVal.length === 6 ? 'Code entered — ready to submit' : 'Check your inbox for the verification code'}
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* ── Submit row ────────────────────────────────────────────────────── */}
+        <div className="flex items-center justify-between pt-1">
+          <Button variant="ghost" onClick={() => { setErrors({}); }}>Reset form</Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => window.location.href = '/dashboard'}>Cancel</Button>
+            <Button variant="primary" onClick={() => { if (validate()) setSubmitted(true) }}>Complete setup →</Button>
+          </div>
+        </div>
+
+      </div>
     </div>
   )
 }

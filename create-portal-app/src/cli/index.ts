@@ -9,7 +9,7 @@ import {
   genMiddleware, genSessionRoute, genLogoutRoute, genApiClient,
   genNavConfig, genDashboardLayout, genReduxStore, genAuthSlice,
   genRootPage, genDashboardHomePage, genUsersPage, genSettingsPage,
-  genComponentsShowcasePage,
+  genComponentsShowcasePage, genOnboardingPage,
 } from '../templates'
 
 // ── File helpers ───────────────────────────────────────────────────────────────
@@ -178,9 +178,10 @@ async function runPrompts(projectNameArg?: string): Promise<ScaffoldOptions> {
   const sidebarStyle = noCancel(await p.select({
     message: 'Sidebar style',
     options: [
-      { value: 'full', label: 'Full', hint: 'Wide sidebar with labels and collapsible groups' },
-      { value: 'rail', label: 'Rail', hint: 'Icon-only narrow sidebar' },
-      { value: 'both', label: 'Both', hint: 'Full on desktop, rail on mobile' },
+      { value: 'full',   label: 'Full',   hint: 'Wide sidebar with labels and collapsible groups' },
+      { value: 'rail',   label: 'Rail',   hint: 'Icon-only narrow sidebar' },
+      { value: 'both',   label: 'Both',   hint: 'Full on desktop, rail on mobile' },
+      { value: 'header', label: 'Header', hint: 'Top nav bar with horizontal pill links + dropdowns' },
     ],
   }))
 
@@ -279,6 +280,7 @@ function scaffold(opts: ScaffoldOptions): number {
   w(f('src/app/dashboard/users/page.tsx'),             genUsersPage(opts))
   w(f('src/app/dashboard/settings/page.tsx'),          genSettingsPage(opts))
   w(f('src/app/dashboard/components/page.tsx'),        genComponentsShowcasePage())
+  w(f('src/app/dashboard/onboarding/page.tsx'),        genOnboardingPage())
   w(f('src/app/api/auth/login/route.ts'),              genLoginRoute(opts))
   w(f('src/app/api/auth/user/route.ts'),               genUserRoute(opts))
   w(f('src/app/api/auth/session/route.ts'),            genSessionRoute(opts))
@@ -341,7 +343,7 @@ async function main() {
       '  --yes, -y     Skip prompts, use defaults',
       '  --auth=       jwt | multi-role | laravel',
       '  --login=      animated | simple',
-      '  --sidebar=    full | rail | both',
+      '  --sidebar=    full | rail | both | header',
       '  --primary=#   Primary brand colour',
       '  --accent=#    Accent colour',
       '  --success=#   Success colour',

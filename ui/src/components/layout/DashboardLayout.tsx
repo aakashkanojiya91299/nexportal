@@ -5,6 +5,7 @@ import { LogOut, Settings, ChevronDown } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Sidebar } from './Sidebar'
 import { SidebarRail } from './SidebarRail'
+import { HeaderNav } from './HeaderNav'
 import { PageFooter } from './PageFooter'
 import type { NavGroup, UserInfo, PoweredByConfig } from './types'
 import type { SidebarVariant } from '../../theme/types'
@@ -153,6 +154,26 @@ export function DashboardLayout({
   className,
 }: DashboardLayoutProps) {
   const commonProps = { navGroups, logoSrc, logoAlt, projectName, user, pathname, onLogout }
+
+  /* ── Header layout ──────────────────────────────────────────────────────── */
+  if (sidebar === 'header') {
+    return (
+      <div className={cn('flex flex-col min-h-screen bg-surface-secondary', className)}>
+        <HeaderNav {...commonProps} />
+        <main className="flex-1 overflow-auto pt-[52px] lg:pt-0">
+          {children}
+        </main>
+        <PageFooter
+          organizationName={projectName}
+          logoSrc={logoSrc}
+          logoAlt={logoAlt}
+          poweredByText={poweredBy?.text}
+          poweredByLogoSrc={poweredBy?.logoSrc}
+          poweredByHref={poweredBy?.href}
+        />
+      </div>
+    )
+  }
 
   return (
     <div className={cn('flex min-h-screen bg-surface-secondary', className)}>

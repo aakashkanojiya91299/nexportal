@@ -100,7 +100,7 @@ npx @lucifer91299/create-portal-app --help
 | `--yes`, `-y` | — | — | Skip all prompts, use defaults |
 | `--auth=` | `jwt` \| `multi-role` \| `laravel` | `jwt` | Auth strategy |
 | `--login=` | `animated` \| `simple` | `animated` | Login page style |
-| `--sidebar=` | `full` \| `rail` \| `both` | `full` | Sidebar variant |
+| `--sidebar=` | `full` \| `rail` \| `both` \| `header` | `full` | Sidebar variant |
 | `--primary=` | `#hex` | `#000080` | Primary brand colour |
 | `--accent=` | `#hex` | `#FF9933` | Accent colour |
 | `--success=` | `#hex` | `#138808` | Success / green colour |
@@ -142,7 +142,8 @@ my-portal/
 │   │   │   ├── page.tsx            dashboard home page
 │   │   │   ├── users/page.tsx      Users management page
 │   │   │   ├── settings/page.tsx   Settings page
-│   │   │   └── components/page.tsx Full component showcase
+│   │   │   ├── components/page.tsx Full component showcase
+│   │   │   └── onboarding/page.tsx 4-step multi-field onboarding form
 │   │   └── api/
 │   │       └── auth/
 │   │           ├── login/route.ts  POST — signs JWT, sets httpOnly cookie
@@ -223,9 +224,10 @@ Clean gradient card login with optional role-select splash. Best for SaaS or min
 
 | Value | Description |
 |-------|-------------|
-| `full` | Wide sidebar with group headings, nav labels, and collapsible sections |
-| `rail` | Icon-only narrow sidebar |
-| `both` | Full on desktop, rail on mobile/tablet |
+| `full`   | Wide sidebar with group headings, nav labels, and collapsible sections |
+| `rail`   | Icon-only narrow sidebar |
+| `both`   | Full on desktop, rail on mobile/tablet |
+| `header` | Horizontal top nav bar — logo + pill links + dropdown groups + profile menu |
 
 ---
 
@@ -261,6 +263,15 @@ See the full component and theming documentation at:
 ---
 
 ## Changelog
+
+### v1.1.12
+- **Onboarding page redesigned** — replaced multi-step stepper with a single full-form using every component: `Input`, `Textarea`, `DatePicker`, `DateTimePicker`, `FileUpload`, `Select` (searchable), `NumberInput`, `Slider`, `TagInput`, `RadioGroup`, `Switch` ×3, `Checkbox` ×3, `OTPInput` — organised into 4 card sections (Personal, Professional, Plan & Preferences, Security) with validation and success state
+
+### v1.1.11
+- **Onboarding page** — generated project now includes `/dashboard/onboarding`: a 4-step multi-step form (Personal → Professional → Preferences → Review) using `Stepper`, `DatePicker`, `FileUpload`, `Select` (searchable), `NumberInput`, `TagInput`, `Switch`, `RadioGroup`, `Slider`, and review cards with per-section Edit buttons
+- **`header` sidebar variant** — new `--sidebar=header` option scaffolds a horizontal top nav bar with logo, scrollable pill links, dropdown groups, and profile menu (no vertical sidebar)
+- **Nav update** — `nav-config.tsx` now includes an Onboarding link with `ClipboardList` icon
+- **UI version bump** — generated projects now use `@lucifer91299/ui@^1.1.19`
 
 ### v1.1.10
 - **Components showcase** — all new components now included: `StatsCard`, `EmptyState`, `FileUpload`, `Drawer`, `OTPInput`, `NumberInput`, `Slider`, `TagInput`, `Timeline`, `Popover`
