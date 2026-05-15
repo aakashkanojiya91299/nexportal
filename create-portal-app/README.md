@@ -262,6 +262,10 @@ See the full component and theming documentation at:
 
 ## Changelog
 
+### v1.1.10
+- **Components showcase** — all new components now included: `StatsCard`, `EmptyState`, `FileUpload`, `Drawer`, `OTPInput`, `NumberInput`, `Slider`, `TagInput`, `Timeline`, `Popover`
+- Bumps generated project to use `@lucifer91299/ui@^1.1.18`
+
 ### v1.1.9
 - **Components showcase** — generated `components/page.tsx` now demonstrates `error` prop for every form component (Input, Textarea, Select, DatePicker, DateTimePicker, Switch, Checkbox, RadioGroup)
 - **Select section** — separate full Select section with single, disabled, multi-select, grouped, and error demos

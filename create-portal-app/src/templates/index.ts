@@ -870,6 +870,8 @@ import {
   Dialog, Tooltip, Tabs, TabsList, TabsTrigger, TabsContent,
   Accordion, AccordionItem, Progress, Skeleton, SkeletonCard, SkeletonText,
   Separator, Avatar, AvatarGroup, DataTable, ActionButtons, Stepper,
+  StatsCard, EmptyState, FileUpload,
+  Drawer, OTPInput, NumberInput, Slider, TagInput, Timeline, Popover,
   PortalBarChart, PortalLineChart, PortalAreaChart, PortalDonutChart,
 } from '@lucifer91299/ui'
 
@@ -965,6 +967,11 @@ export default function ComponentsPage() {
   const [dtVal12h, setDtVal12h] = useState('')
   const [dtValSec, setDtValSec] = useState('')
   const [stepperStep, setStepperStep] = useState(1)
+  const [drawerOpen,  setDrawerOpen]  = useState(false)
+  const [otpVal,      setOtpVal]      = useState('')
+  const [numVal,      setNumVal]      = useState(5)
+  const [sliderVal,   setSliderVal]   = useState(40)
+  const [tagVal,      setTagVal]      = useState<string[]>(['React', 'TypeScript'])
 
   return (
     <div className="p-6 space-y-14 max-w-5xl pb-20">
@@ -1488,6 +1495,198 @@ export default function ComponentsPage() {
             />
           </Card>
         </div>
+      </Section>
+
+      {/* ── StatsCard ───────────────────────────────────────────────────── */}
+      <Section id="statscard" title="StatsCard" subtitle="KPI metric cards with icon, trend indicator, and 5 colour variants.">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatsCard
+            title="Total Revenue"
+            value="₹4,82,900"
+            subtitle="This financial year"
+            trend={12.4}
+            trendLabel="vs last year"
+            variant="primary"
+            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          />
+          <StatsCard
+            title="Active Users"
+            value="1,284"
+            trend={5.2}
+            trendLabel="vs last month"
+            variant="success"
+            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" /></svg>}
+          />
+          <StatsCard
+            title="Pending Tasks"
+            value="38"
+            trend={-8.1}
+            trendLabel="vs last week"
+            variant="warning"
+            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
+          />
+          <StatsCard
+            title="Failed Jobs"
+            value="7"
+            trend={0}
+            trendLabel="no change"
+            variant="danger"
+            icon={<svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>}
+          />
+        </div>
+      </Section>
+
+      {/* ── EmptyState ──────────────────────────────────────────────────── */}
+      <Section id="emptystate" title="EmptyState" subtitle="Zero-data placeholders for tables, lists, and search results.">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card>
+            <EmptyState
+              title="No results found"
+              description="Try adjusting your search or filter to find what you're looking for."
+              action={<Button variant="outline" size="sm">Clear filters</Button>}
+            />
+          </Card>
+          <Card>
+            <EmptyState
+              icon={<svg className="w-6 h-6 text-label-tertiary" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>}
+              title="No documents yet"
+              description="Upload your first document to get started."
+              action={<Button variant="primary" size="sm">Upload file</Button>}
+            />
+          </Card>
+          <Card>
+            <EmptyState
+              icon={<svg className="w-6 h-6 text-label-tertiary" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" /></svg>}
+              title="No notifications"
+              description="You're all caught up! Check back later."
+            />
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── FileUpload ──────────────────────────────────────────────────── */}
+      <Section id="fileupload" title="FileUpload" subtitle="Drag-and-drop file picker with size validation, file list, and error state.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <Card className="p-5">
+            <FileUpload label="Upload document" helperText="PDF, DOCX or TXT · max 5 MB" accept=".pdf,.docx,.txt" maxSize={5 * 1024 * 1024} />
+          </Card>
+          <Card className="p-5">
+            <FileUpload label="Profile photo" helperText="PNG, JPG or WEBP · max 2 MB" accept="image/*" maxSize={2 * 1024 * 1024} />
+          </Card>
+          <Card className="p-5">
+            <FileUpload label="Multiple files" helperText="Any file type · multiple allowed" multiple />
+          </Card>
+          <Card className="p-5">
+            <FileUpload label="With error" error="Please upload a valid document" accept=".pdf" />
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── Drawer ──────────────────────────────────────────────────────── */}
+      <Section id="drawer" title="Drawer" subtitle="Side-panel overlay — lighter than Dialog for quick edits and detail views.">
+        <Card className="p-5">
+          <Row>
+            <Button variant="primary" onClick={() => setDrawerOpen(true)}>Open right drawer</Button>
+          </Row>
+        </Card>
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+          title="Edit member"
+          description="Update name and role then save."
+          side="right"
+          footer={
+            <div className="flex gap-2 justify-end">
+              <Button variant="ghost"   onClick={() => setDrawerOpen(false)}>Cancel</Button>
+              <Button variant="primary" onClick={() => setDrawerOpen(false)}>Save changes</Button>
+            </div>
+          }
+        >
+          <div className="space-y-4">
+            <Input    label="Full name" defaultValue="Priya Mehta" />
+            <Select   label="Role"      options={SELECT_OPTS} value={selectVal} onChange={setSelectVal} />
+            <Textarea label="Notes"     placeholder="Add internal notes…" />
+          </div>
+        </Drawer>
+      </Section>
+
+      {/* ── OTPInput ────────────────────────────────────────────────────── */}
+      <Section id="otp" title="OTPInput" subtitle="4 or 6-digit code input with auto-advance, backspace, and paste support.">
+        <Card className="p-5 space-y-5">
+          <div>
+            <Label>6-digit code</Label>
+            <OTPInput length={6} value={otpVal} onChange={setOtpVal} label="Verification code" helperText={otpVal.length === 6 ? \`Entered: \${otpVal}\` : 'Enter the 6-digit code sent to your email'} />
+          </div>
+          <Separator />
+          <div>
+            <Label>4-digit — error state</Label>
+            <OTPInput length={4} value="12" error="Invalid code. Please try again." />
+          </div>
+        </Card>
+      </Section>
+
+      {/* ── NumberInput, Slider, TagInput ───────────────────────────────── */}
+      <Section id="inputs2" title="NumberInput, Slider & TagInput" subtitle="Numeric stepper, range picker, and free-text tag entry.">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+          <Card className="p-5 space-y-4">
+            <Label>NumberInput</Label>
+            <NumberInput label="Team size" value={numVal} onChange={setNumVal} min={1} max={100} helperText={\`Current: \${numVal}\`} />
+            <NumberInput label="Disabled"   defaultValue={3} disabled />
+            <NumberInput label="With error" defaultValue={0} error="Value must be at least 1" />
+          </Card>
+          <Card className="p-5 space-y-6">
+            <Label>Slider</Label>
+            <Slider label="Progress" value={sliderVal} onChange={setSliderVal} showValue valueFormat={v => \`\${v}%\`} />
+            <Slider label="Budget" defaultValue={25000} min={0} max={100000} step={500} showValue valueFormat={v => \`₹\${v.toLocaleString()}\`} helperText="Max ₹1,00,000" />
+            <Slider label="Disabled" defaultValue={60} disabled showValue />
+          </Card>
+          <Card className="p-5 space-y-4">
+            <Label>TagInput</Label>
+            <TagInput label="Skills" value={tagVal} onChange={setTagVal} placeholder="Type & press Enter…" helperText={\`\${tagVal.length} tag\${tagVal.length !== 1 ? 's' : ''} added\`} maxTags={8} />
+            <TagInput label="With error" value={[]} onChange={() => {}} error="At least one tag required" />
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── Timeline ────────────────────────────────────────────────────── */}
+      <Section id="timeline" title="Timeline" subtitle="Activity feed — timestamped events with icon, variant colour, and description.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <Card className="p-5">
+            <Label>Activity log</Label>
+            <Timeline
+              items={[
+                { title: 'Account created',      timestamp: '2 min ago', variant: 'success', description: 'priya@example.com signed up'   },
+                { title: 'Email verified',        timestamp: '1 min ago', variant: 'success', description: 'Verification link confirmed'   },
+                { title: 'Profile incomplete',    timestamp: 'Just now',  variant: 'warning', description: 'Missing phone and company info' },
+                { title: 'Login from new device', timestamp: 'Just now',  variant: 'info',    description: 'Chrome on macOS · Mumbai, IN' },
+              ]}
+            />
+          </Card>
+          <Card className="p-5">
+            <Label>Approval workflow</Label>
+            <Timeline
+              items={[
+                { title: 'Request submitted', timestamp: '10 Jan',  variant: 'default', description: 'Leave request for 15–20 Jan' },
+                { title: 'Manager review',    timestamp: '11 Jan',  variant: 'info',    description: 'Rohan Mehta reviewing'       },
+                { title: 'Approved',          timestamp: '12 Jan',  variant: 'success', description: 'Approved by Rohan Mehta'     },
+                { title: 'HR notified',       timestamp: '12 Jan',  variant: 'success', description: 'Calendar updated'            },
+                { title: 'Escalation raised', timestamp: 'Pending', variant: 'danger',  description: 'Auto-escalated after 48h'   },
+              ]}
+            />
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── Popover ─────────────────────────────────────────────────────── */}
+      <Section id="popover" title="Popover" subtitle="Lightweight positioned panel — click-triggered, closes on outside click.">
+        <Card className="p-5">
+          <Row>
+            <Popover placement="top"    trigger={<Button variant="outline" size="sm">Top</Button>}    content={<p className="text-xs text-label-tertiary max-w-[160px]">Top-positioned popover.</p>} />
+            <Popover placement="bottom" trigger={<Button variant="outline" size="sm">Bottom</Button>} content={<p className="text-xs text-label-tertiary max-w-[160px]">Bottom-positioned popover.</p>} />
+            <Popover placement="right"  trigger={<Button variant="outline" size="sm">Right</Button>}  content={<p className="text-xs text-label-tertiary max-w-[160px]">Right-side popover.</p>} />
+            <Popover placement="left"   trigger={<Button variant="outline" size="sm">Left</Button>}   content={<p className="text-xs text-label-tertiary max-w-[160px]">Left-side popover.</p>} />
+          </Row>
+        </Card>
       </Section>
 
       {/* ── TricolorBar ─────────────────────────────────────────────────── */}
