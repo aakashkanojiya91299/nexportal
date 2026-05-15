@@ -14,6 +14,7 @@ export interface TagInputProps {
   maxTags?: number
   disabled?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
 export function TagInput({
@@ -26,6 +27,7 @@ export function TagInput({
   maxTags,
   disabled,
   className,
+  style,
 }: TagInputProps) {
   const [input, setInput] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
@@ -50,7 +52,8 @@ export function TagInput({
   const atMax = !!(maxTags && value.length >= maxTags)
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}
+        style={style}>
       {label && <span className="text-footnote font-medium text-label-primary">{label}</span>}
       <div
         onClick={() => !disabled && inputRef.current?.focus()}

@@ -14,13 +14,14 @@ export interface DrawerProps {
   footer?: React.ReactNode
   children?: React.ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 const SIZES = { sm: 'w-72', md: 'w-96', lg: 'w-[32rem]', full: 'w-screen' }
 
 export function Drawer({
   open, onClose, title, description, side = 'right', size = 'md',
-  footer, children, className,
+  footer, children, className, style,
 }: DrawerProps) {
   const [visible, setVisible] = useState(false)
   const [rendered, setRendered] = useState(false)
@@ -66,6 +67,7 @@ export function Drawer({
           transform: visible
             ? 'translateX(0)'
             : side === 'right' ? 'translateX(100%)' : 'translateX(-100%)',
+          ...style,
         }}
       >
         {/* Header */}

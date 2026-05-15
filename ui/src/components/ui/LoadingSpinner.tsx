@@ -6,6 +6,7 @@ import { cn } from '../../lib/cn'
 interface LoadingSpinnerProps {
   size?: 'xs' | 'sm' | 'md' | 'lg'
   className?: string
+  style?: React.CSSProperties
 }
 
 const sizeClass = {
@@ -15,7 +16,7 @@ const sizeClass = {
   lg: 'w-8 h-8 border-2',
 }
 
-export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = 'md', className, style }: LoadingSpinnerProps) {
   return (
     <span
       className={cn(
@@ -23,6 +24,7 @@ export function LoadingSpinner({ size = 'md', className }: LoadingSpinnerProps) 
         sizeClass[size],
         className,
       )}
+      style={style}
       role="status"
       aria-label="Loading"
     />

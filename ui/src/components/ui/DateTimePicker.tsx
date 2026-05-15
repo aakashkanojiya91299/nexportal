@@ -39,6 +39,7 @@ export interface DateTimePickerProps {
   minTime?: string
   maxTime?: string
   className?: string
+  style?: React.CSSProperties
   containerClassName?: string
 }
 
@@ -62,7 +63,7 @@ export function DateTimePicker({
   minuteStep = 1,
   showSeconds = false,
   minTime, maxTime,
-  className, containerClassName,
+  className, containerClassName, style,
 }: DateTimePickerProps) {
   const resolvedPlaceholder = placeholder ?? (showSeconds ? 'DD/MM/YYYY HH:MM:SS' : 'DD/MM/YYYY HH:MM')
   const valueFormat = showSeconds ? 'yyyy-MM-dd HH:mm:ss' : 'yyyy-MM-dd HH:mm'
@@ -313,6 +314,7 @@ export function DateTimePicker({
             disabled && 'opacity-50 cursor-not-allowed',
             className,
           )}
+          style={style}
         >
           <span>{displayValue || resolvedPlaceholder}</span>
           <div className="flex items-center gap-1 text-label-tertiary flex-shrink-0 ml-2">

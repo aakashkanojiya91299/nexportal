@@ -15,12 +15,13 @@ export interface StepperProps {
   current: number
   orientation?: 'horizontal' | 'vertical'
   className?: string
+  style?: React.CSSProperties
 }
 
-export function Stepper({ steps, current, orientation = 'horizontal', className }: StepperProps) {
+export function Stepper({ steps, current, orientation = 'horizontal', className, style }: StepperProps) {
   if (orientation === 'vertical') {
     return (
-      <div className={cn('flex flex-col', className)}>
+      <div className={cn('flex flex-col', className)} style={style}>
         {steps.map((step, i) => {
           const isComplete = i < current
           const isCurrent  = i === current
@@ -65,7 +66,8 @@ export function Stepper({ steps, current, orientation = 'horizontal', className 
 
   // Horizontal
   return (
-    <div className={cn('flex items-start', className)}>
+    <div className={cn('flex items-start', className)}
+        style={style}>
       {steps.map((step, i) => {
         const isComplete = i < current
         const isCurrent  = i === current

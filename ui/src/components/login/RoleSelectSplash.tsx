@@ -1,6 +1,7 @@
 'use client'
 
 import React, { type ReactNode } from 'react'
+import { cn } from '../../lib/cn'
 import { BrandLogo } from '../layout/BrandLogo'
 
 export interface RoleOption {
@@ -17,6 +18,8 @@ export interface RoleSelectSplashProps {
   message?: string
   roles: RoleOption[]
   onSelect: (roleKey: string) => void
+  className?: string
+  style?: React.CSSProperties
 }
 
 export function RoleSelectSplash({
@@ -26,9 +29,11 @@ export function RoleSelectSplash({
   message = 'You have multiple roles. Choose how to continue.',
   roles,
   onSelect,
+  className,
+  style,
 }: RoleSelectSplashProps) {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-surface-secondary to-white flex items-center justify-center p-4">
+    <div className={cn('min-h-screen bg-gradient-to-br from-surface-secondary to-white flex items-center justify-center p-4', className)} style={style}>
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">

@@ -13,6 +13,7 @@ export interface TooltipProps {
   disabled?: boolean
   children: React.ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 interface Position { top: number; left: number }
@@ -24,6 +25,7 @@ export function Tooltip({
   disabled,
   children,
   className,
+  style,
 }: TooltipProps) {
   const [pos, setPos] = useState<Position | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -91,6 +93,7 @@ export function Tooltip({
               left: pos.left,
               transform: transformMap[placement],
               background: 'var(--primary, #000080)',
+              ...style,
             }}
           >
             {content}

@@ -12,6 +12,7 @@ export interface AvatarProps {
   size?: AvatarSize
   shape?: 'circle' | 'square'
   className?: string
+  style?: React.CSSProperties
 }
 
 const sizeClasses: Record<AvatarSize, string> = {
@@ -22,7 +23,7 @@ const sizeClasses: Record<AvatarSize, string> = {
   xl: 'h-16 w-16 text-[18px]',
 }
 
-export function Avatar({ src, alt, name, size = 'md', shape = 'circle', className }: AvatarProps) {
+export function Avatar({ src, alt, name, size = 'md', shape = 'circle', className, style }: AvatarProps) {
   const [imgError, setImgError] = useState(false)
   const initials = name
     ? name.split(' ').map((w) => w[0] ?? '').slice(0, 2).join('').toUpperCase()
@@ -37,6 +38,7 @@ export function Avatar({ src, alt, name, size = 'md', shape = 'circle', classNam
         alt={alt ?? name ?? 'avatar'}
         onError={() => setImgError(true)}
         className={cn('flex-shrink-0 object-cover', sizeClasses[size], shapeClass, className)}
+        style={style}
       />
     )
   }
@@ -49,7 +51,7 @@ export function Avatar({ src, alt, name, size = 'md', shape = 'circle', classNam
         shapeClass,
         className,
       )}
-      style={{ background: 'var(--primary, #000080)' }}
+      style={{ background: 'var(--primary, #000080)', ...style }}
       aria-label={name}
     >
       {initials}
@@ -62,14 +64,15 @@ export interface AvatarGroupProps {
   max?: number
   size?: AvatarSize
   className?: string
+  style?: React.CSSProperties
 }
 
-export function AvatarGroup({ avatars, max = 4, size = 'sm', className }: AvatarGroupProps) {
+export function AvatarGroup({ avatars, max = 4, size = 'sm', className, style }: AvatarGroupProps) {
   const visible = avatars.slice(0, max)
   const extra = avatars.length - max
 
   return (
-    <div className={cn('flex items-center', className)}>
+    <div className={cn('flex items-center', className)} style={style}>
       {visible.map((a, i) => (
         <div
           key={i}

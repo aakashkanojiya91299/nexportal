@@ -16,6 +16,7 @@ export interface NumberInputProps {
   error?: string
   disabled?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
 export function NumberInput({
@@ -30,6 +31,7 @@ export function NumberInput({
   error,
   disabled,
   className,
+  style,
 }: NumberInputProps) {
   const [internal, setInternal] = useState(defaultValue)
   const isControlled = controlled !== undefined
@@ -49,7 +51,8 @@ export function NumberInput({
   )
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}
+        style={style}>
       {label && (
         <span className={cn('text-subhead font-medium', error ? 'text-red-500' : 'text-label-primary')}>
           {label}

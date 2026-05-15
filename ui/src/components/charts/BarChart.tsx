@@ -22,7 +22,10 @@ export interface PortalBarChartProps {
   showGrid?: boolean
   showLegend?: boolean
   rounded?: boolean
+  /** Color of legend label text. Defaults to #555 */
+  legendTextColor?: string
   className?: string
+  style?: React.CSSProperties
 }
 
 const DEFAULT_COLORS = ['#000080', '#FF9933', '#138808', '#6366f1', '#ec4899', '#06b6d4']
@@ -45,12 +48,14 @@ export function PortalBarChart({
   showGrid = true,
   showLegend = true,
   rounded = true,
+  legendTextColor = '#555',
   className = '',
+  style,
 }: PortalBarChartProps) {
   const colors = series.map((s, i) => getColor(s, i))
 
   return (
-    <div className={className} style={{ width: '100%', height }}>
+    <div className={className} style={{ width: '100%', height, ...style }}>
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 100, height }}>
         <ReBarChart data={data} barCategoryGap="28%" barGap={4}
           margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
@@ -74,7 +79,7 @@ export function PortalBarChart({
             cursor={{ fill: '#f5f5f5', radius: 4 }}
           />
           {showLegend && (
-            <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+            <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} formatter={(v) => <span style={{ color: legendTextColor }}>{v}</span>} />
           )}
           {series.map((s, i) => (
             <Bar

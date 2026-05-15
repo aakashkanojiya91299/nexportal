@@ -55,6 +55,7 @@ export interface PageFooterProps {
   poweredByHref?: string
   socialLinks?: FooterSocialLink[]
   className?: string
+  style?: React.CSSProperties
 }
 
 const DEFAULT_SOCIAL_LINKS: FooterSocialLink[] = [
@@ -97,11 +98,12 @@ export function PageFooter({
   poweredByHref = '#',
   socialLinks = DEFAULT_SOCIAL_LINKS,
   className,
+  style,
 }: PageFooterProps) {
   const year = new Date().getFullYear()
 
   return (
-    <footer className={cn('shrink-0 px-3 pb-3', className)}>
+    <footer className={cn('shrink-0 px-3 pb-3', className)} style={style}>
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         <div className="px-5 py-3 flex items-center justify-between gap-4 flex-wrap">
           {/* Left: org name + copyright */}

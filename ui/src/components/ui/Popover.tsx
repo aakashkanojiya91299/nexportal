@@ -12,6 +12,7 @@ export interface PopoverProps {
   open?: boolean
   onOpenChange?: (open: boolean) => void
   className?: string
+  style?: React.CSSProperties
 }
 
 const PLACEMENT: Record<PopoverPlacement, string> = {
@@ -23,6 +24,7 @@ const PLACEMENT: Record<PopoverPlacement, string> = {
 
 export function Popover({
   trigger, content, placement = 'bottom', open: controlled, onOpenChange, className,
+  style,
 }: PopoverProps) {
   const [internal, setInternal] = useState(false)
   const isControlled = controlled !== undefined
@@ -57,7 +59,7 @@ export function Popover({
           'absolute z-50 min-w-max rounded-xl border border-gray-200 bg-white shadow-lg p-3',
           PLACEMENT[placement],
           className,
-        )}>
+        )} style={style}>
           {content}
         </div>
       )}

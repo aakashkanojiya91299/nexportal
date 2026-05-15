@@ -15,6 +15,7 @@ export interface DialogProps {
   footer?: React.ReactNode
   hideCloseButton?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
 const sizeClasses: Record<NonNullable<DialogProps['size']>, string> = {
@@ -35,6 +36,7 @@ export function Dialog({
   footer,
   hideCloseButton,
   className,
+  style,
 }: DialogProps) {
   const panelRef = useRef<HTMLDivElement>(null)
 
@@ -73,7 +75,7 @@ export function Dialog({
           sizeClasses[size],
           className,
         )}
-        style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.18)' }}
+        style={{ boxShadow: '0 24px 64px rgba(0,0,0,0.18)', ...style }}
       >
         {/* Header */}
         {(title || !hideCloseButton) && (

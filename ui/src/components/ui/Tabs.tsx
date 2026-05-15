@@ -22,6 +22,7 @@ export interface TabsProps {
   variant?: 'line' | 'pill' | 'card'
   children: React.ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 export function Tabs({
@@ -31,6 +32,7 @@ export function Tabs({
   variant = 'line',
   children,
   className,
+  style,
 }: TabsProps) {
   const [internal, setInternal] = useState(defaultValue ?? '')
   const isControlled = value !== undefined
@@ -43,7 +45,8 @@ export function Tabs({
 
   return (
     <TabsContext.Provider value={{ active, setActive, variant }}>
-      <div className={cn('flex flex-col', className)}>{children}</div>
+      <div className={cn('flex flex-col', className)}
+        style={style}>{children}</div>
     </TabsContext.Provider>
   )
 }
@@ -51,6 +54,7 @@ export function Tabs({
 export interface TabsListProps {
   children: React.ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 export function TabsList({ children, className }: TabsListProps) {
@@ -77,6 +81,7 @@ export interface TabsTriggerProps {
   children: React.ReactNode
   disabled?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
 export function TabsTrigger({ value, children, disabled, className }: TabsTriggerProps) {
@@ -131,13 +136,14 @@ export interface TabsContentProps {
   value: string
   children: React.ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
-export function TabsContent({ value, children, className }: TabsContentProps) {
+export function TabsContent({ value, children, className, style }: TabsContentProps) {
   const { active } = useContext(TabsContext)
   if (active !== value) return null
   return (
-    <div role="tabpanel" className={cn('mt-4', className)}>
+    <div role="tabpanel" className={cn('mt-4', className)} style={style}>
       {children}
     </div>
   )

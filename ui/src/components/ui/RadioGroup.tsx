@@ -20,6 +20,7 @@ export interface RadioGroupProps {
   error?: string
   orientation?: 'vertical' | 'horizontal'
   className?: string
+  style?: React.CSSProperties
   name?: string
 }
 
@@ -33,6 +34,7 @@ export function RadioGroup({
   error,
   orientation = 'vertical',
   className,
+  style,
   name,
 }: RadioGroupProps) {
   const [internal, setInternal] = React.useState(defaultValue ?? '')
@@ -47,7 +49,8 @@ export function RadioGroup({
   }
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}
+        style={style}>
       {label && (
         <span className="text-callout font-medium text-label-primary">{label}</span>
       )}

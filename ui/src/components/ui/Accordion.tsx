@@ -23,6 +23,7 @@ export interface AccordionProps {
   onChange?: (value: string | string[]) => void
   children: React.ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 export function Accordion({
@@ -32,6 +33,7 @@ export function Accordion({
   onChange,
   children,
   className,
+  style,
 }: AccordionProps) {
   const toArray = (v?: string | string[]) =>
     v === undefined ? [] : Array.isArray(v) ? v : [v]
@@ -53,7 +55,8 @@ export function Accordion({
 
   return (
     <AccordionContext.Provider value={{ open, toggle, type }}>
-      <div className={cn('flex flex-col divide-y divide-separator-opaque', className)}>
+      <div className={cn('flex flex-col divide-y divide-separator-opaque', className)}
+        style={style}>
         {children}
       </div>
     </AccordionContext.Provider>
@@ -66,14 +69,15 @@ export interface AccordionItemProps {
   children: React.ReactNode
   disabled?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
-export function AccordionItem({ value, trigger, children, disabled, className }: AccordionItemProps) {
+export function AccordionItem({ value, trigger, children, disabled, className, style }: AccordionItemProps) {
   const { open, toggle } = useContext(AccordionContext)
   const isOpen = open.includes(value)
 
   return (
-    <div className={cn('py-1', className)}>
+    <div className={cn('py-1', className)} style={style}>
       <button
         type="button"
         aria-expanded={isOpen}

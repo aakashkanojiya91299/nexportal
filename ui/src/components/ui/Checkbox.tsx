@@ -15,6 +15,7 @@ export interface CheckboxProps {
   error?: string
   size?: 'sm' | 'md'
   className?: string
+  style?: React.CSSProperties
   id?: string
 }
 
@@ -29,6 +30,7 @@ export function Checkbox({
   error,
   size = 'md',
   className,
+  style,
   id,
 }: CheckboxProps) {
   const [internal, setInternal] = React.useState(defaultChecked ?? false)
@@ -46,7 +48,8 @@ export function Checkbox({
   const isActive = isChecked || indeterminate
 
   return (
-    <div className={cn('flex items-start gap-2.5', className)}>
+    <div className={cn('flex items-start gap-2.5', className)}
+        style={style}>
       <button
         type="button"
         role="checkbox"

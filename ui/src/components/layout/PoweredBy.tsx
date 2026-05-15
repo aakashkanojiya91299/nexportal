@@ -8,9 +8,10 @@ export interface PoweredByProps {
   text?: string
   href?: string
   className?: string
+  style?: React.CSSProperties
 }
 
-export function PoweredBy({ logoSrc, text = 'Powered by', href = '#', className }: PoweredByProps) {
+export function PoweredBy({ logoSrc, text = 'Powered by', href = '#', className, style }: PoweredByProps) {
   return (
     <a
       href={href}
@@ -20,6 +21,7 @@ export function PoweredBy({ logoSrc, text = 'Powered by', href = '#', className 
         'fixed bottom-4 right-4 z-20 flex items-center gap-1.5 hover:opacity-80 transition-opacity',
         className,
       )}
+      style={style}
     >
       <span className="text-caption1 font-black uppercase tracking-widest text-label-tertiary">
         {text}

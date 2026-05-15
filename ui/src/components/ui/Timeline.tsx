@@ -14,6 +14,7 @@ export interface TimelineItem {
 export interface TimelineProps {
   items: TimelineItem[]
   className?: string
+  style?: React.CSSProperties
 }
 
 const DOT: Record<string, string> = {
@@ -32,9 +33,9 @@ const ICON_BG: Record<string, string> = {
   info:    'bg-blue-100 text-blue-600',
 }
 
-export function Timeline({ items, className }: TimelineProps) {
+export function Timeline({ items, className, style }: TimelineProps) {
   return (
-    <div className={cn('flex flex-col', className)}>
+    <div className={cn('flex flex-col', className)} style={style}>
       {items.map((item, i) => {
         const v      = item.variant ?? 'default'
         const isLast = i === items.length - 1

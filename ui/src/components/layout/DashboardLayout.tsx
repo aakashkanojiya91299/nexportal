@@ -22,6 +22,7 @@ export interface DashboardLayoutProps {
   poweredBy?: PoweredByConfig
   children: ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 function UserAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
@@ -152,13 +153,14 @@ export function DashboardLayout({
   poweredBy,
   children,
   className,
+  style,
 }: DashboardLayoutProps) {
   const commonProps = { navGroups, logoSrc, logoAlt, projectName, user, pathname, onLogout }
 
   /* ── Header layout ──────────────────────────────────────────────────────── */
   if (sidebar === 'header') {
     return (
-      <div className={cn('flex flex-col min-h-screen bg-surface-secondary', className)}>
+      <div className={cn('flex flex-col min-h-screen bg-surface-secondary', className)} style={style}>
         <HeaderNav {...commonProps} />
         <main className="flex-1 overflow-auto pt-[52px] lg:pt-0">
           {children}
@@ -176,7 +178,7 @@ export function DashboardLayout({
   }
 
   return (
-    <div className={cn('flex min-h-screen bg-surface-secondary', className)}>
+    <div className={cn('flex min-h-screen bg-surface-secondary', className)} style={style}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       {sidebar === 'full' && <Sidebar {...commonProps} />}

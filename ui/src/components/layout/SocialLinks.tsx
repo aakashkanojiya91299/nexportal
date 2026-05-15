@@ -14,12 +14,13 @@ export interface SocialLink {
 export interface SocialLinksProps {
   links: SocialLink[]
   className?: string
+  style?: React.CSSProperties
 }
 
-export function SocialLinks({ links, className }: SocialLinksProps) {
+export function SocialLinks({ links, className, style }: SocialLinksProps) {
   if (!links.length) return null
   return (
-    <div className={cn('flex items-center gap-3', className)}>
+    <div className={cn('flex items-center gap-3', className)} style={style}>
       {links.map(({ icon, href, label }) => (
         <a
           key={href}

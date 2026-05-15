@@ -27,6 +27,7 @@ export interface FileUploadProps {
   maxSize?: number
   onChange?: (files: File[]) => void
   className?: string
+  style?: React.CSSProperties
 }
 
 export function FileUpload({
@@ -38,6 +39,7 @@ export function FileUpload({
   maxSize,
   onChange,
   className,
+  style,
 }: FileUploadProps) {
   const inputRef   = useRef<HTMLInputElement>(null)
   const [files,    setFiles]    = useState<File[]>([])
@@ -72,7 +74,8 @@ export function FileUpload({
   const displayError = error || sizeErr
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}
+        style={style}>
       {label && (
         <span className="text-footnote font-medium text-label-primary">{label}</span>
       )}

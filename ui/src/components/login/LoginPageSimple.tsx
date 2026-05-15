@@ -32,6 +32,7 @@ export interface LoginPageSimpleProps {
   registerLinks?: RegisterLink[]
 
   className?: string
+  style?: React.CSSProperties
 }
 
 export function LoginPageSimple({
@@ -46,6 +47,7 @@ export function LoginPageSimple({
   onRoleSelect,
   registerLinks,
   className,
+  style,
 }: LoginPageSimpleProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -84,6 +86,7 @@ export function LoginPageSimple({
         'min-h-screen bg-gradient-to-br from-surface-secondary to-white flex items-center justify-center p-4',
         className,
       )}
+      style={style}
     >
       <div className="max-w-md w-full">
         <div className="text-center mb-8">

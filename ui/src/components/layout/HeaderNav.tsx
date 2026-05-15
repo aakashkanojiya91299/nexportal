@@ -16,6 +16,10 @@ export interface HeaderNavProps {
   user: UserInfo
   pathname: string
   onLogout: () => void
+  /** Applied to the desktop sticky header bar */
+  className?: string
+  /** Applied to the desktop sticky header bar */
+  style?: React.CSSProperties
 }
 
 function isActive(pathname: string, href: string): boolean {
@@ -328,6 +332,8 @@ export function HeaderNav({
   user,
   pathname,
   onLogout,
+  className,
+  style,
 }: HeaderNavProps) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [openMenu, setOpenMenu] = useState<string | null>(null)
@@ -378,7 +384,7 @@ export function HeaderNav({
       )}
 
       {/* ── Desktop header bar ───────────────────────────────────────────── */}
-      <header className="hidden lg:flex flex-col flex-shrink-0 sticky top-0 z-40 bg-white border-b border-separator-opaque shadow-sm">
+      <header className={cn('hidden lg:flex flex-col flex-shrink-0 sticky top-0 z-40 bg-white border-b border-separator-opaque shadow-sm', className)} style={style}>
         <TricolorBar />
         <div className="flex h-12 items-center gap-2 px-4">
 

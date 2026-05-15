@@ -10,20 +10,21 @@ export interface TricolorBarProps {
   animated?: boolean
   height?: number
   className?: string
+  style?: React.CSSProperties
 }
 
-export function TricolorBar({ colors, animated = false, height = 3, className }: TricolorBarProps) {
+export function TricolorBar({ colors, animated = false, height = 3, className, style }: TricolorBarProps) {
   const theme = useTheme()
   const [c1, c2, c3] = colors ?? [theme.accent, '#ffffff', theme.success]
 
-  const style: React.CSSProperties = {
+  const barStyle: React.CSSProperties = {
     height,
     background: `linear-gradient(to right, ${c1} 33.33%, ${c2} 33.33% 66.66%, ${c3} 66.66%)`,
   }
 
   return (
     <div
-      style={style}
+      style={{ ...barStyle, ...style }}
       className={cn(animated && 'tricolor-sweep', className)}
       aria-hidden="true"
     />

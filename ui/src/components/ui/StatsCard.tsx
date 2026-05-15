@@ -14,6 +14,7 @@ export interface StatsCardProps {
   icon?: React.ReactNode
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger'
   className?: string
+  style?: React.CSSProperties
 }
 
 export function StatsCard({
@@ -25,6 +26,7 @@ export function StatsCard({
   icon,
   variant = 'default',
   className,
+  style,
 }: StatsCardProps) {
   const hasTrend = trend !== undefined && trend !== null
   const trendUp   = hasTrend && trend > 0
@@ -42,7 +44,7 @@ export function StatsCard({
     <div className={cn(
       'flex flex-col gap-3 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm',
       className,
-    )}>
+    )} style={style}>
       {icon && (
         <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', iconBg)}>
           {icon}

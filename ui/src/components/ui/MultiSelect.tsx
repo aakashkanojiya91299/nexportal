@@ -27,6 +27,7 @@ export interface MultiSelectProps {
   selectAll?: boolean
   required?: boolean
   className?: string
+  style?: React.CSSProperties
   containerClassName?: string
 }
 
@@ -46,6 +47,7 @@ export function MultiSelect({
   selectAll = false,
   required,
   className,
+  style,
   containerClassName,
 }: MultiSelectProps) {
   const [open, setOpen] = useState(false)
@@ -152,6 +154,7 @@ export function MultiSelect({
             disabled && 'opacity-50 cursor-not-allowed bg-surface-secondary',
             className,
           )}
+          style={style}
         >
           <div className="flex flex-1 flex-wrap items-center gap-1.5 min-w-0">
             {visibleChips.length === 0 ? (

@@ -18,6 +18,7 @@ export interface SidebarProps {
   collapsed?: boolean
   onLogout: () => void
   className?: string
+  style?: React.CSSProperties
 }
 
 function isActive(pathname: string, href: string): boolean {
@@ -55,6 +56,7 @@ export function Sidebar({
   collapsed = false,
   onLogout,
   className,
+  style,
 }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [openSection, setOpenSection] = useState<string | null>(null)
@@ -103,6 +105,7 @@ export function Sidebar({
         collapsed ? 'w-[72px]' : 'w-72',
         className,
       )}
+      style={style}
     >
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0">
@@ -115,10 +118,9 @@ export function Sidebar({
         >
           <div
             className={cn(
-              'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden ring-2',
+              'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden',
               collapsed ? 'w-10 h-10' : 'w-14 h-14',
             )}
-            style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}
           >
             <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'lg'} />
           </div>
@@ -296,7 +298,6 @@ export function Sidebar({
           <div className="flex items-center gap-2.5">
             <div
               className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden"
-              style={{ background: 'var(--primary-soft, rgba(0,0,128,0.08))' }}
             >
               <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="md" />
             </div>

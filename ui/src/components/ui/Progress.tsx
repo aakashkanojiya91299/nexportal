@@ -12,6 +12,7 @@ export interface ProgressProps {
   variant?: 'default' | 'success' | 'warning' | 'danger'
   animated?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
 const variantColors: Record<NonNullable<ProgressProps['variant']>, string> = {
@@ -36,12 +37,14 @@ export function Progress({
   variant = 'default',
   animated,
   className,
+  style,
 }: ProgressProps) {
   const pct = Math.min(100, Math.max(0, (value / max) * 100))
   const color = variantColors[variant]
 
   return (
-    <div className={cn('flex flex-col gap-1.5', className)}>
+    <div className={cn('flex flex-col gap-1.5', className)}
+        style={style}>
       {(label || showValue) && (
         <div className="flex items-center justify-between">
           {label && <span className="text-callout font-medium text-label-primary">{label}</span>}

@@ -31,6 +31,7 @@ export interface DatePickerProps {
   excludeWeekends?: boolean
   excludeDates?: string[]
   className?: string
+  style?: React.CSSProperties
   containerClassName?: string
 }
 
@@ -48,7 +49,7 @@ export function DatePicker({
   disableFuture, disablePast,
   minDate, maxDate,
   excludeWeekends, excludeDates,
-  className, containerClassName,
+  className, containerClassName, style,
 }: DatePickerProps) {
   // Support uncontrolled mode: when no value/onChange are passed, manage state internally
   const isControlled = valueProp !== undefined
@@ -194,6 +195,7 @@ export function DatePicker({
             disabled && 'opacity-50 cursor-not-allowed',
             className,
           )}
+          style={style}
         >
           <span>{date ? format(date, 'dd/MM/yyyy') : placeholder}</span>
           <CalendarIcon className="h-4 w-4 text-label-tertiary flex-shrink-0 ml-2" />

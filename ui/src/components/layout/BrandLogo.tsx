@@ -10,6 +10,7 @@ export interface BrandLogoProps {
   alt?: string
   size?: LogoSize
   className?: string
+  style?: React.CSSProperties
 }
 
 const sizeMap: Record<LogoSize, { width: number; height: number; className: string }> = {
@@ -19,7 +20,7 @@ const sizeMap: Record<LogoSize, { width: number; height: number; className: stri
   xl: { width: 80,  height: 80,  className: 'w-20 h-20' },
 }
 
-export function BrandLogo({ src, alt = 'Logo', size = 'md', className }: BrandLogoProps) {
+export function BrandLogo({ src, alt = 'Logo', size = 'md', className, style }: BrandLogoProps) {
   const { width, height, className: sizeClass } = sizeMap[size]
   return (
     // eslint-disable-next-line @next/next/no-img-element
@@ -29,6 +30,7 @@ export function BrandLogo({ src, alt = 'Logo', size = 'md', className }: BrandLo
       width={width}
       height={height}
       className={cn('object-contain flex-shrink-0', sizeClass, className)}
+      style={style}
     />
   )
 }

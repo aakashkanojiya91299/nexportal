@@ -18,6 +18,7 @@ npx @lucifer91299/create-portal-app my-portal
 
 - [Install](#install)
 - [Setup (5 steps)](#setup-5-steps)
+- [Styling Components](#styling-components)
 - [Components](#components)
   - [Button](#button)
   - [Input & Textarea](#input--textarea)
@@ -48,6 +49,7 @@ npx @lucifer91299/create-portal-app my-portal
   - [LoginPageSimple (Clean)](#loginpagesimple-clean)
   - [DashboardLayout](#dashboardlayout)
   - [HeaderNav](#headernav)
+  - [Layout Primitives](#layout-primitives)
 - [Auth Hooks](#auth-hooks)
 - [Auth API routes](#auth-api-routes)
 - [Middleware / proxy.ts](#middleware--proxyts)
@@ -143,6 +145,96 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 ```
 
 > Import `@lucifer91299/ui/styles/components.css` in `layout.tsx`, not in `globals.css`. Importing SDK CSS from `node_modules` can trigger Tailwind directive errors.
+
+---
+
+## Styling Components
+
+Every component in this library supports **both** `className` and `style` props on its root element. This makes it trivial to override defaults using Tailwind classes or inline CSS without fighting specificity.
+
+### `className` — Tailwind / CSS classes
+
+```tsx
+<StatsCard className="border-2 border-blue-500 shadow-xl" ... />
+<Dialog className="max-w-2xl" ... />
+<PortalBarChart className="rounded-2xl bg-white p-4" ... />
+```
+
+### `style` — Inline CSS (React.CSSProperties)
+
+```tsx
+<LoginPage style={{ background: 'linear-gradient(to bottom, #001, #003)' }} ... />
+<DashboardLayout style={{ '--primary': '#7c3aed' } as React.CSSProperties} ... />
+<Tooltip style={{ background: '#333', borderRadius: 8 }} ... />
+```
+
+### CSS Variable overrides via `style`
+
+Because the theme system uses CSS variables, you can override individual token values per-component:
+
+```tsx
+<StatsCard
+  style={{ '--primary': '#e11d48', '--primary-soft': 'rgba(225,29,72,0.1)' } as React.CSSProperties}
+  variant="primary"
+  ...
+/>
+```
+
+### Component `className` / `style` coverage
+
+| Component | `className` | `style` | Notes |
+|-----------|:-----------:|:-------:|-------|
+| `Button` | ✓ | ✓ | via `ButtonHTMLAttributes` |
+| `Input` | ✓ | ✓ | via `InputHTMLAttributes`; wraps `<input>` |
+| `Textarea` | ✓ | ✓ | via `TextareaHTMLAttributes` |
+| `Card` | ✓ | ✓ | via `HTMLAttributes<HTMLDivElement>` |
+| `Select` | ✓ | ✓ | applied to trigger button |
+| `MultiSelect` | ✓ | ✓ | applied to trigger button |
+| `DatePicker` | ✓ | ✓ | applied to trigger button |
+| `DateTimePicker` | ✓ | ✓ | applied to trigger button |
+| `Switch` | ✓ | ✓ | applied to root wrapper |
+| `Checkbox` | ✓ | ✓ | applied to root wrapper |
+| `RadioGroup` | ✓ | ✓ | applied to root wrapper |
+| `Badge` | ✓ | ✓ | |
+| `AlertBanner` | ✓ | ✓ | |
+| `Separator` | ✓ | ✓ | all 3 orientation branches |
+| `Dialog` | ✓ | ✓ | merged with default box-shadow |
+| `Drawer` | ✓ | ✓ | merged with slide transform |
+| `Tabs` / `TabsList` / `TabsTrigger` / `TabsContent` | ✓ | ✓ | |
+| `Accordion` / `AccordionItem` | ✓ | ✓ | |
+| `Tooltip` | ✓ | ✓ | merged with positioning + background |
+| `Popover` | ✓ | ✓ | applied to content panel |
+| `Avatar` / `AvatarGroup` | ✓ | ✓ | merged with initials background |
+| `Progress` | ✓ | ✓ | |
+| `Skeleton` / `SkeletonText` / `SkeletonCard` | ✓ | ✓ | merged with width/height |
+| `LoadingSpinner` | ✓ | ✓ | |
+| `StatsCard` | ✓ | ✓ | |
+| `EmptyState` | ✓ | ✓ | |
+| `FileUpload` | ✓ | ✓ | |
+| `OTPInput` | ✓ | ✓ | |
+| `NumberInput` | ✓ | ✓ | |
+| `Slider` | ✓ | ✓ | |
+| `TagInput` | ✓ | ✓ | |
+| `Timeline` | ✓ | ✓ | |
+| `DataTable` | ✓ | ✓ | |
+| `Stepper` | ✓ | ✓ | |
+| `PortalBarChart` | ✓ | ✓ | merged with width/height |
+| `PortalLineChart` | ✓ | ✓ | merged with width/height |
+| `PortalAreaChart` | ✓ | ✓ | merged with width/height |
+| `PortalDonutChart` | ✓ | ✓ | merged with width/height |
+| `LoginPage` | ✓ | ✓ | merged with gradient background |
+| `LoginPageSimple` | ✓ | ✓ | |
+| `RoleSelectSplash` | ✓ | ✓ | |
+| `DashboardLayout` | ✓ | ✓ | |
+| `Sidebar` | ✓ | ✓ | |
+| `SidebarRail` | ✓ | ✓ | |
+| `HeaderNav` | ✓ | ✓ | applied to desktop sticky `<header>` |
+| `PageShell` | ✓ | ✓ | |
+| `PageFooter` | ✓ | ✓ | |
+| `BrandLogo` | ✓ | ✓ | |
+| `TricolorBar` | ✓ | ✓ | merged with bar gradient/height |
+| `SocialLinks` | ✓ | ✓ | |
+| `PoweredBy` | ✓ | ✓ | |
 
 ---
 
@@ -958,27 +1050,57 @@ const data = [
   data={data}
   xKey="month"
   series={[
-    { key: 'revenue',  name: 'Revenue'  },
-    { key: 'expenses', name: 'Expenses' },
+    { key: 'revenue',  name: 'Revenue',  color: '#7c3aed' },
+    { key: 'expenses', name: 'Expenses', color: '#e11d48' },
   ]}
   height={240}
+  legendTextColor="#444"
 />
 
-<PortalLineChart  data={data} xKey="month" series={[{ key: 'revenue', name: 'Revenue' }]} height={240} />
+<PortalLineChart  data={data} xKey="month" series={[{ key: 'revenue', name: 'Revenue' }]} height={240} legendTextColor="#666" />
 <PortalAreaChart  data={data} xKey="month" series={[{ key: 'revenue', name: 'Revenue' }]} height={240} />
 
-{/* DonutChart accepts both name and label fields */}
+{/* DonutChart — fully customisable indication colors */}
 <PortalDonutChart
   data={[
-    { label: 'Active',   value: 58 },
-    { label: 'Pending',  value: 22 },
-    { label: 'Inactive', value: 20 },
+    { label: 'Active',   value: 58, color: '#138808' },
+    { label: 'Pending',  value: 22, color: '#FF9933' },
+    { label: 'Inactive', value: 20, color: '#000080' },
   ]}
   centerLabel="Total"
   centerValue={100}
+  centerValueColor="#1a1a1a"
+  centerLabelColor="#888"
+  legendTextColor="#555"
   height={240}
 />
 ```
+
+**Chart series color resolution order:**
+1. `series[i].color` (or `data[i].color` for DonutChart) — **explicit override**
+2. CSS variables `--primary`, `--accent`, `--success` — from your `ThemeProvider`
+3. Built-in fallback palette (`#000080`, `#FF9933`, `#138808`, `#6366f1`, …)
+
+**Chart props reference:**
+
+| Prop | Bar | Line | Area | Donut | Description |
+|------|:---:|:----:|:----:|:-----:|-------------|
+| `height` | ✓ | ✓ | ✓ | ✓ | Chart height in px (default `280`) |
+| `showGrid` | ✓ | ✓ | ✓ | — | Show grid lines |
+| `showLegend` | ✓ | ✓ | ✓ | ✓ | Show legend |
+| `legendTextColor` | ✓ | ✓ | ✓ | ✓ | Legend label text color (default `#555`) |
+| `rounded` | ✓ | — | — | — | Rounded bar tops |
+| `showDots` | — | ✓ | — | — | Show data dots |
+| `curved` | — | ✓ | — | — | Smooth curve |
+| `stacked` | — | — | ✓ | — | Stack areas |
+| `centerLabel` | — | — | — | ✓ | Text inside donut |
+| `centerValue` | — | — | — | ✓ | Number inside donut |
+| `centerValueColor` | — | — | — | ✓ | Center value text color (default `#1a1a1a`) |
+| `centerLabelColor` | — | — | — | ✓ | Center label text color (default `#888`) |
+| `innerRadius` | — | — | — | ✓ | Inner ring radius (default `58%`) |
+| `outerRadius` | — | — | — | ✓ | Outer ring radius (default `78%`) |
+| `className` | ✓ | ✓ | ✓ | ✓ | CSS class on wrapper div |
+| `style` | ✓ | ✓ | ✓ | ✓ | Inline style on wrapper div |
 
 ---
 
@@ -1003,7 +1125,7 @@ import { LoginPage } from '@lucifer91299/ui'
   isLoading={false}
   error={null}
   forgotPasswordHref="/forgot-password"
-  poweredBy={{ logoSrc: '/brand/powered-by.svg', text: 'Powered by STSPL', href: 'https://stspl.com' }}
+  poweredBy={{ logoSrc: '/brand/powered-by.svg', text: 'Powered by STSPL', href: 'https://xyz.com' }}
 />
 ```
 
@@ -1130,6 +1252,72 @@ type NavGroup = {
   items: NavItem[]
 }
 ```
+
+---
+
+### Layout Primitives
+
+Smaller building-block components you can use inside or outside the dashboard layout.
+
+```tsx
+import {
+  BrandLogo,
+  TricolorBar,
+  SocialLinks,
+  PoweredBy,
+  PageShell,
+  PageFooter,
+} from '@lucifer91299/ui'
+
+{/* Logo — sizes: 'sm' (32px) | 'md' (48px) | 'lg' (64px) | 'xl' (80px) */}
+<BrandLogo src="/brand/logo.svg" alt="My Portal" size="xl" className="rounded-xl" />
+
+{/* Animated Indian tricolor bar */}
+<TricolorBar animated height={4} />
+
+{/* Override colors */}
+<TricolorBar colors={['#e11d48', '#ffffff', '#2563eb']} height={3} />
+
+{/* Social media links row */}
+<SocialLinks
+  links={[
+    { icon: <Instagram className="w-4 h-4" />, href: 'https://instagram.com/...', label: 'Instagram' },
+  ]}
+  className="gap-4"
+/>
+
+{/* "Powered by" fixed badge */}
+<PoweredBy logoSrc="/brand/powered-by.svg" text="Powered by" href="https://xyz.com" />
+
+{/* Page title + subtitle + actions area */}
+<PageShell
+  title="Athletes"
+  subtitle="Manage registered athletes"
+  actions={<Button>Add Athlete</Button>}
+  breadcrumbs={<Breadcrumbs items={[{ label: 'Dashboard', href: '/dashboard' }, { label: 'Athletes' }]} />}
+/>
+
+{/* Footer with org name, logo, and social links */}
+<PageFooter
+  organizationName="My Portal"
+  logoSrc="/brand/logo.svg"
+  poweredByText="Powered by"
+  poweredByLogoSrc="/brand/powered-by.svg"
+  poweredByHref="https://xyz.com"
+/>
+```
+
+| Component | Key props |
+|-----------|-----------|
+| `BrandLogo` | `src`, `alt`, `size` (`sm`/`md`/`lg`/`xl`), `className`, `style` |
+| `TricolorBar` | `colors`, `animated`, `height`, `className`, `style` |
+| `SocialLinks` | `links` (`{ icon, href, label }`), `className`, `style` |
+| `PoweredBy` | `logoSrc`, `text`, `href`, `className`, `style` |
+| `PageShell` | `title`, `subtitle`, `actions`, `controls`, `breadcrumbs`, `backButton`, `className`, `style` |
+| `PageFooter` | `organizationName`, `logoSrc`, `poweredByText`, `poweredByLogoSrc`, `poweredByHref`, `socialLinks`, `className`, `style` |
+| `Separator` | `orientation` (`horizontal`/`vertical`), `label`, `className`, `style` |
+| `Stepper` | `steps`, `current`, `orientation` (`horizontal`/`vertical`), `className`, `style` |
+| `Timeline` | `items` (`{ title, description?, timestamp?, icon?, variant? }`), `className`, `style` |
 
 ---
 
@@ -1402,6 +1590,18 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 ---
 
 ## Changelog
+
+### v1.1.26
+
+- **Universal `className` + `style` props** — every public component now accepts both `className?: string` and `style?: React.CSSProperties`. Existing `inline style` objects (e.g. box-shadow in `Dialog`, transform in `Drawer`, background in `Avatar`) are merged via `{ ...defaultStyle, ...style }` so consumer styles override without losing animation or defaults
+- **Chart legend & indicator colors fully customisable**
+  - `PortalBarChart`, `PortalLineChart`, `PortalAreaChart` — new `legendTextColor` prop (default `#555`)
+  - `PortalDonutChart` — new `legendTextColor`, `centerValueColor` (default `#1a1a1a`), and `centerLabelColor` (default `#888`) props
+  - Series/slice colors use: `series[i].color` → CSS `--primary`/`--accent`/`--success` → built-in palette
+- **`LoginPage`** — login page logo bumped from `h-12 w-12` (48 px) to `h-20 w-20` (80 px); glow bloom enlarged to match
+- **`RoleSelectSplash`** — added `className` + `style` props
+- **`HeaderNav`** — added `className` + `style` props (applied to desktop sticky `<header>`)
+- **README** — new [Styling Components](#styling-components) section with full coverage table, CSS variable override examples, and expanded [Charts](#charts) props reference; new [Layout Primitives](#layout-primitives) section
 
 ### v1.1.25
 - **Logo sizes increased** — `LoginHeader` bumped to `xl` (80 px); `Sidebar` expanded header container `w-14 h-14` with `size="lg"`, mobile top bar `w-10 h-10` with `size="md"`; `HeaderNav` desktop, mobile top bar, and mobile drawer all bumped from `sm` (32 px) to `md` (48 px)

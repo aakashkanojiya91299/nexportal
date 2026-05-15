@@ -79,6 +79,7 @@ export interface LoginPageProps {
   socialLinksLabel?: string
 
   className?: string
+  style?: React.CSSProperties
 }
 
 /* ──────────────── Particle canvas ─────────────────────────────────────── */
@@ -436,6 +437,7 @@ export function LoginPage({
   poweredBy,
   socialLinks, socialLinksLabel = 'Connect with us',
   className,
+  style,
 }: LoginPageProps) {
   const [identifier, setIdentifier] = useState('')
   const [password, setPassword] = useState('')
@@ -490,7 +492,7 @@ export function LoginPage({
         'relative flex h-screen flex-col items-center justify-center overflow-hidden p-4 sm:p-6',
         className,
       )}
-      style={{ background: 'linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)' }}
+      style={{ background: 'linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)', ...style }}
       onMouseMove={onMouseMove}
     >
       <ParticleCanvas mouseRef={mouseRef as React.RefObject<{ x: number; y: number }>} />
@@ -508,12 +510,12 @@ export function LoginPage({
                 <motion.div className="absolute inset-0 rounded-full pointer-events-none"
                   style={{
                     background: 'radial-gradient(circle, rgba(255,153,51,0.2) 0%, transparent 70%)',
-                    filter: 'blur(18px)', transform: 'scale(1.7)',
+                    filter: 'blur(22px)', transform: 'scale(2.0)',
                   }}
                   animate={{ opacity: [0.45, 0.8, 0.45] }}
                   transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} />
                 <img src={logoSrc} alt={logoAlt ?? projectName}
-                  className="h-12 w-12 object-contain rounded-full relative" />
+                  className="h-30 w-30 object-contain rounded-full relative" />
               </div>
             )}
             <div className="flex flex-col leading-tight">

@@ -9,6 +9,7 @@ interface AlertBannerProps {
   variant?: AlertVariant
   children: ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 const variantStyles: Record<AlertVariant, string> = {
@@ -18,11 +19,12 @@ const variantStyles: Record<AlertVariant, string> = {
   success: 'bg-green-50 border border-green-200 text-green-700',
 }
 
-export function AlertBanner({ variant = 'info', children, className }: AlertBannerProps) {
+export function AlertBanner({ variant = 'info', children, className, style }: AlertBannerProps) {
   return (
     <div
       role="alert"
       className={cn('rounded px-4 py-3 text-callout', variantStyles[variant], className)}
+      style={style}
     >
       {children}
     </div>

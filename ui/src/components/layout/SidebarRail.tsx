@@ -16,6 +16,7 @@ export interface SidebarRailProps {
   pathname: string
   onLogout: () => void
   className?: string
+  style?: React.CSSProperties
 }
 
 function isActive(pathname: string, href: string): boolean {
@@ -49,6 +50,7 @@ export function SidebarRail({
   pathname,
   onLogout: _onLogout,
   className,
+  style,
 }: SidebarRailProps) {
   const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number } | null>(null)
 
@@ -74,6 +76,7 @@ export function SidebarRail({
           'flex flex-col h-screen sticky top-0 bg-white border-r border-separator-opaque w-[72px]',
           className,
         )}
+        style={style}
       >
         {/* Header */}
         <div className="flex-shrink-0">

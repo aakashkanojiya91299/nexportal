@@ -26,6 +26,7 @@ interface SelectCommonProps {
   addNewLabel?: string
   required?: boolean
   className?: string
+  style?: React.CSSProperties
   containerClassName?: string
   maxTagsShown?: number
 }
@@ -60,6 +61,7 @@ export function Select(props: SelectProps) {
     addNewLabel = 'Add new…',
     required,
     className,
+    style,
     containerClassName,
     maxTagsShown = 3,
   } = props
@@ -171,6 +173,7 @@ export function Select(props: SelectProps) {
             disabled && 'opacity-50 cursor-not-allowed bg-surface-secondary',
             className,
           )}
+          style={style}
         >
           {/* Trigger label */}
           {!multiple ? (

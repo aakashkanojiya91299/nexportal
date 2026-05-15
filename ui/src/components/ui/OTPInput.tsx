@@ -12,10 +12,12 @@ export interface OTPInputProps {
   label?: string
   helperText?: string
   className?: string
+  style?: React.CSSProperties
 }
 
 export function OTPInput({
   length = 6, value = '', onChange, error, disabled, label, helperText, className,
+  style,
 }: OTPInputProps) {
   const refs = useRef<(HTMLInputElement | null)[]>([])
 
@@ -40,7 +42,8 @@ export function OTPInput({
   }
 
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
+    <div className={cn('flex flex-col gap-2', className)}
+        style={style}>
       {label && <span className="text-footnote font-medium text-label-primary">{label}</span>}
       <div className="flex gap-2.5">
         {Array.from({ length }).map((_, i) => (

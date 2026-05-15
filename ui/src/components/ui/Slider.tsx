@@ -16,6 +16,7 @@ export interface SliderProps {
   helperText?: string
   disabled?: boolean
   className?: string
+  style?: React.CSSProperties
 }
 
 export function Slider({
@@ -31,6 +32,7 @@ export function Slider({
   helperText,
   disabled,
   className,
+  style,
 }: SliderProps) {
   const [internal, setInternal] = useState(defaultValue)
   const isControlled = controlled !== undefined
@@ -44,7 +46,8 @@ export function Slider({
   }
 
   return (
-    <div className={cn('flex flex-col gap-2', className)}>
+    <div className={cn('flex flex-col gap-2', className)}
+        style={style}>
       {(label || showValue) && (
         <div className="flex items-center justify-between">
           {label && <span className="text-footnote font-medium text-label-primary">{label}</span>}

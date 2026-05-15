@@ -13,6 +13,7 @@ export interface SwitchProps {
   error?: string
   size?: 'sm' | 'md'
   className?: string
+  style?: React.CSSProperties
   id?: string
 }
 
@@ -26,6 +27,7 @@ export function Switch({
   error,
   size = 'md',
   className,
+  style,
   id,
 }: SwitchProps) {
   const [internal, setInternal] = React.useState(defaultChecked ?? false)
@@ -41,7 +43,8 @@ export function Switch({
   }
 
   return (
-    <div className={cn('flex flex-col gap-1', className)}>
+    <div className={cn('flex flex-col gap-1', className)}
+        style={style}>
       <div className="flex items-start gap-3">
         <button
           type="button"

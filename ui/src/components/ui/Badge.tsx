@@ -9,6 +9,7 @@ interface BadgeProps {
   variant?: BadgeVariant
   children: ReactNode
   className?: string
+  style?: React.CSSProperties
 }
 
 const variantClass: Record<BadgeVariant, string> = {
@@ -19,9 +20,9 @@ const variantClass: Record<BadgeVariant, string> = {
   primary:  'badge-primary',
 }
 
-export function Badge({ variant = 'primary', children, className }: BadgeProps) {
+export function Badge({ variant = 'primary', children, className, style }: BadgeProps) {
   return (
-    <span className={cn(variantClass[variant], className)}>
+    <span className={cn(variantClass[variant], className)} style={style}>
       {children}
     </span>
   )

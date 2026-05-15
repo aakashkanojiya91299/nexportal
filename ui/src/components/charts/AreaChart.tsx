@@ -15,7 +15,10 @@ export interface PortalAreaChartProps {
   showGrid?: boolean
   showLegend?: boolean
   stacked?: boolean
+  /** Color of legend label text. Defaults to #555 */
+  legendTextColor?: string
   className?: string
+  style?: React.CSSProperties
 }
 
 const DEFAULT_COLORS = ['#000080', '#FF9933', '#138808', '#6366f1', '#ec4899', '#06b6d4']
@@ -36,12 +39,14 @@ export function PortalAreaChart({
   showGrid = true,
   showLegend = true,
   stacked = false,
+  legendTextColor = '#555',
   className = '',
+  style,
 }: PortalAreaChartProps) {
   const colors = series.map((s, i) => getColor(s, i))
 
   return (
-    <div className={className} style={{ width: '100%', height }}>
+    <div className={className} style={{ width: '100%', height, ...style }}>
       <ResponsiveContainer width="100%" height="100%" initialDimension={{ width: 100, height }}>
         <ReAreaChart data={data} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
           <defs>
@@ -71,7 +76,7 @@ export function PortalAreaChart({
             contentStyle={{ borderRadius: 10, border: '1px solid #e5e7eb', fontSize: 12 }}
           />
           {showLegend && (
-            <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} />
+            <Legend wrapperStyle={{ fontSize: 12, paddingTop: 8 }} formatter={(v) => <span style={{ color: legendTextColor }}>{v}</span>} />
           )}
           {series.map((s, i) => (
             <Area

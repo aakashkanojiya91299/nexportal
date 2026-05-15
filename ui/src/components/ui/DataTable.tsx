@@ -17,6 +17,7 @@ export interface TableColumn<T = any> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   render?: (item: any, index: number) => ReactNode
   className?: string
+  style?: React.CSSProperties
   headerClassName?: string
   sortable?: boolean
   searchable?: boolean
@@ -35,6 +36,7 @@ export interface DataTableProps<T = any> {
   isLoading?: boolean
   loadingRows?: number
   className?: string
+  style?: React.CSSProperties
   onRowClick?: (item: T) => void
   // Search
   searchable?: boolean
@@ -69,6 +71,7 @@ export function DataTable<T extends Record<string, any>>({
   isLoading = false,
   loadingRows = 5,
   className,
+  style,
   onRowClick,
   searchable = false,
   searchPlaceholder = 'Search…',
@@ -197,7 +200,8 @@ export function DataTable<T extends Record<string, any>>({
   const rowHeight = compact ? 'py-2' : 'py-3'
 
   return (
-    <div className={cn('flex flex-col', className)}>
+    <div className={cn('flex flex-col', className)}
+        style={style}>
 
       {/* ── Top toolbar ──────────────────────────────────────────────────── */}
       {(title || description || searchable || toolbar) && (
@@ -453,7 +457,8 @@ export function DataTable<T extends Record<string, any>>({
                         col.align === 'right'  && 'text-right',
                         col.className,
                       )}
-                    >
+                          style={style}
+                     >
                       {col.render
                         ? col.render(item, index)
                         : (item[col.key] ?? '—')}
@@ -591,6 +596,7 @@ const STATUS_STYLES: Record<string, { bg: string; text: string; border: string }
 export interface StatusBadgeProps {
   status?: string | null
   className?: string
+  style?: React.CSSProperties
 }
 
 export function StatusBadge({ status, className }: StatusBadgeProps) {
