@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.33',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.34',
     'next': '^16.2.6',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
@@ -1730,10 +1730,10 @@ export default function ComponentsPage() {
           side={drawerSide}
           size="md"
           footer={
-            <div className="flex gap-2 justify-end">
-              <Button variant="ghost"   size="sm" onClick={() => setDrawerOpen(false)}>Cancel</Button>
-              <Button variant="primary" size="sm" onClick={() => setDrawerOpen(false)}>Save changes</Button>
-            </div>
+            <>
+              <Button variant="ghost"   size="sm" className="w-full sm:w-auto" onClick={() => setDrawerOpen(false)}>Cancel</Button>
+              <Button variant="primary" size="sm" className="w-full sm:w-auto" onClick={() => setDrawerOpen(false)}>Save changes</Button>
+            </>
           }
         >
           <div className="space-y-4">
@@ -1826,11 +1826,15 @@ export default function ComponentsPage() {
 
       {/* ── NotificationBell ────────────────────────────────────────────── */}
       <Section id="notifications" title="NotificationBell" subtitle="Animated bell with unread badge, dropdown list, mark-read, and mark-all-read.">
-        <Card className="p-5 space-y-5">
-          <Label>Click the bell to open the dropdown</Label>
-          <div className="flex items-center gap-6 flex-wrap">
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[11px] text-label-tertiary font-medium">With unread</span>
+        {/* Demo as real header — overflow-visible so dropdown is not clipped */}
+        <div className="rounded-2xl border border-gray-200 shadow-sm overflow-visible bg-white">
+          <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Dashboard</p>
+              <p className="text-[11px] text-gray-400">{notifs.filter(n => !n.read).length} unread notification{notifs.filter(n => !n.read).length !== 1 ? 's' : ''}</p>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="hidden sm:inline text-[11px] text-gray-400">Click bell to open ↓</span>
               <NotificationBell
                 notifications={notifs}
                 onMarkRead={(id) => setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
@@ -1838,12 +1842,14 @@ export default function ComponentsPage() {
                 onViewAll={() => alert('Navigate to /notifications')}
               />
             </div>
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-[11px] text-label-tertiary font-medium">Empty state</span>
+          </div>
+          <div className="px-5 py-4 flex items-center gap-6 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] text-gray-400 font-medium">Empty state:</span>
               <NotificationBell notifications={[]} emptyMessage="You're all caught up!" />
             </div>
           </div>
-        </Card>
+        </div>
       </Section>
 
       {/* ── TricolorBar ─────────────────────────────────────────────────── */}

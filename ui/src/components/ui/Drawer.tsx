@@ -17,7 +17,12 @@ export interface DrawerProps {
   style?: React.CSSProperties
 }
 
-const SIZES = { sm: 'w-72', md: 'w-96', lg: 'w-[32rem]', full: 'w-screen' }
+const SIZES = {
+  sm:   'w-full sm:w-72',
+  md:   'w-full sm:w-96',
+  lg:   'w-full sm:w-[32rem]',
+  full: 'w-screen',
+}
 
 export function Drawer({
   open, onClose, title, description, side = 'right', size = 'md',
@@ -90,7 +95,9 @@ export function Drawer({
 
         {/* Footer */}
         {footer && (
-          <div className="border-t border-separator-opaque px-5 py-4 flex-shrink-0 bg-surface-secondary/50">{footer}</div>
+          <div className="border-t border-separator-opaque px-4 py-3 sm:px-5 sm:py-4 flex-shrink-0 bg-surface-secondary/50">
+            <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">{footer}</div>
+          </div>
         )}
       </div>
     </div>

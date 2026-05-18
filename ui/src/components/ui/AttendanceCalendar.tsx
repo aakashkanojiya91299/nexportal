@@ -282,8 +282,8 @@ export function AttendanceCalendar({
     <div className={cn('space-y-6', className)} style={style}>
 
       {/* Status + progress bar */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-2 min-w-0">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="space-y-2 min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <span className={cn(
               'inline-flex items-center px-2.5 py-0.5 rounded-full text-footnote font-medium',
@@ -319,35 +319,37 @@ export function AttendanceCalendar({
         </div>
 
         {status === 'active' && (
-          <div className="flex w-full flex-col gap-2 md:w-auto md:items-end">
-            {onComplete && (
-              <button
-                type="button"
-                onClick={() => setShowCompleteDialog(true)}
-                disabled={presentDaysCount < requiredDays}
-                className="inline-flex w-full items-center justify-center gap-1.5 px-3 py-2 text-footnote font-medium rounded-lg md:w-auto
-                  bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                Complete Internship
-              </button>
-            )}
+          <div className="flex flex-col gap-2 sm:items-end flex-shrink-0">
+            <div className="flex flex-wrap gap-2">
+              {onComplete && (
+                <button
+                  type="button"
+                  onClick={() => setShowCompleteDialog(true)}
+                  disabled={presentDaysCount < requiredDays}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-footnote font-medium rounded-lg
+                    bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Complete Internship
+                </button>
+              )}
+              {hasPendingChanges && onSave && (
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="inline-flex items-center gap-1.5 px-3 py-2 text-footnote font-medium rounded-lg
+                    bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                  {saving ? 'Saving…' : `Save (${pendingChanges.size})`}
+                </button>
+              )}
+            </div>
             {presentDaysCount < requiredDays && (
-              <p className="text-footnote text-label-tertiary md:text-right">
-                {daysLeft} more day{daysLeft !== 1 ? 's' : ''} needed to complete
+              <p className="text-footnote text-label-tertiary">
+                {daysLeft} more day{daysLeft !== 1 ? 's' : ''} needed
               </p>
-            )}
-            {hasPendingChanges && onSave && (
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                className="inline-flex w-full items-center justify-center gap-1.5 px-3 py-2 text-footnote font-medium rounded-lg md:w-auto
-                  bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                {saving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
-                {saving ? 'Saving…' : `Save Attendance (${pendingChanges.size})`}
-              </button>
             )}
           </div>
         )}
