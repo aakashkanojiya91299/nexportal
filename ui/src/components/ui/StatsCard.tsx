@@ -42,23 +42,25 @@ export function StatsCard({
 
   return (
     <div className={cn(
-      'flex flex-col gap-3 rounded-2xl border border-gray-200/80 bg-white p-5 shadow-sm',
+      'flex flex-col gap-3 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm min-w-0',
       className,
     )} style={style}>
-      {icon && (
-        <div className={cn('w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0', iconBg)}>
-          {icon}
+      {/* Top row: icon (if present) floated right alongside title */}
+      <div className="flex items-start justify-between gap-2 min-w-0">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-label-tertiary truncate">{title}</p>
+          <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-label-primary mt-1 leading-none tabular-nums break-all">{value}</p>
+          {subtitle && <p className="text-[11px] sm:text-xs text-label-tertiary mt-1 truncate">{subtitle}</p>}
         </div>
-      )}
-
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-wider text-label-tertiary">{title}</p>
-        <p className="text-3xl font-bold text-label-primary mt-0.5 leading-none tabular-nums">{value}</p>
-        {subtitle && <p className="text-xs text-label-tertiary mt-1">{subtitle}</p>}
+        {icon && (
+          <div className={cn('w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center flex-shrink-0', iconBg)}>
+            {icon}
+          </div>
+        )}
       </div>
 
       {hasTrend && (
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5 flex-wrap">
           <div className={cn(
             'flex items-center gap-0.5 text-xs font-semibold',
             trendUp   ? 'text-green-600' : trendDown ? 'text-red-500' : 'text-label-tertiary',

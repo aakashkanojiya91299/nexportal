@@ -127,7 +127,7 @@ export type { PageFooterProps, FooterSocialLink } from './components/layout/Page
 
 // ── Login components ──────────────────────────────────────────────────────
 export { LoginPage } from './components/login/LoginPage'
-export type { LoginPageProps } from './components/login/LoginPage'
+export type { LoginPageProps, LoginRole, RegistrationLink, AmbientColor } from './components/login/LoginPage'
 export { LoginPageSimple } from './components/login/LoginPageSimple'
 export type { LoginPageSimpleProps, RegisterLink } from './components/login/LoginPageSimple'
 export { LoginCard } from './components/login/LoginCard'
@@ -138,3 +138,22 @@ export { ParticleBg } from './components/login/ParticleBg'
 
 // ── Utilities ─────────────────────────────────────────────────────────────
 export { cn } from './lib/cn'
+export {
+  PHONE_COUNTRIES, DEFAULT_PHONE_COUNTRY,
+  getCountryFlag, splitPhoneNumber, formatPhoneForStorage, validatePhoneNumber,
+} from './lib/phone-countries'
+export type { PhoneCountry } from './lib/phone-countries'
+
+// ── New components from C&J ───────────────────────────────────────────────
+export { ImageViewer, useImageViewer } from './components/ui/ImageViewer'
+export type { ImageViewerProps } from './components/ui/ImageViewer'
+export { DropdownMenu } from './components/ui/DropdownMenu'
+export type { DropdownMenuProps, DropdownMenuItem } from './components/ui/DropdownMenu'
+export { PhoneInput } from './components/ui/PhoneInput'
+export type { PhoneInputProps } from './components/ui/PhoneInput'
+export { ProfilePhotoInput } from './components/ui/ProfilePhotoInput'
+export type { ProfilePhotoInputProps } from './components/ui/ProfilePhotoInput'
+export { AttendanceCalendar } from './components/ui/AttendanceCalendar'
+export type { AttendanceCalendarProps, AttendanceRecord } from './components/ui/AttendanceCalendar'
+export { NotificationBell } from './components/ui/NotificationBell'
+export type { NotificationBellProps, NotificationItem, NotificationType } from './components/ui/NotificationBell'

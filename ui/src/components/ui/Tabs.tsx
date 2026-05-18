@@ -7,12 +7,14 @@ interface TabsContextValue {
   active: string
   setActive: (v: string) => void
   variant: 'line' | 'pill' | 'card'
+  animation: 'fade' | 'none'
 }
 
 const TabsContext = createContext<TabsContextValue>({
   active: '',
   setActive: () => {},
   variant: 'line',
+  animation: 'fade',
 })
 
 export interface TabsProps {
@@ -20,6 +22,7 @@ export interface TabsProps {
   value?: string
   onChange?: (value: string) => void
   variant?: 'line' | 'pill' | 'card'
+  animation?: 'fade' | 'none'
   children: React.ReactNode
   className?: string
   style?: React.CSSProperties
@@ -30,6 +33,7 @@ export function Tabs({
   value,
   onChange,
   variant = 'line',
+  animation = 'fade',
   children,
   className,
   style,
@@ -44,9 +48,10 @@ export function Tabs({
   }
 
   return (
-    <TabsContext.Provider value={{ active, setActive, variant }}>
-      <div className={cn('flex flex-col', className)}
-        style={style}>{children}</div>
+    <TabsContext.Provider value={{ active, setActive, variant, animation }}>
+      <div className={cn('flex flex-col', className)} style={style}>
+        {children}
+      </div>
     </TabsContext.Provider>
   )
 }
@@ -59,7 +64,6 @@ export interface TabsListProps {
 
 export function TabsList({ children, className }: TabsListProps) {
   const { variant } = useContext(TabsContext)
-
   return (
     <div
       role="tablist"
@@ -78,13 +82,14 @@ export function TabsList({ children, className }: TabsListProps) {
 
 export interface TabsTriggerProps {
   value: string
+  icon?: React.ReactNode
   children: React.ReactNode
   disabled?: boolean
   className?: string
   style?: React.CSSProperties
 }
 
-export function TabsTrigger({ value, children, disabled, className }: TabsTriggerProps) {
+export function TabsTrigger({ value, icon, children, disabled, className }: TabsTriggerProps) {
   const { active, setActive, variant } = useContext(TabsContext)
   const isActive = active === value
 
@@ -98,21 +103,18 @@ export function TabsTrigger({ value, children, disabled, className }: TabsTrigge
       className={cn(
         'relative flex items-center gap-1.5 text-callout font-medium transition-all duration-150 focus:outline-none whitespace-nowrap',
         disabled && 'cursor-not-allowed opacity-50',
-
         variant === 'line' && cn(
           'px-4 py-2.5 border-b-2 -mb-px',
           isActive
             ? 'text-label-primary border-[color:var(--primary,#000080)]'
             : 'text-label-tertiary border-transparent hover:text-label-secondary hover:border-separator-opaque',
         ),
-
         variant === 'pill' && cn(
           'px-4 py-1.5 rounded-lg',
           isActive
             ? 'bg-white text-label-primary shadow-sm'
             : 'text-label-tertiary hover:text-label-secondary',
         ),
-
         variant === 'card' && cn(
           'px-4 py-1.5 rounded-lg',
           isActive
@@ -121,12 +123,9 @@ export function TabsTrigger({ value, children, disabled, className }: TabsTrigge
         ),
         className,
       )}
-      style={
-        variant === 'card' && isActive
-          ? { background: 'var(--primary, #000080)' }
-          : undefined
-      }
+      style={variant === 'card' && isActive ? { background: 'var(--primary, #000080)' } : undefined}
     >
+      {icon && <span className="shrink-0 flex items-center">{icon}</span>}
       {children}
     </button>
   )
@@ -140,10 +139,19 @@ export interface TabsContentProps {
 }
 
 export function TabsContent({ value, children, className, style }: TabsContentProps) {
-  const { active } = useContext(TabsContext)
-  if (active !== value) return null
+  const { active, animation } = useContext(TabsContext)
+  const isActive = active === value
+  if (!isActive) return null
   return (
-    <div role="tabpanel" className={cn('mt-4', className)} style={style}>
+    <div
+      role="tabpanel"
+      className={cn(
+        'mt-4',
+        animation === 'fade' && 'animate-in fade-in-0 duration-200',
+        className,
+      )}
+      style={style}
+    >
       {children}
     </div>
   )

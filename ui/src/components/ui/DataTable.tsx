@@ -200,12 +200,12 @@ export function DataTable<T extends Record<string, any>>({
   const rowHeight = compact ? 'py-2' : 'py-3'
 
   return (
-    <div className={cn('flex flex-col', className)}
+    <div className={cn('flex flex-col rounded-2xl border border-gray-200 shadow-sm overflow-hidden bg-white', className)}
         style={style}>
 
       {/* ── Top toolbar ──────────────────────────────────────────────────── */}
       {(title || description || searchable || toolbar) && (
-        <div className="flex items-start justify-between gap-4 px-4 py-3 border-b border-separator-opaque">
+        <div className="flex items-start justify-between gap-4 px-4 py-3 border-b border-gray-200">
           <div className="min-w-0 flex-1">
             {title       && <p className="text-callout font-semibold text-label-primary leading-tight">{title}</p>}
             {description && <p className="text-footnote text-label-tertiary mt-0.5">{description}</p>}
@@ -213,7 +213,7 @@ export function DataTable<T extends Record<string, any>>({
           <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">
             {toolbar}
             {searchable && (
-              <div className="flex items-center gap-2 rounded-apple border border-separator-opaque bg-surface-secondary px-2.5 py-1.5 min-w-[220px] focus-within:border-primary/40 transition-colors">
+              <div className="flex items-center gap-2 rounded-apple border border-gray-200 bg-gray-50 px-2.5 py-1.5 min-w-[220px] focus-within:border-gray-400 transition-colors">
                 <Search className="h-3.5 w-3.5 text-label-quaternary shrink-0" />
                 <input
                   value={globalSearch}
@@ -254,9 +254,9 @@ export function DataTable<T extends Record<string, any>>({
           <thead className={cn(stickyHeader && 'sticky top-0 z-10')}>
 
             {/* Main header row */}
-            <tr className="border-b border-separator-opaque bg-surface-secondary">
+            <tr className="border-b border-gray-200 bg-gray-50">
               {selectable && (
-                <th className="w-10 px-3 py-2.5 text-left">
+                <th className="w-10 px-4 py-3 text-left">
                   <SelectBox
                     checked={allVisibleSelected}
                     indeterminate={!allVisibleSelected && someSelected}
@@ -270,7 +270,7 @@ export function DataTable<T extends Record<string, any>>({
                   style={{ width: col.width }}
                   onClick={() => col.sortable && handleSort(col.key)}
                   className={cn(
-                    'px-3 py-2.5 font-semibold text-label-secondary tracking-wide text-left',
+                    'px-4 py-3 text-[11px] font-medium text-gray-500 uppercase tracking-wider text-left',
                     col.align === 'center' && 'text-center',
                     col.align === 'right'  && 'text-right',
                     col.sortable && 'cursor-pointer select-none hover:text-label-primary transition-colors',
@@ -322,12 +322,12 @@ export function DataTable<T extends Record<string, any>>({
 
             {/* Column filter row — only rendered when a filter icon is open */}
             {hasColumnControls && columns.some((c) => openFilter === c.key) && (
-              <tr className="border-b border-separator-opaque bg-surface-secondary/60">
+              <tr className="border-b border-gray-200 bg-gray-50/60">
                 {selectable && <td />}
                 {columns.map((col) => (
                   <td key={col.key} className="px-3 py-1.5 align-top">
                     {openFilter === col.key && col.searchable && !col.filterOptions?.length && (
-                      <div className="flex items-center gap-1.5 rounded border border-separator-opaque bg-white px-2 py-1 focus-within:border-primary/40 transition-colors">
+                      <div className="flex items-center gap-1.5 rounded border border-gray-200 bg-white px-2 py-1 focus-within:border-gray-400 transition-colors">
                         <Search className="h-3 w-3 text-label-quaternary shrink-0" />
                         <input
                           autoFocus
@@ -377,7 +377,7 @@ export function DataTable<T extends Record<string, any>>({
           <tbody>
             {/* Loading skeleton */}
             {isLoading && Array.from({ length: loadingRows }).map((_, i) => (
-              <tr key={i} className="border-b border-separator-opaque/50">
+              <tr key={i} className="border-b border-gray-100">
                 {selectable && (
                   <td className="px-3 py-2.5">
                     <div className="h-4 w-4 rounded bg-gray-100 animate-pulse" />
@@ -432,11 +432,11 @@ export function DataTable<T extends Record<string, any>>({
                     if (selectable) toggleRow(id)
                   }}
                   className={cn(
-                    'border-b border-separator-opaque/50 transition-colors',
-                    striped && index % 2 === 1 && 'bg-surface-secondary/30',
-                    isSelected && 'bg-primary-soft/20',
+                    'border-b border-gray-100 transition-colors',
+                    striped && index % 2 === 1 && 'bg-gray-50/60',
+                    isSelected && 'bg-blue-50/40',
                     (onRowClick || selectable) && 'cursor-pointer',
-                    'hover:bg-surface-secondary',
+                    'hover:bg-gray-50',
                   )}
                 >
                   {selectable && (
@@ -451,14 +451,14 @@ export function DataTable<T extends Record<string, any>>({
                     <td
                       key={col.key}
                       className={cn(
-                        'px-3 text-label-primary',
+                        'px-4 text-[13px] text-gray-900',
                         rowHeight,
                         col.align === 'center' && 'text-center',
                         col.align === 'right'  && 'text-right',
                         col.className,
                       )}
-                          style={style}
-                     >
+                      style={col.style}
+                    >
                       {col.render
                         ? col.render(item, index)
                         : (item[col.key] ?? '—')}
@@ -473,7 +473,7 @@ export function DataTable<T extends Record<string, any>>({
 
       {/* ── Pagination bar ───────────────────────────────────────────────── */}
       {pagination && (
-        <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-separator-opaque flex-wrap">
+        <div className="flex items-center justify-between gap-4 px-4 py-3 border-t border-gray-200 flex-wrap bg-gray-50/50">
 
           {/* Left: count + page size */}
           <div className="flex items-center gap-4">
@@ -487,7 +487,7 @@ export function DataTable<T extends Record<string, any>>({
               <select
                 value={pageSize}
                 onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1) }}
-                className="border border-separator-opaque rounded-lg px-2 py-1 text-footnote text-label-primary bg-white outline-none cursor-pointer hover:border-primary/30 transition-colors"
+                className="border border-gray-200 rounded-lg px-2 py-1 text-footnote text-gray-700 bg-white outline-none cursor-pointer hover:border-gray-400 transition-colors"
               >
                 {pageSizeOptions.map((n) => <option key={n} value={n}>{n}</option>)}
               </select>

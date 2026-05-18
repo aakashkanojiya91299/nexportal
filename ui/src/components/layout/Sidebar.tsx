@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect } from 'react'
 import { createPortal } from 'react-dom'
-import { ChevronDown, ChevronRight, LogOut, Menu, X, Settings, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { ChevronDown, ChevronRight, LogOut, Menu, X, Settings, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { BrandLogo } from './BrandLogo'
 import { TricolorBar } from './TricolorBar'
@@ -136,23 +136,6 @@ export function Sidebar({
               </div>
             )}
           </div>
-          {/* Collapse toggle — desktop only, shown when onToggleCollapse is provided */}
-          {onToggleCollapse && (
-            <button
-              type="button"
-              onClick={onToggleCollapse}
-              className={cn(
-                'flex-shrink-0 rounded-lg p-1.5 text-label-tertiary hover:bg-surface-secondary hover:text-label-primary transition-colors focus:outline-none',
-                collapsed ? 'w-full flex justify-center' : '',
-              )}
-              title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            >
-              {collapsed
-                ? <PanelLeftOpen className="h-4 w-4" />
-                : <PanelLeftClose className="h-4 w-4" />
-              }
-            </button>
-          )}
         </div>
       </div>
 
@@ -392,6 +375,28 @@ export function Sidebar({
       <div className="hidden lg:flex h-screen sticky top-0">
         {SidebarBody}
       </div>
+
+      {/* Floating collapse toggle — desktop only, fixed at sidebar right edge */}
+      {onToggleCollapse && (
+        <button
+          type="button"
+          onClick={onToggleCollapse}
+          title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+          className={cn(
+            'hidden lg:flex items-center justify-center',
+            'fixed top-1/2 -translate-y-1/2 z-50',
+            'w-6 h-6 rounded-full bg-white border border-separator-opaque shadow-md',
+            'text-label-tertiary hover:text-label-primary hover:shadow-lg hover:scale-110',
+            'transition-all duration-300 ease-in-out',
+            collapsed ? 'left-[60px]' : 'left-[276px]',
+          )}
+        >
+          {collapsed
+            ? <ChevronsRight className="w-3 h-3" />
+            : <ChevronsLeft className="w-3 h-3" />
+          }
+        </button>
+      )}
 
       {/* Tooltip portal */}
       {tooltip && typeof document !== 'undefined' &&

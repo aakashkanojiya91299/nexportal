@@ -45,7 +45,7 @@ export function OTPInput({
     <div className={cn('flex flex-col gap-2', className)}
         style={style}>
       {label && <span className="text-footnote font-medium text-label-primary">{label}</span>}
-      <div className="flex gap-2.5">
+      <div className="flex gap-1.5 sm:gap-2.5">
         {Array.from({ length }).map((_, i) => (
           <input
             key={i}
@@ -59,7 +59,7 @@ export function OTPInput({
             onChange={e => handleChange(i, e.target.value)}
             onKeyDown={e => onKeyDown(i, e)}
             className={cn(
-              'w-11 h-13 text-center text-xl font-bold rounded-xl border-2 outline-none transition-all focus:scale-105',
+              'w-10 h-11 sm:w-11 sm:h-14 text-center text-lg sm:text-xl font-bold rounded-xl border-2 outline-none transition-all focus:scale-105',
               error
                 ? 'border-red-300 focus:border-red-500 bg-red-50/30 text-red-600'
                 : value[i]
@@ -67,7 +67,6 @@ export function OTPInput({
                 : 'border-gray-200 focus:border-[color:var(--primary,#000080)] bg-white text-label-primary',
               disabled && 'opacity-50 cursor-not-allowed bg-gray-50',
             )}
-            style={{ height: 52 }}
           />
         ))}
       </div>

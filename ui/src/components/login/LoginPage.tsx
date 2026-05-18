@@ -35,11 +35,16 @@ export interface LoginRole {
   accentSoft: string
 }
 
+/** RGB tuple for ambient background glow blobs */
+export type AmbientColor = [number, number, number]
+
 export interface LoginPageProps {
   projectName: string
   projectSubtitle?: string
   logoSrc?: string
   logoAlt?: string
+  /** Logo display size in px (default 56) */
+  logoSize?: number
 
   /**
    * Called on submit. Throw an Error to set the error state.
@@ -77,6 +82,15 @@ export interface LoginPageProps {
   /** Social links shown below the card */
   socialLinks?: SocialLink[]
   socialLinksLabel?: string
+
+  /**
+   * Three RGB tuples for the ambient glow blobs (top-right, bottom-left, center).
+   * Defaults to saffron / green / navy (Indian tricolor palette).
+   */
+  ambientColors?: [AmbientColor, AmbientColor, AmbientColor]
+
+  /** Background gradient override, e.g. 'linear-gradient(...)' */
+  backgroundGradient?: string
 
   className?: string
   style?: React.CSSProperties
@@ -201,7 +215,21 @@ function ParticleCanvas({ mouseRef }: { mouseRef: React.RefObject<{ x: number; y
 
 /* ──────────────── Ambient glow blobs ───────────────────────────────────── */
 
-function AmbientGlobs({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<number> }) {
+const DEFAULT_AMBIENT_COLORS: [AmbientColor, AmbientColor, AmbientColor] = [
+  [255, 153,  51],   // saffron
+  [ 19, 136,   8],   // green
+  [  0,   0, 128],   // navy
+]
+
+function AmbientGlobs({
+  sx, sy,
+  colors = DEFAULT_AMBIENT_COLORS,
+}: {
+  sx: MotionValue<number>
+  sy: MotionValue<number>
+  colors?: [AmbientColor, AmbientColor, AmbientColor]
+}) {
+  const [c1, c2, c3] = colors
   const b1x = useTransform(sx, [0, 1], [-22,  22])
   const b1y = useTransform(sy, [0, 1], [-16,  16])
   const b2x = useTransform(sx, [0, 1], [ 16, -16])
@@ -212,19 +240,19 @@ function AmbientGlobs({ sx, sy }: { sx: MotionValue<number>; sy: MotionValue<num
     <>
       <motion.div className="absolute rounded-full pointer-events-none"
         style={{ top: '-12%', right: '-10%', width: '40vw', aspectRatio: '1',
-          background: 'radial-gradient(circle, rgba(255,153,51,0.09) 0%, transparent 65%)',
+          background: `radial-gradient(circle, rgba(${c1[0]},${c1[1]},${c1[2]},0.09) 0%, transparent 65%)`,
           filter: 'blur(52px)', x: b1x, y: b1y }}
         animate={{ scale: [1, 1.1, 1], opacity: [0.65, 1, 0.65] }}
         transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut' }} />
       <motion.div className="absolute rounded-full pointer-events-none"
         style={{ bottom: '-14%', left: '-12%', width: '38vw', aspectRatio: '1',
-          background: 'radial-gradient(circle, rgba(19,136,8,0.07) 0%, transparent 65%)',
+          background: `radial-gradient(circle, rgba(${c2[0]},${c2[1]},${c2[2]},0.07) 0%, transparent 65%)`,
           filter: 'blur(56px)', x: b2x, y: b2y }}
         animate={{ scale: [1, 1.14, 1], opacity: [0.55, 0.9, 0.55] }}
         transition={{ duration: 14, repeat: Infinity, ease: 'easeInOut', delay: 3 }} />
       <motion.div className="absolute rounded-full pointer-events-none"
         style={{ top: '38%', left: '38%', width: '26vw', aspectRatio: '1',
-          background: 'radial-gradient(circle, rgba(0,0,128,0.04) 0%, transparent 65%)',
+          background: `radial-gradient(circle, rgba(${c3[0]},${c3[1]},${c3[2]},0.04) 0%, transparent 65%)`,
           filter: 'blur(60px)', x: b3x, y: b3y }}
         animate={{ scale: [1, 1.07, 1], opacity: [0.35, 0.65, 0.35] }}
         transition={{ duration: 19, repeat: Infinity, ease: 'easeInOut', delay: 7 }} />
@@ -395,19 +423,22 @@ function RoleSelectContent({
 
 function RoleSelectSplashView({
   roles, logoSrc, logoAlt, projectName, onSelect, onCancel,
+  ambientColors, backgroundGradient,
 }: {
   roles: LoginRole[]
   logoSrc?: string; logoAlt?: string; projectName: string
   onSelect: (key: string) => void
   onCancel: () => void
+  ambientColors?: [AmbientColor, AmbientColor, AmbientColor]
+  backgroundGradient?: string
 }) {
   const { mouseRef, sx, sy, onMouseMove } = useParallax()
   return (
     <div className="h-screen overflow-hidden relative flex items-center justify-center p-6"
-      style={{ background: 'linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)' }}
+      style={{ background: backgroundGradient ?? 'linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)' }}
       onMouseMove={onMouseMove}>
       <ParticleCanvas mouseRef={mouseRef as React.RefObject<{ x: number; y: number }>} />
-      <AmbientGlobs sx={sx} sy={sy} />
+      <AmbientGlobs sx={sx} sy={sy} colors={ambientColors} />
       <motion.button initial={{ opacity: 0, scale: 0.8 }} animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.3, delay: 0.2 }}
         onClick={onCancel} aria-label="Sign out"
@@ -426,7 +457,7 @@ function RoleSelectSplashView({
 
 export function LoginPage({
   projectName, projectSubtitle = 'Sign in to continue',
-  logoSrc, logoAlt,
+  logoSrc, logoAlt, logoSize = 56,
   onSubmit, isLoading, error,
   identifierLabel = 'Email address', identifierType = 'email',
   identifierPlaceholder = 'you@example.com',
@@ -436,6 +467,8 @@ export function LoginPage({
   registrationLinks,
   poweredBy,
   socialLinks, socialLinksLabel = 'Connect with us',
+  ambientColors,
+  backgroundGradient,
   className,
   style,
 }: LoginPageProps) {
@@ -482,7 +515,9 @@ export function LoginPage({
       <RoleSelectSplashView
         roles={roles} logoSrc={logoSrc} logoAlt={logoAlt} projectName={projectName}
         onSelect={handleRoleSelect}
-        onCancel={() => { setShowRoleSelect(false); setPendingTokens(null) }} />
+        onCancel={() => { setShowRoleSelect(false); setPendingTokens(null) }}
+        ambientColors={ambientColors}
+        backgroundGradient={backgroundGradient} />
     )
   }
 
@@ -492,11 +527,11 @@ export function LoginPage({
         'relative flex h-screen flex-col items-center justify-center overflow-hidden p-4 sm:p-6',
         className,
       )}
-      style={{ background: 'linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)', ...style }}
+      style={{ background: backgroundGradient ?? 'linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)', ...style }}
       onMouseMove={onMouseMove}
     >
       <ParticleCanvas mouseRef={mouseRef as React.RefObject<{ x: number; y: number }>} />
-      <AmbientGlobs sx={sx} sy={sy} />
+      <AmbientGlobs sx={sx} sy={sy} colors={ambientColors} />
 
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
 
@@ -509,13 +544,17 @@ export function LoginPage({
               <div className="relative flex-shrink-0">
                 <motion.div className="absolute inset-0 rounded-full pointer-events-none"
                   style={{
-                    background: 'radial-gradient(circle, rgba(255,153,51,0.2) 0%, transparent 70%)',
+                    background: `radial-gradient(circle, rgba(${(ambientColors ?? DEFAULT_AMBIENT_COLORS)[0].join(',')},0.2) 0%, transparent 70%)`,
                     filter: 'blur(22px)', transform: 'scale(2.0)',
                   }}
                   animate={{ opacity: [0.45, 0.8, 0.45] }}
                   transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }} />
-                <img src={logoSrc} alt={logoAlt ?? projectName}
-                  className="h-30 w-30 object-contain rounded-full relative" />
+                <img
+                  src={logoSrc}
+                  alt={logoAlt ?? projectName}
+                  className="object-contain rounded-full relative"
+                  style={{ width: logoSize, height: logoSize }}
+                />
               </div>
             )}
             <div className="flex flex-col leading-tight">

@@ -1,6 +1,6 @@
 # `@lucifer91299/ui`
 
-> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 40+ production-ready components.
+> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 55+ production-ready components.
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
@@ -45,6 +45,11 @@ npx @lucifer91299/create-portal-app my-portal
   - [TagInput](#taginput)
   - [Timeline](#timeline)
   - [Charts](#charts)
+  - [ImageViewer](#imageviewer)
+  - [DropdownMenu](#dropdownmenu)
+  - [PhoneInput](#phoneinput)
+  - [ProfilePhotoInput](#profilephotoinput)
+  - [AttendanceCalendar](#attendancecalendar)
   - [LoginPage (Animated)](#loginpage-animated)
   - [LoginPageSimple (Clean)](#loginpagesimple-clean)
   - [DashboardLayout](#dashboardlayout)
@@ -222,6 +227,11 @@ Because the theme system uses CSS variables, you can override individual token v
 | `PortalLineChart` | ✓ | ✓ | merged with width/height |
 | `PortalAreaChart` | ✓ | ✓ | merged with width/height |
 | `PortalDonutChart` | ✓ | ✓ | merged with width/height |
+| `ImageViewer` | ✓ | ✓ | applied to root overlay |
+| `DropdownMenu` | — | — | portal-rendered, no root element |
+| `PhoneInput` | ✓ | — | applied to number `<input>` |
+| `ProfilePhotoInput` | ✓ | ✓ | applied to root wrapper |
+| `AttendanceCalendar` | ✓ | ✓ | applied to root wrapper |
 | `LoginPage` | ✓ | ✓ | merged with gradient background |
 | `LoginPageSimple` | ✓ | ✓ | |
 | `RoleSelectSplash` | ✓ | ✓ | |
@@ -1104,6 +1114,259 @@ const data = [
 
 ---
 
+### ImageViewer
+
+Full-screen portal overlay for viewing images and PDFs. Supports zoom, rotate, download, keyboard shortcuts, and optional authenticated fetching via `useCredentials`.
+
+```tsx
+import { ImageViewer, useImageViewer } from '@lucifer91299/ui'
+
+// Standalone — pass src directly
+const [open, setOpen] = useState(false)
+
+<button onClick={() => setOpen(true)}>View photo</button>
+
+<ImageViewer
+  src="/uploads/athlete-photo.jpg"
+  alt="Athlete photo"
+  open={open}
+  onClose={() => setOpen(false)}
+/>
+
+// Hook — convenient open/close helper
+const { open, src, alt, openViewer, closeViewer } = useImageViewer()
+
+<button onClick={() => openViewer('/uploads/cert.pdf', 'Certificate')}>View PDF</button>
+
+<ImageViewer src={src} alt={alt} open={open} onClose={closeViewer} />
+
+// Authenticated fetch — loads image via blob URL using credentials cookie
+<ImageViewer
+  src="/api/private/photo.jpg"
+  alt="Private photo"
+  open={open}
+  onClose={closeViewer}
+  useCredentials
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | `string` | — | Image or PDF URL |
+| `alt` | `string` | `''` | Alt text / aria-label |
+| `open` | `boolean` | — | Controls visibility |
+| `onClose` | `() => void` | — | Called on Escape or backdrop click |
+| `useCredentials` | `boolean` | `false` | Fetch via `credentials: 'include'` and display as blob URL |
+
+**Keyboard shortcuts:** `Escape` = close · `+` = zoom in · `-` = zoom out
+
+---
+
+### DropdownMenu
+
+Portal-based action menu triggered by a `MoreVertical` icon (or custom trigger). Auto-flips up/down based on viewport space. Closes on outside click, scroll, resize, and Escape.
+
+```tsx
+import { DropdownMenu } from '@lucifer91299/ui'
+import { Edit, Trash2, Eye } from 'lucide-react'
+
+<DropdownMenu
+  items={[
+    { label: 'View',   icon: <Eye className="w-4 h-4" />,    onClick: () => view(row) },
+    { label: 'Edit',   icon: <Edit className="w-4 h-4" />,   onClick: () => edit(row) },
+    { label: 'Delete', icon: <Trash2 className="w-4 h-4" />, onClick: () => del(row),  variant: 'danger' },
+  ]}
+/>
+
+// Custom trigger
+<DropdownMenu
+  trigger={<Button size="sm" variant="outline">Actions</Button>}
+  items={[
+    { label: 'Approve', onClick: approve, variant: 'success' },
+    { label: 'Reject',  onClick: reject,  variant: 'danger'  },
+  ]}
+/>
+```
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `items` | `DropdownMenuItem[]` | Menu items array |
+| `trigger` | `ReactNode` | Custom trigger element (defaults to `MoreVertical` icon button) |
+
+**`DropdownMenuItem` fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `label` | `string` | Menu item text |
+| `icon` | `ReactNode` | Optional leading icon |
+| `onClick` | `() => void` | Click handler |
+| `variant` | `'default' \| 'success' \| 'danger' \| 'warning'` | Color variant |
+| `disabled` | `boolean` | Disable the item |
+
+---
+
+### PhoneInput
+
+Country flag picker + international dial code + phone number input. 250+ countries, India pinned at top, auto-formats number for storage as `+<dialCode><nationalNumber>`.
+
+```tsx
+import { PhoneInput } from '@lucifer91299/ui'
+
+<PhoneInput
+  label="Mobile number"
+  value={phone}
+  onChange={(e) => setPhone(e.target.value)}  // value is '+919876543210'
+/>
+
+// Pre-select a country
+<PhoneInput
+  label="Mobile number"
+  defaultCountryIso="US"
+  value={phone}
+  onChange={(e) => setPhone(e.target.value)}
+/>
+
+// With error + helper
+<PhoneInput
+  label="WhatsApp number"
+  value={phone}
+  onChange={(e) => setPhone(e.target.value)}
+  error="Invalid phone number"
+  helperText="Include country code"
+/>
+
+// Listen for country changes
+<PhoneInput
+  label="Phone"
+  value={phone}
+  onChange={(e) => setPhone(e.target.value)}
+  onCountryChange={(country) => console.log(country.name, country.dialCode)}
+/>
+```
+
+The `onChange` value is always a full E.164-style string: `+919876543210`. Store this directly; it round-trips safely through `splitPhoneNumber` if you need to display parts separately.
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | — | Full phone string e.g. `'+919876543210'` |
+| `onChange` | `(e: ChangeEvent) => void` | — | `e.target.value` is the formatted E.164 string |
+| `defaultCountryIso` | `string` | `'IN'` | ISO2 code for initial country selection |
+| `onCountryChange` | `(country: PhoneCountry) => void` | — | Fires when the user switches country |
+| `label` | `string` | — | Field label |
+| `error` | `string` | — | Red border + error message |
+| `helperText` | `string` | — | Helper text (hidden when error is set) |
+
+**Phone utilities** (also exported directly):
+
+```ts
+import { splitPhoneNumber, validatePhoneNumber, formatPhoneForStorage, PHONE_COUNTRIES } from '@lucifer91299/ui'
+
+const { country, nationalNumber } = splitPhoneNumber('+919876543210')
+// country.name → 'India', country.dialCode → '+91', nationalNumber → '9876543210'
+
+const ok = validatePhoneNumber('+919876543210')  // true / false
+```
+
+---
+
+### ProfilePhotoInput
+
+Square drag-drop photo picker with live preview and remove button. Validates file type and size client-side.
+
+```tsx
+import { ProfilePhotoInput } from '@lucifer91299/ui'
+
+const [photo, setPhoto] = useState<File | null>(null)
+
+<ProfilePhotoInput
+  value={photo}
+  onChange={setPhoto}
+/>
+
+// With constraints + error forwarding
+<ProfilePhotoInput
+  value={photo}
+  onChange={setPhoto}
+  maxSizeMb={2}
+  accept="image/jpeg,image/png"
+  error={errors.photo}
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `File \| null` | — | Currently selected file |
+| `onChange` | `(file: File \| null) => void` | — | Called when file is selected or removed |
+| `maxSizeMb` | `number` | `5` | Max file size in MB |
+| `accept` | `string` | `'image/jpeg,image/png,image/webp'` | Accepted MIME types |
+| `error` | `string` | — | Error message shown below the picker |
+
+---
+
+### AttendanceCalendar
+
+Two-month side-by-side attendance calendar for tracking daily present/absent records. Manages pending (unsaved) changes locally with an amber ring indicator, then flushes them via an `onSave` callback. Supports a "not started" empty state, a "completed" read-only state, a progress bar, and a confirm dialog for completing the period.
+
+```tsx
+import { AttendanceCalendar } from '@lucifer91299/ui'
+import type { AttendanceRecord } from '@lucifer91299/ui'
+
+// Not started — shows empty state + Start button
+<AttendanceCalendar
+  status="not_started"
+  onStart={async () => {
+    await api.startInternship()
+    // after this resolves the parent should re-fetch and pass status="active"
+  }}
+/>
+
+// Active — two-month calendar with attendance marking
+<AttendanceCalendar
+  status="active"
+  startDate="2025-01-15"
+  attendanceRecords={records}   // AttendanceRecord[]
+  presentDaysCount={42}
+  requiredDays={60}
+  onSave={async (changes) => {
+    // changes: Map<string, 'present' | 'absent' | undefined>
+    for (const [date, status] of changes) {
+      await api.markAttendance({ date, status })
+    }
+  }}
+  onComplete={async (remark) => {
+    await api.completeInternship({ remark })
+  }}
+/>
+
+// Completed — read-only view with progress
+<AttendanceCalendar
+  status="completed"
+  startDate="2025-01-15"
+  completedAt="2025-04-20"
+  attendanceRecords={records}
+  presentDaysCount={60}
+  requiredDays={60}
+  notes="Excellent performance throughout the internship."
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `status` | `'not_started' \| 'active' \| 'completed'` | — | Controls which view is rendered |
+| `startDate` | `string` | — | `'YYYY-MM-DD'` — required for active/completed |
+| `attendanceRecords` | `AttendanceRecord[]` | `[]` | Saved records from the server |
+| `presentDaysCount` | `number` | `0` | Count shown in the progress bar |
+| `requiredDays` | `number` | `60` | Target days for completion |
+| `completedAt` | `string` | — | `'YYYY-MM-DD'` — shown when completed |
+| `notes` | `string` | — | Admin notes shown below the calendar |
+| `onSave` | `(changes: Map<string, 'present' \| 'absent' \| undefined>) => Promise<void>` | — | Save pending changes; component shows loading state until promise resolves |
+| `onComplete` | `(remark?: string) => Promise<void>` | — | Confirm-complete callback |
+| `onStart` | `() => Promise<void>` | — | Start button callback (not_started state only) |
+
+**Day click cycle:** unmarked → present (✓ green) → absent (✕ red) → unmarked. Days before `startDate` or in the future are non-interactive. All clicks accumulate as pending changes (amber ring) until the user clicks **Save Attendance**.
+
+---
+
 ### LoginPage (Animated)
 
 Full-screen login with floating parallax orbs, particle canvas, and an animated tricolor stripe. Best for institutional portals.
@@ -1590,6 +1853,51 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 ---
 
 ## Changelog
+
+### v1.1.33
+
+- **`NotificationBell` — new component**: animated bell button with unread count badge (spring-pop animation), framer-motion dropdown panel, per-item mark-as-read (✓ button), mark-all-read, and a "View all" footer link. Notification items support `type` (`info` / `success` / `warning` / `error`) with matching icon and dot colours, optional `avatar` image, `href` for linked notifications, and relative time via `date-fns`. Empty state shown when the list is empty. Props: `notifications`, `onMarkRead`, `onMarkAllRead`, `onNotificationClick`, `onViewAll`, `emptyMessage`, `title`, `maxVisible`, `className`. Exported as `NotificationBell`, `NotificationBellProps`, `NotificationItem`, `NotificationType`.
+- **`LoginPage` — dynamic ambient colors + logo fix**: new `ambientColors` prop (`[AmbientColor, AmbientColor, AmbientColor]`) lets callers override the three background glow blob colors (defaults to saffron / green / navy tricolor palette). New `backgroundGradient` prop overrides the default parchment gradient. New `logoSize` prop (default `56`) replaces the invalid `h-30 w-30` Tailwind class (those utility classes don't exist in Tailwind's default scale). Logo glow tracks the first ambient color. `AmbientColor` (`[number, number, number]` RGB tuple), `LoginRole`, and `RegistrationLink` are now exported from the package. The role-select splash also accepts and forwards the new ambient / gradient props.
+
+### v1.1.32
+
+- **`DataTable` — matches C&J frontend exactly**: outer card uses `border-gray-200 shadow-sm`; header row uses `bg-gray-50` (was `bg-surface-secondary/60` tint); header cells use `font-medium text-gray-500 px-4` (was `font-semibold text-label-tertiary px-3`); data cells use `text-gray-900 px-4` and `col.style` (was incorrectly applying the root `style` prop to every cell); row dividers changed from `border-separator-opaque/40` → `border-gray-100`; row hover changed from `hover:bg-surface-secondary` → `hover:bg-gray-50`; search input uses `border-gray-200 bg-gray-50`; pagination bar uses `border-gray-200 bg-gray-50/50`; skeleton rows use `border-gray-100`.
+- **`NumberInput` — big-number + mobile responsive**: input width changed from `w-16` (64 px) to `flex-1 sm:w-28` (112 px on ≥sm). Container changed from `w-fit` to `w-full max-w-xs sm:w-fit` so it fills available space on mobile without overflowing. Input and buttons both `h-9` for consistent alignment.
+- **`StatsCard` — mobile responsive**: layout changed from stacked icon-then-text to `flex justify-between` with icon floated right. Value font scales: `text-xl sm:text-2xl lg:text-3xl`; value uses `break-all` to prevent overflow. Padding `p-4 sm:p-5`. Title and subtitle truncate on narrow columns. Trend row wraps on small screens. Card gets `min-w-0` to participate in CSS grid correctly. Border changed from `border-gray-200/80` → `border-gray-200`.
+
+### v1.1.31
+
+- **`DashboardLayout` — breadcrumbs in header + animation**: desktop header bar now accepts three new props: `breadcrumbs?: BreadcrumbItem[]`, `breadcrumbHomeHref?: string`, `breadcrumbHomeLabel?: string`. When provided, breadcrumbs render on the left side of the header card; the profile menu stays on the right. Header card structure updated to match the C&J frontend exactly — `bg-white rounded-2xl border border-gray-200 shadow-sm`; the tricolor bar is wrapped in its own `overflow-hidden rounded-t-2xl` div so it clips to card corners without clipping the profile dropdown. Header card slides in on mount via `animate-in fade-in slide-in-from-top-2 duration-300 ease-out`. Scaffold template (`genDashboardLayout`) auto-derives breadcrumbs from pathname segments.
+
+### v1.1.30
+
+- **`DateTimePicker` — clock hand fix**: clock hand and selection circle now render correctly in 24h mode (previously `display12H` was passing raw 0–23 values that didn't match the 1–12 item array, so `indexOf` returned -1 and no hand was drawn). Fixed by always converting to 12h display and using `ampm` state for AM/PM both in 12h and 24h modes. AM/PM toggle now also visible in clock mode for 24h pickers. Selected hour number now shows white text (was `transparent`, making it invisible on the primary-coloured selection circle).
+- **`AttendanceCalendar` — cell UX**: active unmarked days now render white with a border (`bg-white border border-separator-opaque`) instead of `bg-surface-tertiary` (which looked identical to blocked days). Blocked/future/pre-start days get `opacity-60` to visually de-emphasise them. Day cell content simplified to the date number only — background colour (green = present, red = absent, white = unmarked, grey = blocked) communicates status clearly without cramped 8 px two-line text. Removed stray `bg-primary` class from the Start Internship button (style attribute already provides the colour).
+- **`OTPInput` — 6-digit mobile layout**: box widths and heights are now responsive (`w-10 h-11 sm:w-11 sm:h-14`) and the gap shrinks on mobile (`gap-1.5 sm:gap-2.5`). Six boxes on a 320 px screen: 6 × 40 + 5 × 6 = 270 px — no longer overflows. Removed the fixed `style={{ height: 52 }}` override.
+
+### v1.1.29
+
+- **`DateTimePicker` — clock-face time picker**: replaced the ▲/▼ spinner with a Material-style circular clock. Hour view shown first (1–12 around the face), clicking a number auto-advances to the minute view. Active hour/minute shown as highlighted pill at the top. AM/PM stacked toggle for 12h mode. Toggle icon (keyboard ↔ clock) switches to text-input spinner mode. Popup widened to `w-80`.
+- **`DataTable` — card wrapper**: the table is now wrapped in a `rounded-2xl border overflow-hidden bg-white` card. Header cells use `uppercase tracking-wider text-[11px]` and lighter background. Row borders subtler.
+- **`DashboardLayout` header** — fixed dropdown clipping: removed `overflow-hidden` from header card; `TricolorBar` gets `rounded-t-2xl`; dropdown `z-[60]`.
+- **`Tabs` — fade animation + icon support**: `TabsContent` fades in (`animate-in fade-in-0 duration-200`) when active. New `animation` prop (`'fade'` | `'none'`). `TabsTrigger` accepts `icon?: ReactNode` rendered before the label.
+- **`Stepper` — navigation buttons**: new optional props `onNext`, `onBack`, `onSubmit`, `submitLabel`, `nextLabel`, `backLabel`, `isSubmitting` render a Back/Next/Submit button row below the step track. Submit button appears dynamically on the last step with a loading spinner when `isSubmitting` is true.
+- **Showcase** — updated `create-portal-app` templates: version bumped to `^1.1.28`; added showcase sections for `PhoneInput`, `ProfilePhotoInput`, `DropdownMenu`, `AttendanceCalendar`; Stepper uses built-in nav buttons; Tabs show icon usage.
+
+### v1.1.28
+
+- **`AttendanceCalendar`** — two-month side-by-side calendar for tracking daily present/absent records; local pending-change state with amber ring indicator; `onSave` / `onComplete` / `onStart` async callbacks; progress bar + required-days counter; confirm dialog for completing; `not_started` empty state; read-only `completed` mode; fully responsive (single-month on mobile)
+- **`DashboardLayout` header** — redesigned from a flush full-width bar to a padded rounded card (`rounded-2xl` with `border shadow-sm`) with a `TricolorBar` stripe at the top, matching the C&J frontend header style
+
+### v1.1.27
+
+- **`ImageViewer` + `useImageViewer`** — full-screen portal overlay for images and PDFs with zoom, rotate, download, keyboard shortcuts (`Escape`, `+`, `-`), and `useCredentials` prop for authenticated blob-URL fetching
+- **`DropdownMenu`** — portal-based action menu triggered by `MoreVertical` icon or a custom trigger; auto-flips up/down based on viewport, four item variants (`default`, `success`, `danger`, `warning`), closes on outside click/scroll/Escape
+- **`PhoneInput`** — international phone number field with 250+ country flags, dial code picker (India pinned at top), E.164 output format, `onCountryChange` callback
+- **`ProfilePhotoInput`** — square drag-drop photo picker with live preview, remove button, max-size and MIME-type validation
+- **Phone utilities exported** — `PHONE_COUNTRIES`, `DEFAULT_PHONE_COUNTRY`, `splitPhoneNumber`, `formatPhoneForStorage`, `validatePhoneNumber`, `getCountryFlag` and `PhoneCountry` type all available as top-level exports
+- **Sidebar collapse button** — replaced header-bar toggle with a floating circle button fixed at the sidebar's right edge (matches C&J frontend pattern); uses `ChevronsLeft` / `ChevronsRight` icons, animates left position between collapsed (`60px`) and expanded (`276px`) states
+- **Sidebar logo** — removed `ring-2` border and tinted background from the logo container in both the desktop sidebar and mobile top bar
 
 ### v1.1.26
 

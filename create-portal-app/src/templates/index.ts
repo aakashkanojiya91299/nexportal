@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.22',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.33',
     'next': '^16.2.6',
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
@@ -489,6 +489,17 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     )
   }
 
+  // Build breadcrumbs from pathname segments.
+  // Replace this with a usePageBreadcrumbs() hook or context for dynamic routes.
+  const breadcrumbs = pathname
+    .replace('/dashboard', '')
+    .split('/')
+    .filter(Boolean)
+    .map((seg, i, arr) => ({
+      label: seg.charAt(0).toUpperCase() + seg.slice(1).replace(/-/g, ' '),
+      href: i < arr.length - 1 ? '/dashboard/' + arr.slice(0, i + 1).join('/') : undefined,
+    }))
+
   return (
     <DashboardLayout
       navGroups={navGroups}
@@ -498,6 +509,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       user={{ name: String((user as any)?.name ?? 'User'), role: String((user as any)?.role ?? '') }}
       pathname={pathname}
       onLogout={logout}
+      breadcrumbs={breadcrumbs}
     >
       {children}
     </DashboardLayout>
@@ -904,7 +916,10 @@ import {
   StatsCard, EmptyState, FileUpload,
   Drawer, OTPInput, NumberInput, Slider, TagInput, Timeline, Popover,
   PortalBarChart, PortalLineChart, PortalAreaChart, PortalDonutChart,
+  AttendanceCalendar, PhoneInput, ProfilePhotoInput, DropdownMenu,
+  ImageViewer, useImageViewer, NotificationBell,
 } from '@lucifer91299/ui'
+import { LayoutDashboard, Eye, Pencil, CheckCircle, Trash2 } from 'lucide-react'
 
 // ── Demo data ────────────────────────────────────────────────────────────────
 
@@ -1006,12 +1021,22 @@ export default function ComponentsPage() {
   const [dtVal12h, setDtVal12h] = useState('')
   const [dtValSec, setDtValSec] = useState('')
   const [stepperStep, setStepperStep] = useState(1)
+  const [phone,        setPhone]        = useState('')
+  const [phone2,       setPhone2]       = useState('')
+  const [profilePhoto, setProfilePhoto] = useState<File | null>(null)
   const [drawerOpen,  setDrawerOpen]  = useState(false)
   const [drawerSide,  setDrawerSide]  = useState<'right' | 'left'>('right')
   const [otpVal,      setOtpVal]      = useState('')
   const [numVal,      setNumVal]      = useState(5)
   const [sliderVal,   setSliderVal]   = useState(40)
   const [tagVal,      setTagVal]      = useState<string[]>(['React', 'TypeScript'])
+  const [notifs, setNotifs] = useState([
+    { id: '1', title: 'New member registered', message: 'Priya Mehta completed onboarding.', time: new Date(Date.now() - 1000 * 60 * 5),  read: false, type: 'success' as const },
+    { id: '2', title: 'Payment received',      message: '₹12,500 credited for invoice #INV-0042.',  time: new Date(Date.now() - 1000 * 60 * 32), read: false, type: 'info'    as const },
+    { id: '3', title: 'Report ready',          message: 'Monthly attendance report is available.', time: new Date(Date.now() - 1000 * 60 * 90), read: false, type: 'info'    as const },
+    { id: '4', title: 'Server warning',        message: 'CPU usage exceeded 85% for 10 minutes.',  time: new Date(Date.now() - 1000 * 60 * 60 * 3), read: true,  type: 'warning' as const },
+    { id: '5', title: 'Upload failed',         message: 'Could not process roster_final.xlsx.',    time: new Date(Date.now() - 1000 * 60 * 60 * 7), read: true,  type: 'error'   as const },
+  ])
 
   return (
     <div className="p-6 space-y-14 max-w-5xl pb-20">
@@ -1019,12 +1044,6 @@ export default function ComponentsPage() {
       <PageShell
         title="Component Gallery"
         subtitle="Every component in the @lucifer91299/ui SDK — live and interactive."
-        breadcrumbs={
-          <Breadcrumbs items={[
-            { label: 'Dashboard', href: '/dashboard' },
-            { label: 'Components' },
-          ]} />
-        }
       />
 
       {/* ── Buttons ─────────────────────────────────────────────────────── */}
@@ -1294,13 +1313,11 @@ export default function ComponentsPage() {
                 { label: 'Review',          description: 'Confirm & submit' },
               ]}
               current={stepperStep}
+              onNext={() => setStepperStep(s => Math.min(s + 1, 3))}
+              onBack={() => setStepperStep(s => Math.max(s - 1, 0))}
+              onSubmit={() => alert('Form submitted!')}
+              submitLabel="Submit Form"
             />
-            <Separator />
-            <div className="flex items-center gap-3">
-              <Button variant="outline" size="sm" disabled={stepperStep === 0} onClick={() => setStepperStep(s => s - 1)}>← Back</Button>
-              <span className="text-xs text-label-tertiary flex-1 text-center">Step {stepperStep + 1} of 4</span>
-              <Button variant="primary" size="sm" disabled={stepperStep === 4} onClick={() => setStepperStep(s => s + 1)}>Next →</Button>
-            </div>
           </Card>
           <Card className="p-6 space-y-4">
             <Label>Vertical</Label>
@@ -1316,6 +1333,45 @@ export default function ComponentsPage() {
             />
           </Card>
         </div>
+      </Section>
+
+      {/* ── PhoneInput ────────────────────────────────────────────────────── */}
+      <Section id="phoneinput" title="PhoneInput" subtitle="International phone number input with 250+ country flags and E.164 output.">
+        <div className="max-w-xs space-y-4">
+          <PhoneInput label="Mobile number" value={phone} onChange={(e) => setPhone(e.target.value)} />
+          <PhoneInput label="US number" defaultCountryIso="US" value={phone2} onChange={(e) => setPhone2(e.target.value)} />
+          <PhoneInput label="With error" value="" onChange={() => {}} error="Please enter a valid phone number" />
+        </div>
+      </Section>
+
+      {/* ── ProfilePhotoInput ─────────────────────────────────────────────── */}
+      <Section id="profilephoto" title="ProfilePhotoInput" subtitle="Square drag-drop photo picker with preview and size validation.">
+        <ProfilePhotoInput value={profilePhoto} onChange={setProfilePhoto} />
+      </Section>
+
+      {/* ── DropdownMenu ──────────────────────────────────────────────────── */}
+      <Section id="dropdownmenu" title="DropdownMenu" subtitle="Portal-based action menu with smart positioning and item variants.">
+        <DropdownMenu
+          items={[
+            { label: 'View details', icon: <Eye className="w-4 h-4" />, onClick: () => {} },
+            { label: 'Edit', icon: <Pencil className="w-4 h-4" />, onClick: () => {} },
+            { label: 'Approve', icon: <CheckCircle className="w-4 h-4" />, onClick: () => {}, variant: 'success' },
+            { label: 'Delete', icon: <Trash2 className="w-4 h-4" />, onClick: () => {}, variant: 'danger' },
+          ]}
+        />
+      </Section>
+
+      {/* ── AttendanceCalendar ────────────────────────────────────────────── */}
+      <Section id="attendance" title="AttendanceCalendar" subtitle="Two-month attendance calendar with pending changes, progress bar, and complete dialog.">
+        <AttendanceCalendar
+          status="active"
+          startDate={new Date(new Date().getFullYear(), new Date().getMonth() - 1, 15).toISOString().split('T')[0]}
+          attendanceRecords={[]}
+          presentDaysCount={18}
+          requiredDays={60}
+          onSave={async () => {}}
+          onComplete={async () => {}}
+        />
       </Section>
 
       {/* ── Progress ────────────────────────────────────────────────────── */}
@@ -1434,7 +1490,7 @@ export default function ComponentsPage() {
         <Card className="p-5">
           <Tabs defaultValue="overview" variant={tabVariant}>
             <TabsList>
-              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="overview" icon={<LayoutDashboard className="w-3.5 h-3.5" />}>Overview</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
               <TabsTrigger value="settings">Settings</TabsTrigger>
               <TabsTrigger value="disabled" disabled>Disabled</TabsTrigger>
@@ -1765,6 +1821,28 @@ export default function ComponentsPage() {
             <Popover placement="right"  trigger={<Button variant="outline" size="sm">Right</Button>}  content={<p className="text-xs text-label-tertiary max-w-[160px]">Right-side popover.</p>} />
             <Popover placement="left"   trigger={<Button variant="outline" size="sm">Left</Button>}   content={<p className="text-xs text-label-tertiary max-w-[160px]">Left-side popover.</p>} />
           </Row>
+        </Card>
+      </Section>
+
+      {/* ── NotificationBell ────────────────────────────────────────────── */}
+      <Section id="notifications" title="NotificationBell" subtitle="Animated bell with unread badge, dropdown list, mark-read, and mark-all-read.">
+        <Card className="p-5 space-y-5">
+          <Label>Click the bell to open the dropdown</Label>
+          <div className="flex items-center gap-6 flex-wrap">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[11px] text-label-tertiary font-medium">With unread</span>
+              <NotificationBell
+                notifications={notifs}
+                onMarkRead={(id) => setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))}
+                onMarkAllRead={() => setNotifs(prev => prev.map(n => ({ ...n, read: true })))}
+                onViewAll={() => alert('Navigate to /notifications')}
+              />
+            </div>
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[11px] text-label-tertiary font-medium">Empty state</span>
+              <NotificationBell notifications={[]} emptyMessage="You're all caught up!" />
+            </div>
+          </div>
         </Card>
       </Section>
 

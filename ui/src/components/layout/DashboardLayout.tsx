@@ -1,12 +1,15 @@
 'use client'
 
 import React, { type ReactNode, useState, useRef, useEffect } from 'react'
-import { LogOut, Settings, ChevronDown, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { LogOut, Settings, ChevronDown } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Sidebar } from './Sidebar'
 import { SidebarRail } from './SidebarRail'
 import { HeaderNav } from './HeaderNav'
 import { PageFooter } from './PageFooter'
+import { TricolorBar } from './TricolorBar'
+import { Breadcrumbs } from './Breadcrumbs'
+import type { BreadcrumbItem } from './Breadcrumbs'
 import type { NavGroup, UserInfo, PoweredByConfig } from './types'
 import type { SidebarVariant } from '../../theme/types'
 
@@ -21,6 +24,10 @@ export interface DashboardLayoutProps {
   onLogout: () => void
   poweredBy?: PoweredByConfig
   children: ReactNode
+  /** Breadcrumb items rendered on the left side of the desktop header bar */
+  breadcrumbs?: BreadcrumbItem[]
+  breadcrumbHomeHref?: string
+  breadcrumbHomeLabel?: string
   /** Start the sidebar in collapsed state (persisted to localStorage) */
   defaultCollapsed?: boolean
   className?: string
@@ -98,7 +105,7 @@ function ProfileMenu({ user, onLogout, settingsHref = '/dashboard/settings' }: P
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-xl border border-separator-opaque overflow-hidden z-50 animate-in fade-in-0 zoom-in-95 duration-100"
+          className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-xl border border-separator-opaque overflow-hidden z-[60] animate-in fade-in-0 zoom-in-95 duration-100"
           style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)' }}
         >
           {/* User info header */}
@@ -154,6 +161,9 @@ export function DashboardLayout({
   onLogout,
   poweredBy,
   children,
+  breadcrumbs,
+  breadcrumbHomeHref,
+  breadcrumbHomeLabel,
   defaultCollapsed = false,
   className,
   style,
@@ -211,30 +221,31 @@ export function DashboardLayout({
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
 
         {/* Desktop top header bar */}
-        <header className="flex-shrink-0 hidden lg:flex items-center justify-between h-14 px-4 bg-white border-b border-separator-opaque">
-          {/* Left: collapse toggle + current section name */}
-          <div className="flex items-center gap-3 min-w-0">
-            {(sidebar === 'full' || sidebar === 'both') && (
-              <button
-                type="button"
-                onClick={toggleCollapsed}
-                className="flex-shrink-0 rounded-lg p-2 text-label-tertiary hover:bg-surface-secondary hover:text-label-primary transition-colors focus:outline-none"
-                title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-              >
-                {collapsed
-                  ? <PanelLeftOpen className="h-[18px] w-[18px]" />
-                  : <PanelLeftClose className="h-[18px] w-[18px]" />
-                }
-              </button>
-            )}
-            <span className="text-callout font-semibold text-label-primary capitalize">
-              {pathname.split('/').filter(Boolean).pop()?.replace(/-/g, ' ') || 'Dashboard'}
-            </span>
+        <div className="hidden lg:block flex-shrink-0 px-4 pt-4">
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300 ease-out">
+            {/* Clip only the tricolor bar to the card's top corners */}
+            <div className="overflow-hidden rounded-t-2xl">
+              <TricolorBar height={3} />
+            </div>
+            <div className="px-5 py-3 flex items-center justify-between gap-4">
+              {/* Left: breadcrumbs */}
+              <div className="min-w-0 flex-1">
+                {breadcrumbs && breadcrumbs.length > 0 && (
+                  <Breadcrumbs
+                    items={breadcrumbs}
+                    homeHref={breadcrumbHomeHref}
+                    homeLabel={breadcrumbHomeLabel}
+                    className="mb-0"
+                  />
+                )}
+              </div>
+              {/* Right: profile menu */}
+              <div className="flex-shrink-0">
+                <ProfileMenu user={user} onLogout={onLogout} />
+              </div>
+            </div>
           </div>
-
-          {/* Right: profile menu */}
-          <ProfileMenu user={user} onLogout={onLogout} />
-        </header>
+        </div>
 
         {/* Main content */}
         <main className={cn(

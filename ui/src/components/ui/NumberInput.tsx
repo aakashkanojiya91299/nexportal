@@ -44,7 +44,7 @@ export function NumberInput({
   }
 
   const btnBase = cn(
-    'flex items-center justify-center w-8 h-8 rounded-lg transition-colors flex-shrink-0',
+    'flex items-center justify-center w-9 h-9 rounded-lg transition-colors flex-shrink-0',
     'border border-separator-opaque bg-surface-secondary text-label-secondary',
     'hover:bg-surface-tertiary hover:text-label-primary',
     'disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-surface-secondary',
@@ -59,7 +59,7 @@ export function NumberInput({
         </span>
       )}
 
-      <div className="flex items-center gap-2 w-fit">
+      <div className="flex items-center gap-2 w-full max-w-xs sm:w-fit">
         <button
           type="button"
           onClick={() => set(value - step)}
@@ -79,7 +79,7 @@ export function NumberInput({
           disabled={disabled}
           onChange={e => { const n = parseFloat(e.target.value); if (!isNaN(n)) set(n) }}
           className={cn(
-            'w-16 h-8 text-center text-sm font-semibold text-label-primary bg-surface-primary',
+            'flex-1 sm:flex-none sm:w-28 h-9 min-w-0 text-center text-sm font-semibold text-label-primary bg-surface-primary',
             'border rounded-lg outline-none transition-colors tabular-nums',
             'focus:ring-2 focus:ring-[color:var(--primary,#000080)]/20',
             '[appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
