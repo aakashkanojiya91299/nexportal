@@ -252,14 +252,16 @@ export function NotificationBell({
                       {itemContent}
                     </a>
                   ) : (
-                    <button
+                    <div
                       key={item.id}
-                      type="button"
+                      role="button"
+                      tabIndex={0}
                       onClick={() => handleItemClick(item)}
+                      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleItemClick(item) } }}
                       className={rowClass}
                     >
                       {itemContent}
-                    </button>
+                    </div>
                   )
                 })
               )}

@@ -9,7 +9,7 @@ import {
   genMiddleware, genSessionRoute, genLogoutRoute, genApiClient,
   genNavConfig, genDashboardLayout, genReduxStore, genAuthSlice,
   genRootPage, genDashboardHomePage, genUsersPage, genSettingsPage,
-  genComponentsShowcasePage, genOnboardingPage,
+  genComponentsShowcasePage, genFormBuilderPage, genOnboardingPage,
 } from '../templates'
 
 // ── File helpers ───────────────────────────────────────────────────────────────
@@ -280,6 +280,7 @@ function scaffold(opts: ScaffoldOptions): number {
   w(f('src/app/dashboard/users/page.tsx'),             genUsersPage(opts))
   w(f('src/app/dashboard/settings/page.tsx'),          genSettingsPage(opts))
   w(f('src/app/dashboard/components/page.tsx'),        genComponentsShowcasePage())
+  w(f('src/app/dashboard/form-builder/page.tsx'),      genFormBuilderPage())
   w(f('src/app/dashboard/onboarding/page.tsx'),        genOnboardingPage())
   w(f('src/app/api/auth/login/route.ts'),              genLoginRoute(opts))
   w(f('src/app/api/auth/user/route.ts'),               genUserRoute(opts))

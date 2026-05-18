@@ -28,7 +28,10 @@ export interface ScaffoldOptions {
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
     '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.34',
-    'next': '^16.2.6',
+    '@dnd-kit/core': '^6.3.1',
+    '@dnd-kit/sortable': '^10.0.0',
+    '@dnd-kit/utilities': '^3.2.2',
+    'next': '^16.2.6', 
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
     'framer-motion': '^12.0.0',
@@ -445,7 +448,7 @@ export default api
 }
 
 export function genNavConfig(o: ScaffoldOptions): string {
-  return `import { LayoutDashboard, Settings, Users, Layers, ClipboardList } from 'lucide-react'
+  return `import { LayoutDashboard, Settings, Users, Layers, ClipboardList, FormInput } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
 export const navGroups: NavGroup[] = [
@@ -453,10 +456,11 @@ export const navGroups: NavGroup[] = [
     heading: 'Main',
     groupIcon: <LayoutDashboard className="h-3.5 w-3.5" />,
     items: [
-      { label: 'Dashboard',  href: '/dashboard',            icon: <LayoutDashboard className="h-4 w-4" /> },
-      { label: 'Users',      href: '/dashboard/users',      icon: <Users className="h-4 w-4" /> },
-      { label: 'Components', href: '/dashboard/components', icon: <Layers className="h-4 w-4" /> },
-      { label: 'Onboarding', href: '/dashboard/onboarding', icon: <ClipboardList className="h-4 w-4" /> },
+      { label: 'Dashboard',    href: '/dashboard',                 icon: <LayoutDashboard className="h-4 w-4" /> },
+      { label: 'Users',        href: '/dashboard/users',           icon: <Users className="h-4 w-4" /> },
+      { label: 'Form Builder', href: '/dashboard/form-builder',    icon: <FormInput className="h-4 w-4" /> },
+      { label: 'Components',   href: '/dashboard/components',      icon: <Layers className="h-4 w-4" /> },
+      { label: 'Onboarding',   href: '/dashboard/onboarding',      icon: <ClipboardList className="h-4 w-4" /> },
     ],
   },
   {
@@ -1857,6 +1861,697 @@ export default function ComponentsPage() {
         <TricolorBar />
       </Section>
 
+    </div>
+  )
+}
+`
+}
+
+export function genFormBuilderPage(): string {
+  return `'use client'
+
+import { useState, useRef, useEffect, useCallback } from 'react'
+import {
+  DndContext, closestCenter, KeyboardSensor, PointerSensor,
+  useSensor, useSensors,
+} from '@dnd-kit/core'
+import type { DragEndEvent } from '@dnd-kit/core'
+import {
+  arrayMove, SortableContext, sortableKeyboardCoordinates,
+  verticalListSortingStrategy, useSortable,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import {
+  GripVertical, Copy, Trash2, Plus, X,
+  AlignLeft, AlignJustify, Calendar, Paperclip,
+  SeparatorHorizontal, CircleDot, CheckSquare, ChevronDownSquare,
+  ChevronDown, ChevronLeft, ChevronRight,
+  BookOpen, Save, Send, Settings, ListChecks, ShieldCheck, MapPin,
+} from 'lucide-react'
+import { Card, CardContent, Button, Input, Select, Textarea } from '@lucifer91299/ui'
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type QuestionType = 'short_answer' | 'paragraph' | 'multiple_choice' | 'checkboxes' | 'dropdown' | 'date' | 'file_upload' | 'section_header'
+type PresetType   = 'name' | 'email' | 'contact_number' | 'aadhar_number' | 'residential_address' | 'date_of_birth' | 'state' | 'gender'
+
+interface QuestionObject {
+  id: string
+  type: QuestionType
+  label: string
+  description?: string
+  required: boolean
+  options?: string[]
+  order: number
+  preset?: PresetType
+}
+
+interface PresetSelection {
+  type: QuestionType
+  preset?: PresetType
+}
+
+// ── Constants ─────────────────────────────────────────────────────────────────
+
+const INDIAN_STATES = [
+  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh',
+  'Goa', 'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka',
+  'Kerala', 'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram',
+  'Nagaland', 'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu',
+  'Telangana', 'Tripura', 'Uttar Pradesh', 'Uttarakhand', 'West Bengal',
+  'Delhi', 'Jammu & Kashmir', 'Ladakh',
+]
+
+const GENDER_OPTIONS = ['male', 'female', 'other']
+
+const PRESET_DEFAULT_LABELS: Record<string, string> = {
+  name: 'Full Name', email: 'Email Address', contact_number: 'Contact Number',
+  aadhar_number: 'Aadhar Card Number', residential_address: 'Residential Address',
+  date_of_birth: 'Date of Birth', state: 'State', gender: 'Gender',
+}
+
+const PRESET_VALIDATION_INFO: Record<PresetType, string> = {
+  name:                 'Letters, spaces, hyphens, apostrophes, and periods only',
+  email:                'Must be a valid email address',
+  contact_number:       '10-digit mobile number starting with 6, 7, 8, or 9',
+  aadhar_number:        '12-digit Aadhar number',
+  residential_address:  'Free-text address',
+  date_of_birth:        'Valid past date required',
+  state:                'Must match an entry from the states list',
+  gender:               'Auto-filled from the user profile',
+}
+
+// ── Type options & icons ──────────────────────────────────────────────────────
+
+interface TypeOption { value: QuestionType; label: string; subItems?: { preset: PresetType; label: string }[] }
+
+const TYPE_OPTIONS: TypeOption[] = [
+  { value: 'short_answer',    label: 'Short Answer',    subItems: [{ preset: 'name', label: 'Name' }, { preset: 'email', label: 'Email' }, { preset: 'contact_number', label: 'Contact Number' }, { preset: 'aadhar_number', label: 'Aadhar Number' }] },
+  { value: 'paragraph',       label: 'Paragraph',       subItems: [{ preset: 'residential_address', label: 'Residential Address' }] },
+  { value: 'dropdown',        label: 'Dropdown',        subItems: [{ preset: 'state', label: 'State' }] },
+  { value: 'multiple_choice', label: 'Multiple Choice', subItems: [{ preset: 'gender', label: 'Gender' }] },
+  { value: 'date',            label: 'Date',            subItems: [{ preset: 'date_of_birth', label: 'Date of Birth' }] },
+  { value: 'checkboxes',      label: 'Checkboxes' },
+  { value: 'file_upload',     label: 'File Upload' },
+  { value: 'section_header',  label: 'Section Header' },
+]
+
+const TYPE_ICONS: Record<QuestionType, React.ReactNode> = {
+  short_answer:    <AlignLeft className="w-3.5 h-3.5" />,
+  paragraph:       <AlignJustify className="w-3.5 h-3.5" />,
+  multiple_choice: <CircleDot className="w-3.5 h-3.5" />,
+  checkboxes:      <CheckSquare className="w-3.5 h-3.5" />,
+  dropdown:        <ChevronDownSquare className="w-3.5 h-3.5" />,
+  date:            <Calendar className="w-3.5 h-3.5" />,
+  file_upload:     <Paperclip className="w-3.5 h-3.5" />,
+  section_header:  <SeparatorHorizontal className="w-3.5 h-3.5" />,
+}
+
+// ── PresetTypeSelector ────────────────────────────────────────────────────────
+
+function PresetTypeSelector({ currentType, currentPreset, onSelect }: {
+  currentType: QuestionType
+  currentPreset?: PresetType
+  onSelect: (s: PresetSelection) => void
+}) {
+  const [open, setOpen]               = useState(false)
+  const [hoveredType, setHoveredType] = useState<QuestionType | null>(null)
+  const [flyoutSide, setFlyoutSide]   = useState<'left' | 'right'>('left')
+  const [expandedType, setExpandedType] = useState<QuestionType | null>(null)
+  const [isTouch, setIsTouch]         = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const timerRef     = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  useEffect(() => {
+    const mq = window.matchMedia('(hover: none) and (pointer: coarse)')
+    setIsTouch(mq.matches)
+    const h = (e: MediaQueryListEvent) => setIsTouch(e.matches)
+    mq.addEventListener('change', h)
+    return () => mq.removeEventListener('change', h)
+  }, [])
+
+  useEffect(() => {
+    if (!open) return
+    const h = (e: PointerEvent) => {
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
+        setOpen(false); setHoveredType(null); setExpandedType(null)
+      }
+    }
+    document.addEventListener('pointerdown', h)
+    return () => document.removeEventListener('pointerdown', h)
+  }, [open])
+
+  useEffect(() => () => { if (timerRef.current) clearTimeout(timerRef.current) }, [])
+
+  const subLabel = TYPE_OPTIONS.find(o => o.value === currentType)?.subItems?.find(s => s.preset === currentPreset)?.label
+  const btnLabel = subLabel
+    ? \`\${TYPE_OPTIONS.find(o => o.value === currentType)?.label} › \${subLabel}\`
+    : (TYPE_OPTIONS.find(o => o.value === currentType)?.label ?? currentType)
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button type="button"
+        onClick={() => { setOpen(o => !o); setHoveredType(null); setExpandedType(null) }}
+        className="flex items-center gap-2 pl-2.5 pr-2 py-1.5 text-sm font-medium border border-gray-200 rounded-lg bg-white text-gray-600 hover:border-gray-300 hover:bg-gray-50 transition-all min-w-[180px] focus:outline-none"
+      >
+        <span className="text-gray-400">{TYPE_ICONS[currentType]}</span>
+        <span className="flex-1 text-left truncate">{btnLabel}</span>
+        <ChevronDown className={\`w-3.5 h-3.5 text-gray-400 flex-shrink-0 transition-transform duration-200 \${open ? 'rotate-180' : ''}\`} />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-1 z-50 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1">
+          {TYPE_OPTIONS.map((opt, idx) => {
+            const isActive   = currentType === opt.value && !currentPreset
+            const hasSubs    = !!(opt.subItems?.length)
+            const showSep    = idx > 0 && !!(TYPE_OPTIONS[idx - 1].subItems?.length) && !hasSubs
+            const isExpanded = isTouch && expandedType === opt.value
+            return (
+              <div key={opt.value}>
+                {showSep && <div className="my-1 border-t border-gray-100" />}
+                <div
+                  className="relative"
+                  onMouseEnter={!isTouch ? (e) => {
+                    if (timerRef.current) clearTimeout(timerRef.current)
+                    if (hasSubs) {
+                      const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                      setFlyoutSide(rect.left - 184 > 8 ? 'left' : 'right')
+                      timerRef.current = setTimeout(() => setHoveredType(opt.value), 80)
+                    } else setHoveredType(null)
+                  } : undefined}
+                  onMouseLeave={!isTouch ? () => { if (timerRef.current) clearTimeout(timerRef.current) } : undefined}
+                >
+                  <button type="button"
+                    onClick={() => {
+                      onSelect({ type: opt.value, preset: undefined })
+                      if (isTouch && hasSubs) { setExpandedType(p => p === opt.value ? null : opt.value) }
+                      else { setOpen(false); setHoveredType(null); setExpandedType(null) }
+                    }}
+                    className={\`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors \${isActive ? 'bg-gray-100 text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'}\`}
+                  >
+                    <span className={isActive ? 'text-gray-600' : 'text-gray-400'}>{TYPE_ICONS[opt.value]}</span>
+                    <span className="flex-1 text-left">{opt.label}</span>
+                    {hasSubs && (isTouch
+                      ? <ChevronRight className={\`w-3 h-3 text-gray-300 flex-shrink-0 transition-transform \${isExpanded ? 'rotate-90' : ''}\`} />
+                      : <ChevronLeft className="w-3 h-3 text-gray-300 flex-shrink-0" />
+                    )}
+                  </button>
+
+                  {/* Desktop flyout */}
+                  {!isTouch && hasSubs && hoveredType === opt.value && (
+                    <div
+                      className={\`absolute top-0 w-44 bg-white border border-gray-200 rounded-xl shadow-lg py-1 \${flyoutSide === 'left' ? 'right-full mr-1' : 'left-full ml-1'}\`}
+                      onMouseEnter={() => { if (timerRef.current) clearTimeout(timerRef.current); setHoveredType(opt.value) }}
+                      onMouseLeave={() => setHoveredType(null)}
+                    >
+                      {opt.subItems!.map(sub => {
+                        const isSub = currentType === opt.value && currentPreset === sub.preset
+                        return (
+                          <button key={sub.preset} type="button"
+                            onClick={() => { onSelect({ type: opt.value, preset: sub.preset }); setOpen(false); setHoveredType(null) }}
+                            className={\`w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors \${isSub ? 'bg-gray-100 text-gray-800 font-medium' : 'text-gray-600 hover:bg-gray-50'}\`}
+                          >
+                            <span className={isSub ? 'text-gray-600' : 'text-gray-400'}>{TYPE_ICONS[opt.value]}</span>
+                            {sub.label}
+                          </button>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Mobile accordion */}
+                {isTouch && hasSubs && isExpanded && (
+                  <div className="border-t border-gray-100 bg-gray-50/60">
+                    {opt.subItems!.map(sub => {
+                      const isSub = currentType === opt.value && currentPreset === sub.preset
+                      return (
+                        <button key={sub.preset} type="button"
+                          onClick={() => { onSelect({ type: opt.value, preset: sub.preset }); setOpen(false); setExpandedType(null) }}
+                          className={\`w-full flex items-center gap-2.5 pl-8 pr-3 py-2 text-sm transition-colors \${isSub ? 'bg-gray-100 text-gray-800 font-medium' : 'text-gray-500 hover:bg-gray-100'}\`}
+                        >
+                          <span className={isSub ? 'text-gray-600' : 'text-gray-400'}>{TYPE_ICONS[opt.value]}</span>
+                          {sub.label}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            )
+          })}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ── SortableQuestionCard ──────────────────────────────────────────────────────
+
+function SortableQuestionCard({ question, onUpdate, onDuplicate, onDelete, hasError }: {
+  question: QuestionObject
+  onUpdate: (u: Partial<QuestionObject>) => void
+  onDuplicate: () => void
+  onDelete: () => void
+  hasError?: boolean
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: question.id })
+  const style = { transform: CSS.Transform.toString(transform), transition, opacity: isDragging ? 0.4 : 1 }
+  const isSectionHeader = question.type === 'section_header'
+
+  const addOption    = () => onUpdate({ options: [...(question.options ?? []), \`Option \${(question.options?.length ?? 0) + 1}\`] })
+  const updateOption = (i: number, v: string) => { const o = [...(question.options ?? [])]; o[i] = v; onUpdate({ options: o }) }
+  const removeOption = (i: number) => onUpdate({ options: (question.options ?? []).filter((_, idx) => idx !== i) })
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={\`bg-white border rounded-xl shadow-sm transition-shadow \${isDragging ? 'shadow-lg' : 'hover:shadow-md'} \${hasError ? 'border-red-300' : 'border-gray-200'}\`}
+    >
+      {/* Top bar: drag handle + type selector */}
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-100 bg-gray-50/60 rounded-t-xl">
+        <button type="button" {...attributes} {...listeners}
+          className="text-gray-300 hover:text-gray-500 cursor-grab active:cursor-grabbing touch-none p-0.5"
+          title="Drag to reorder"
+        >
+          <GripVertical className="w-4 h-4" />
+        </button>
+        <span className="text-xs font-medium text-gray-400 select-none">
+          {isSectionHeader ? 'Section Header' : 'Question'}
+        </span>
+        <div className="flex-1" />
+        {!isSectionHeader && (
+          <PresetTypeSelector
+            currentType={question.type}
+            currentPreset={question.preset}
+            onSelect={({ type, preset }) => onUpdate({ type, preset })}
+          />
+        )}
+      </div>
+
+      {/* Label */}
+      <div className="px-4 pt-4 pb-3">
+        {isSectionHeader ? (
+          <input type="text" placeholder="Section title" value={question.label}
+            onChange={e => onUpdate({ label: e.target.value })}
+            className="w-full text-lg font-bold border-0 border-b-2 border-gray-200 focus:border-blue-500 outline-none pb-1.5 bg-transparent placeholder-gray-300"
+          />
+        ) : (
+          <>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+              Question Label
+            </label>
+            <input type="text" placeholder="e.g. What is your full name?" value={question.label}
+              onChange={e => onUpdate({ label: e.target.value })}
+              className={\`w-full text-sm font-medium rounded-lg px-3 py-2.5 outline-none transition-all border \${
+                hasError && !question.label.trim()
+                  ? 'bg-red-50 border-red-300 placeholder-red-300 focus:ring-2 focus:ring-red-100'
+                  : 'bg-gray-50 border-gray-200 placeholder-gray-300 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10'
+              }\`}
+            />
+            {hasError && !question.label.trim() && (
+              <p className="text-xs text-red-500 mt-1.5 px-0.5">Question label is required before publishing.</p>
+            )}
+            {question.preset && (
+              <div className="flex items-center gap-1.5 mt-2 px-2.5 py-1.5 rounded-lg" style={{ background: 'var(--primary-soft, rgba(0,0,128,0.06))', border: '1px solid var(--primary-border, rgba(0,0,128,0.12))' }}>
+                <ShieldCheck className="w-3.5 h-3.5 flex-shrink-0" style={{ color: 'var(--primary, #000080)' }} />
+                <span className="text-[11px] font-medium" style={{ color: 'var(--primary, #000080)' }}>Validation:</span>
+                <span className="text-[11px]" style={{ color: 'var(--primary, #000080)', opacity: 0.7 }}>{PRESET_VALIDATION_INFO[question.preset]}</span>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Body */}
+      {!isSectionHeader && (
+        <div className="px-4 pb-3 space-y-3">
+          <div>
+            <label className="block text-[11px] font-semibold uppercase tracking-wider text-gray-400 mb-1.5">
+              Description <span className="normal-case font-normal text-gray-300">(optional)</span>
+            </label>
+            <Textarea
+              value={question.description ?? ''}
+              onChange={e => onUpdate({ description: e.target.value || undefined })}
+              placeholder="Add helper text visible to the applicant..."
+              rows={2}
+            />
+          </div>
+
+          {/* Answer preview */}
+          <div className="pt-1">
+            <div className="flex items-center gap-2 mb-2.5">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-gray-400">Answer preview</span>
+              <div className="flex-1 h-px bg-gray-100" />
+            </div>
+
+            {question.type === 'short_answer' && (
+              <div className="flex items-center gap-2.5 px-3.5 py-2.5 border border-gray-300 rounded-lg bg-white shadow-sm">
+                <AlignLeft className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                <span className="text-sm text-gray-400 italic">Short answer text</span>
+              </div>
+            )}
+
+            {question.type === 'paragraph' && (
+              <div className="px-3.5 py-3 border border-gray-300 rounded-lg bg-white shadow-sm space-y-2 min-h-[70px]">
+                {['w-full', 'w-5/6', 'w-3/4', 'w-2/5'].map((w, i) => (
+                  <div key={i} className={\`h-2 bg-gray-200 rounded-full \${w}\`} />
+                ))}
+              </div>
+            )}
+
+            {question.type === 'date' && (
+              <div className="inline-flex items-center gap-2.5 px-3.5 py-2.5 border border-gray-300 rounded-lg bg-white shadow-sm text-sm text-gray-500">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span>DD / MM / YYYY</span>
+              </div>
+            )}
+
+            {question.type === 'file_upload' && (
+              <div className="py-5 px-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 text-center space-y-1.5">
+                <Paperclip className="w-5 h-5 text-gray-400 mx-auto" />
+                <p className="text-sm font-medium text-gray-500">Click to upload or drag &amp; drop</p>
+                <p className="text-xs text-gray-400">Any file type accepted</p>
+              </div>
+            )}
+
+            {(question.type === 'multiple_choice' || question.type === 'checkboxes') && (
+              <div className="space-y-1.5">
+                {(question.preset === 'gender' ? GENDER_OPTIONS : question.options ?? []).map((opt, i) => (
+                  <div key={i} className="flex items-center gap-2.5 bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-gray-300">
+                    {question.type === 'multiple_choice'
+                      ? <span className="w-4 h-4 rounded-full border-2 border-gray-300 flex-shrink-0" />
+                      : <span className="w-4 h-4 rounded border-2 border-gray-300 flex-shrink-0" />
+                    }
+                    <input type="text" value={opt} placeholder={\`Option \${i + 1}\`}
+                      onChange={e => updateOption(i, e.target.value)}
+                      disabled={question.preset === 'gender'}
+                      className="flex-1 text-sm outline-none bg-transparent text-gray-700 placeholder-gray-300"
+                    />
+                    {question.preset !== 'gender' && (
+                      <button type="button" onClick={() => removeOption(i)}
+                        disabled={(question.options?.length ?? 0) <= 1}
+                        className="w-6 h-6 flex items-center justify-center rounded-md text-gray-300 hover:text-red-400 hover:bg-red-50 disabled:opacity-0 transition-all flex-shrink-0"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+                {question.preset === 'gender'
+                  ? <p className="text-xs text-gray-400 px-1">Gender options are auto-populated.</p>
+                  : <button type="button" onClick={addOption}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 rounded-lg text-xs font-medium text-gray-400 hover:border-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all"
+                    ><Plus className="w-3.5 h-3.5" /> Add option</button>
+                }
+              </div>
+            )}
+
+            {question.type === 'dropdown' && (
+              question.preset === 'state'
+                ? <div className="flex items-center gap-2 px-3 py-2.5 border border-gray-200 rounded-lg bg-gray-50 text-sm text-gray-500">
+                    <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                    <span>States list ({INDIAN_STATES.length} options) — auto-populated</span>
+                  </div>
+                : <div className="space-y-1.5">
+                    {(question.options ?? []).map((opt, i) => (
+                      <div key={i} className="flex items-center gap-2.5 bg-white border border-gray-200 rounded-lg px-3 py-2 hover:border-gray-300">
+                        <span className="w-5 h-5 flex items-center justify-center rounded bg-gray-100 text-[11px] font-semibold text-gray-400 flex-shrink-0">{i + 1}</span>
+                        <input type="text" value={opt} placeholder={\`Option \${i + 1}\`}
+                          onChange={e => updateOption(i, e.target.value)}
+                          className="flex-1 text-sm outline-none bg-transparent text-gray-700 placeholder-gray-300"
+                        />
+                        <button type="button" onClick={() => removeOption(i)}
+                          disabled={(question.options?.length ?? 0) <= 1}
+                          className="w-6 h-6 flex items-center justify-center rounded-md text-gray-300 hover:text-red-400 hover:bg-red-50 disabled:opacity-0 transition-all flex-shrink-0"
+                        ><X className="w-3.5 h-3.5" /></button>
+                      </div>
+                    ))}
+                    <button type="button" onClick={addOption}
+                      className="w-full flex items-center justify-center gap-1.5 py-2 border border-dashed border-gray-200 rounded-lg text-xs font-medium text-gray-400 hover:border-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all"
+                    ><Plus className="w-3.5 h-3.5" /> Add option</button>
+                  </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className="flex items-center justify-end gap-1 px-3 py-2 border-t border-gray-100">
+        {!isSectionHeader && (
+          <label className="flex items-center gap-1.5 text-xs text-gray-500 cursor-pointer mr-2 select-none">
+            <input type="checkbox" className="w-3.5 h-3.5"
+              checked={question.required}
+              onChange={e => onUpdate({ required: e.target.checked })}
+            />
+            Required
+          </label>
+        )}
+        <button type="button" onClick={onDuplicate}
+          className="p-1.5 text-gray-400 hover:text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
+          title="Duplicate"
+        ><Copy className="w-4 h-4" /></button>
+        <button type="button" onClick={onDelete}
+          className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
+          title="Delete"
+        ><Trash2 className="w-4 h-4" /></button>
+      </div>
+    </div>
+  )
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function createQuestion(order: number): QuestionObject {
+  return { id: crypto.randomUUID(), type: 'short_answer', label: '', required: false, order }
+}
+
+// ── FormBuilderPage ───────────────────────────────────────────────────────────
+
+export default function FormBuilderPage() {
+  const [activeTab, setActiveTab]       = useState<'questions' | 'settings'>('questions')
+  const [title, setTitle]               = useState('')
+  const [description, setDescription]   = useState('')
+  const [targetAudience, setTarget]     = useState('all')
+  const [paymentRequired, setPayment]   = useState(false)
+  const [price, setPrice]               = useState('')
+  const [questions, setQuestions]       = useState<QuestionObject[]>([createQuestion(0)])
+  const [questionErrors, setQErrors]    = useState<Set<string>>(new Set())
+  const [formErrors, setFormErrors]     = useState<{ title?: string; price?: string; questions?: string }>({})
+  const [saved, setSaved]               = useState(false)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id) return
+    const from = questions.findIndex(q => q.id === active.id)
+    const to   = questions.findIndex(q => q.id === over.id)
+    setQuestions(arrayMove(questions, from, to).map((q, i) => ({ ...q, order: i })))
+  }
+
+  const addQuestion = () => setQuestions(p => [...p, createQuestion(p.length)])
+
+  const updateQuestion = (id: string, updates: Partial<QuestionObject>) => {
+    if (updates.label?.trim()) {
+      setQErrors(p => { const n = new Set(p); n.delete(id); return n })
+      if (formErrors.questions) setFormErrors(p => ({ ...p, questions: undefined }))
+    }
+    setQuestions(p => p.map(q => {
+      if (q.id !== id) return q
+      const u = { ...q, ...updates }
+      if (updates.type && updates.type !== q.type && !('preset' in updates)) u.preset = undefined
+      if (!['multiple_choice', 'checkboxes', 'dropdown'].includes(u.type)) u.options = undefined
+      if (['multiple_choice', 'checkboxes', 'dropdown'].includes(u.type) && !u.options?.length && u.preset !== 'state') u.options = ['Option 1']
+      if ('preset' in updates) {
+        if (updates.preset === 'state')  u.options = undefined
+        if (updates.preset === 'gender') u.options = GENDER_OPTIONS
+        if (!updates.preset && (q.preset === 'state' || q.preset === 'gender') && ['dropdown', 'multiple_choice'].includes(u.type)) u.options = ['Option 1']
+        const isDefault = !q.label.trim() || Object.values(PRESET_DEFAULT_LABELS).includes(q.label.trim())
+        if (updates.preset && isDefault) u.label = PRESET_DEFAULT_LABELS[updates.preset] ?? u.label
+        else if (!updates.preset && isDefault) u.label = ''
+      }
+      return u
+    }))
+  }
+
+  const duplicateQuestion = (id: string) => {
+    const idx   = questions.findIndex(q => q.id === id)
+    const clone = { ...questions[idx], id: crypto.randomUUID(), order: idx + 1 }
+    setQuestions([...questions.slice(0, idx + 1), clone, ...questions.slice(idx + 1)].map((q, i) => ({ ...q, order: i })))
+  }
+
+  const deleteQuestion = (id: string) =>
+    setQuestions(p => p.filter(q => q.id !== id).map((q, i) => ({ ...q, order: i })))
+
+  const validate = (forPublish: boolean) => {
+    const e: typeof formErrors = {}
+    if (!title.trim()) e.title = 'Please enter a form title.'
+    if (paymentRequired && (!price || Number(price) <= 0)) e.price = 'Please enter a valid fee greater than 0.'
+    const emptyIds = forPublish
+      ? questions.filter(q => q.type !== 'section_header' && !q.label.trim()).map(q => q.id)
+      : []
+    if (emptyIds.length) e.questions = 'All questions must have a label before publishing.'
+    return { errors: e, emptyIds }
+  }
+
+  const handleSave = () => {
+    const { errors } = validate(false)
+    if (Object.keys(errors).length) { setFormErrors(errors); return }
+    setFormErrors({})
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3500)
+    // Replace with real API call:
+    console.log('Draft payload:', { title, description, target_audience: targetAudience, payment_required: paymentRequired, price: paymentRequired ? Number(price) : undefined, questions })
+  }
+
+  const handlePublish = () => {
+    const { errors, emptyIds } = validate(true)
+    if (Object.keys(errors).length || emptyIds.length) {
+      setFormErrors(errors); setQErrors(new Set(emptyIds))
+      if (emptyIds.length && activeTab !== 'questions') setActiveTab('questions')
+      return
+    }
+    setFormErrors({}); setQErrors(new Set())
+    setSaved(true)
+    setTimeout(() => setSaved(false), 3500)
+    // Replace with real API call:
+    console.log('Publish payload:', { title, description, target_audience: targetAudience, payment_required: paymentRequired, price: paymentRequired ? Number(price) : undefined, questions })
+  }
+
+  return (
+    <div className="space-y-5 max-w-3xl mx-auto p-4 sm:p-6 pb-24">
+      {/* Header */}
+      <div className="flex flex-wrap items-center gap-3">
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
+          style={{ background: 'var(--primary-soft, rgba(0,0,128,0.07))' }}>
+          <BookOpen className="w-4.5 h-4.5" style={{ color: 'var(--primary, #000080)' }} />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-label-primary leading-tight">Form Builder</h1>
+          <p className="text-xs text-label-tertiary">Build dynamic forms with drag &amp; drop questions</p>
+        </div>
+      </div>
+
+      {saved && (
+        <div className="px-4 py-3 bg-green-50 border border-green-200 rounded-xl text-sm text-green-700 font-medium">
+          ✓ Form saved — check the browser console for the payload. Wire up your API in handleSave / handlePublish.
+        </div>
+      )}
+
+      {/* Form title + description card */}
+      <Card className="overflow-hidden">
+        <div className="h-1" style={{ background: 'var(--primary, #000080)' }} />
+        <CardContent className="pt-5 space-y-4">
+          <div>
+            <input type="text" placeholder="Form Title" value={title}
+              onChange={e => { setTitle(e.target.value); if (formErrors.title) setFormErrors(p => ({ ...p, title: undefined })) }}
+              className={\`w-full text-2xl font-bold border-0 border-b-2 focus:outline-none pb-2 bg-transparent placeholder-gray-300 \${formErrors.title ? 'border-red-400' : 'border-gray-200'}\`}
+            />
+            {formErrors.title && <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>}
+          </div>
+          <Textarea value={description} onChange={e => setDescription(e.target.value)} placeholder="Form description (optional)" rows={2} />
+        </CardContent>
+      </Card>
+
+      {/* Tab bar */}
+      <div className="flex border-b border-gray-200">
+        {([
+          { id: 'questions' as const, Icon: ListChecks, label: 'Questions' },
+          { id: 'settings'  as const, Icon: Settings,   label: 'Settings'  },
+        ]).map(({ id, Icon, label }) => (
+          <button key={id} type="button" onClick={() => setActiveTab(id)}
+            className={\`flex items-center gap-2 px-5 py-2.5 text-sm font-medium border-b-2 transition-colors \${activeTab === id ? 'border-blue-600 text-blue-600' : 'border-transparent text-gray-500 hover:text-gray-700'}\`}
+            style={activeTab === id ? { borderColor: 'var(--primary, #000080)', color: 'var(--primary, #000080)' } : undefined}
+          >
+            <Icon className="w-4 h-4" />{label}
+          </button>
+        ))}
+      </div>
+
+      {/* Questions tab */}
+      {activeTab === 'questions' && (
+        <div className="space-y-5">
+          {formErrors.questions && <p className="text-red-500 text-sm px-1">{formErrors.questions}</p>}
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={questions.map(q => q.id)} strategy={verticalListSortingStrategy}>
+              {questions.map(q => (
+                <SortableQuestionCard
+                  key={q.id}
+                  question={q}
+                  onUpdate={u => updateQuestion(q.id, u)}
+                  onDuplicate={() => duplicateQuestion(q.id)}
+                  onDelete={() => deleteQuestion(q.id)}
+                  hasError={questionErrors.has(q.id)}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
+
+          <button type="button" onClick={addQuestion}
+            className="w-full py-3 border-2 border-dashed border-gray-200 rounded-xl text-gray-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-2 text-sm font-medium"
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--primary, #000080)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = '')}
+          >
+            <Plus className="w-4 h-4" /> Add Question
+          </button>
+        </div>
+      )}
+
+      {/* Settings tab */}
+      {activeTab === 'settings' && (
+        <Card>
+          <CardContent className="pt-5 space-y-5">
+            <Select
+              label="Target Audience"
+              value={targetAudience}
+              onChange={setTarget}
+              options={[
+                { value: 'all',    label: 'All Users'    },
+                { value: 'admin',  label: 'Admins Only'  },
+                { value: 'member', label: 'Members Only' },
+              ]}
+            />
+
+            <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Payment Required</p>
+                <p className="text-xs text-gray-400">Users must pay to submit this form</p>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
+                <input type="checkbox" className="sr-only peer" checked={paymentRequired} onChange={e => setPayment(e.target.checked)} />
+                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
+              </label>
+            </div>
+
+            {paymentRequired && (
+              <Input
+                label="Fee Amount"
+                type="number"
+                min="0"
+                placeholder="e.g. 500"
+                value={price}
+                onChange={e => { setPrice(e.target.value); if (formErrors.price) setFormErrors(p => ({ ...p, price: undefined })) }}
+                error={formErrors.price}
+              />
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Sticky action footer */}
+      <div className="sticky bottom-0 z-10 bg-white border-t border-gray-200 py-3 flex justify-end gap-3">
+        <Button variant="outline" onClick={handleSave} className="flex items-center gap-2">
+          <Save className="w-4 h-4" /> Save as Draft
+        </Button>
+        <Button variant="primary" onClick={handlePublish} className="flex items-center gap-2">
+          <Send className="w-4 h-4" /> Publish Now
+        </Button>
+      </div>
     </div>
   )
 }
