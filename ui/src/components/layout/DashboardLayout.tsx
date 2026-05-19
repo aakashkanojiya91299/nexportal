@@ -156,11 +156,9 @@ export function DashboardLayout({
 
         {/* Desktop top header bar */}
         <div className="hidden lg:block flex-shrink-0 px-4 pt-4">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm animate-slide-up" style={{ animationDuration: '0.35s', animationTimingFunction: 'cubic-bezier(0.22,1,0.36,1)', animationFillMode: 'both' }}>
-            {/* Top tricolor — start corner */}
-            <div className="overflow-hidden rounded-t-2xl">
-              <TricolorBar height={3} animated shimmer />
-            </div>
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden animate-slide-up" style={{ animationDuration: '0.35s', animationTimingFunction: 'cubic-bezier(0.22,1,0.36,1)', animationFillMode: 'both' }}>
+            {/* Top tricolor — covers full start→end width flush to corners */}
+            <TricolorBar height={3} animated shimmer />
             <div className="px-5 py-3 flex items-center justify-between gap-4">
               {/* Left: breadcrumbs */}
               <div className="min-w-0 flex-1">
@@ -212,10 +210,8 @@ export function DashboardLayout({
                 <UserChip user={user} />
               </div>
             </div>
-            {/* Bottom tricolor — end corner (reversed) */}
-            <div className="overflow-hidden rounded-b-2xl" style={{ transform: 'scaleX(-1)' }}>
-              <TricolorBar height={3} animated shimmer />
-            </div>
+            {/* Bottom tricolor — covers full start→end width flush to corners */}
+            <TricolorBar height={3} animated shimmer />
           </div>
         </div>
 
