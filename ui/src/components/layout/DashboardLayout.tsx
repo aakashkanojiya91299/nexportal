@@ -1,7 +1,7 @@
 'use client'
 
-import React, { type ReactNode, useState, useRef, useEffect } from 'react'
-import { LogOut, Settings, ChevronDown } from 'lucide-react'
+import React, { type ReactNode, useState, useEffect } from 'react'
+import { Settings } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Sidebar } from './Sidebar'
 import { SidebarRail } from './SidebarRail'
@@ -9,6 +9,7 @@ import { HeaderNav } from './HeaderNav'
 import { PageFooter } from './PageFooter'
 import { TricolorBar } from './TricolorBar'
 import { Breadcrumbs } from './Breadcrumbs'
+import { NotificationBell } from './NotificationBell'
 import type { BreadcrumbItem } from './Breadcrumbs'
 import type { NavGroup, UserInfo, PoweredByConfig } from './types'
 import type { SidebarVariant } from '../../theme/types'
@@ -30,13 +31,23 @@ export interface DashboardLayoutProps {
   breadcrumbHomeLabel?: string
   /** Start the sidebar in collapsed state (persisted to localStorage) */
   defaultCollapsed?: boolean
-  /** href for the Settings link in the header-variant profile dropdown (default: /dashboard/settings) */
+  /** href for the Settings link in the header (default: /dashboard/settings) */
   settingsHref?: string
+  /** Show the Settings icon button in the header bar (default: true) */
+  showSettings?: boolean
+  /** API endpoint for the notification bell — e.g. "/api/notifications". Omit to hide the bell. */
+  notificationsEndpoint?: string
+  /** Show the Notification Bell in the header bar (default: true when notificationsEndpoint is set) */
+  showNotifications?: boolean
+  /** Called when a notification with a linkUrl is clicked */
+  onNavigate?: (url: string) => void
+  /** Extra nodes rendered in the desktop header bar, between breadcrumbs and the profile menu */
+  headerActions?: ReactNode
   className?: string
   style?: React.CSSProperties
 }
 
-function UserAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
+function UserAvatar({ name }: { name: string }) {
   const initials = name
     .split(' ')
     .map((w) => w[0] ?? '')
@@ -45,112 +56,24 @@ function UserAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' })
     .toUpperCase()
   return (
     <span
-      className={cn(
-        'flex flex-shrink-0 items-center justify-center rounded-full font-bold text-white select-none',
-        size === 'sm' ? 'h-7 w-7 text-[10px]' : 'h-9 w-9 text-[13px]',
-      )}
-      style={{ background: 'var(--primary, #000080)' }}
+      className="flex flex-shrink-0 items-center justify-center rounded-full font-bold text-white select-none h-9 w-9 text-[13px]"
+      style={{
+        background: 'linear-gradient(135deg, var(--primary, #000080) 0%, color-mix(in srgb, var(--primary, #000080) 60%, var(--accent, #FF9933)) 100%)',
+      }}
     >
       {initials || '?'}
     </span>
   )
 }
 
-interface ProfileMenuProps {
-  user: UserInfo
-  onLogout: () => void
-  settingsHref?: string
-}
-
-function ProfileMenu({ user, onLogout, settingsHref = '/dashboard/settings' }: ProfileMenuProps) {
-  const [open, setOpen] = useState(false)
-  const ref = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    function handleOutside(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false)
-    }
-    function handleEsc(e: KeyboardEvent) {
-      if (e.key === 'Escape') setOpen(false)
-    }
-    if (open) {
-      document.addEventListener('mousedown', handleOutside)
-      document.addEventListener('keydown', handleEsc)
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleOutside)
-      document.removeEventListener('keydown', handleEsc)
-    }
-  }, [open])
-
+function UserChip({ user }: { user: UserInfo }) {
   return (
-    <div ref={ref} className="relative">
-      {/* Trigger */}
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 transition-colors hover:bg-surface-secondary/80 focus:outline-none"
-      >
-        <div className="text-right hidden sm:block">
-          <p className="text-callout font-semibold text-label-primary leading-tight">{user.name}</p>
-          <p className="text-[11px] text-label-tertiary leading-tight">{user.role}</p>
-        </div>
-        <UserAvatar name={user.name} />
-        <ChevronDown
-          className={cn(
-            'h-3.5 w-3.5 flex-shrink-0 text-label-quaternary transition-transform duration-200',
-            open && 'rotate-180',
-          )}
-        />
-      </button>
-
-      {/* Dropdown */}
-      {open && (
-        <div
-          className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white border border-separator-opaque overflow-hidden z-[60] animate-in fade-in-0 zoom-in-95 duration-100"
-          style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10)' }}
-        >
-          {/* Top tricolor stripe */}
-          <TricolorBar height={3} animated shimmer />
-
-          {/* User info header — solid primary, fully opaque */}
-          <div
-            className="px-4 py-3.5 border-b border-white/10"
-            style={{ background: 'var(--primary, #000080)' }}
-          >
-            <div className="flex items-center gap-3">
-              <UserAvatar name={user.name} />
-              <div className="min-w-0">
-                <p className="text-callout font-semibold text-white truncate leading-tight">{user.name}</p>
-                <p className="text-[11px] text-white/70 truncate mt-0.5">{user.role}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Menu items */}
-          <div className="py-1.5">
-            <a
-              href={settingsHref}
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-callout font-medium text-label-primary hover:bg-surface-secondary transition-colors"
-            >
-              <Settings className="h-4 w-4 flex-shrink-0 text-label-secondary" />
-              Settings
-            </a>
-          </div>
-
-          <div className="border-t border-separator-opaque py-1.5">
-            <button
-              type="button"
-              onClick={() => { setOpen(false); onLogout() }}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-callout font-semibold text-red-600 hover:bg-red-50 transition-colors"
-            >
-              <LogOut className="h-4 w-4 flex-shrink-0" />
-              Sign out
-            </button>
-          </div>
-        </div>
-      )}
+    <div className="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl bg-gray-50 border border-gray-100">
+      <UserAvatar name={user.name} />
+      <div className="text-left hidden sm:block">
+        <p className="text-[13px] font-semibold text-gray-900 leading-tight">{user.name}</p>
+        <p className="text-[11px] text-gray-400 leading-tight capitalize">{user.role}</p>
+      </div>
     </div>
   )
 }
@@ -171,6 +94,11 @@ export function DashboardLayout({
   breadcrumbHomeLabel,
   defaultCollapsed = false,
   settingsHref = '/dashboard/settings',
+  showSettings = true,
+  notificationsEndpoint,
+  showNotifications = true,
+  onNavigate,
+  headerActions,
   className,
   style,
 }: DashboardLayoutProps) {
@@ -228,7 +156,7 @@ export function DashboardLayout({
 
         {/* Desktop top header bar */}
         <div className="hidden lg:block flex-shrink-0 px-4 pt-4">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden animate-slide-up" style={{ animationDuration: '0.35s', animationTimingFunction: 'cubic-bezier(0.22,1,0.36,1)', animationFillMode: 'both' }}>
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm animate-slide-up" style={{ animationDuration: '0.35s', animationTimingFunction: 'cubic-bezier(0.22,1,0.36,1)', animationFillMode: 'both' }}>
             {/* Top tricolor — start corner */}
             <div className="overflow-hidden rounded-t-2xl">
               <TricolorBar height={3} animated shimmer />
@@ -245,9 +173,43 @@ export function DashboardLayout({
                   />
                 )}
               </div>
-              {/* Right: profile menu */}
-              <div className="flex-shrink-0">
-                <ProfileMenu user={user} onLogout={onLogout} />
+              {/* Right: notification bell + settings + separator + user chip */}
+              <div className="flex items-center gap-1.5 flex-shrink-0">
+                {headerActions}
+                {showNotifications && notificationsEndpoint && (
+                  <NotificationBell
+                    apiEndpoint={notificationsEndpoint}
+                    onNavigate={onNavigate}
+                  />
+                )}
+                {showSettings && (
+                  <a
+                    href={settingsHref}
+                    title="Settings"
+                    aria-label="Settings"
+                    className={cn(
+                      'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border bg-white shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
+                      pathname.startsWith(settingsHref)
+                        ? 'border-[color:var(--primary,#000080)]/25 text-[color:var(--primary,#000080)] shadow-[0_2px_10px_-2px_rgba(0,0,128,0.25)] ring-1 ring-[color:var(--primary,#000080)]/15'
+                        : 'border-black/[0.08] text-label-secondary hover:border-[color:var(--primary,#000080)]/20 hover:text-[color:var(--primary,#000080)] hover:shadow-md',
+                    )}
+                  >
+                    <Settings
+                      className={cn('h-4 w-4 flex-shrink-0', pathname.startsWith(settingsHref) && 'text-[color:var(--primary,#000080)]')}
+                      strokeWidth={pathname.startsWith(settingsHref) ? 2.25 : 2}
+                      aria-hidden
+                    />
+                  </a>
+                )}
+                {/* Separator — only shown when at least one icon is visible */}
+                {(showSettings || (showNotifications && notificationsEndpoint)) && (
+                  <div
+                    className="h-7 w-px flex-shrink-0 mx-1"
+                    style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.12), transparent)' }}
+                    aria-hidden
+                  />
+                )}
+                <UserChip user={user} />
               </div>
             </div>
             {/* Bottom tricolor — end corner (reversed) */}

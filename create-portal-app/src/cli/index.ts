@@ -7,7 +7,7 @@ import {
   genNextConfig, genGlobalsCSS, genRootLayout, genProviders, genLoginPage,
   genLoginRoute, genUserRoute,
   genMiddleware, genSessionRoute, genLogoutRoute, genApiClient,
-  genNavConfig, genDashboardLayout, genReduxStore, genAuthSlice,
+  genNavConfig, genDashboardLayout, genDashboardShell, genContentSkeleton, genReduxStore, genAuthSlice,
   genRootPage, genDashboardHomePage, genUsersPage, genSettingsPage,
   genComponentsShowcasePage, genFormBuilderPage, genOnboardingPage,
   genForgotPasswordPage, genResetPasswordPage, genRegisterPage,
@@ -280,7 +280,9 @@ function scaffold(opts: ScaffoldOptions): number {
   w(f('src/app/forgot-password/page.tsx'),                       genForgotPasswordPage(opts))
   w(f('src/app/reset-password/page.tsx'),                        genResetPasswordPage(opts))
   w(f('src/app/register/page.tsx'),                              genRegisterPage(opts))
-  w(f('src/app/dashboard/layout.tsx'),                           genDashboardLayout(opts))
+  w(f('src/app/dashboard/layout.tsx'),                                    genDashboardLayout(opts))
+  w(f('src/app/dashboard/_components/dashboard-shell.tsx'),              genDashboardShell(opts))
+  w(f('src/app/dashboard/_components/content-skeleton.tsx'),             genContentSkeleton())
   w(f('src/app/dashboard/page.tsx'),                             genDashboardHomePage(opts))
   w(f('src/app/dashboard/users/page.tsx'),                       genUsersPage(opts))
   w(f('src/app/dashboard/settings/page.tsx'),                    genSettingsPage(opts))

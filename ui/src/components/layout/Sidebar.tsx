@@ -261,26 +261,31 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* ── Footer (user card) ──────────────────────────────────────────── */}
+      {/* ── Footer (logout) ─────────────────────────────────────────────── */}
       <div className="flex-shrink-0 border-t border-separator-opaque">
         {collapsed ? (
-          /* Collapsed footer: avatar only */
-          <div className="flex flex-col items-center py-3 px-2">
-            <UserAvatar name={user.name} size="sm" />
+          <div className="flex justify-center py-3 px-2">
+            <button
+              type="button"
+              onClick={onLogout}
+              title="Logout"
+              onMouseEnter={(e) => showTooltip(e, 'Logout')}
+              onMouseLeave={hideTooltip}
+              className="w-10 h-10 flex items-center justify-center rounded-xl text-red-500 hover:bg-red-50 transition-colors"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
           </div>
         ) : (
-          /* Expanded footer: user card */
           <div className="px-3 py-3">
-            <div
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5"
-              style={{ background: 'var(--primary-soft, rgba(0,0,128,0.06))' }}
+            <button
+              type="button"
+              onClick={onLogout}
+              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-callout font-semibold text-red-500 hover:bg-red-50 transition-colors"
             >
-              <UserAvatar name={user.name} />
-              <div className="min-w-0 flex-1">
-                <p className="text-callout font-semibold text-label-primary truncate leading-tight">{user.name}</p>
-                <p className="text-[11px] text-label-tertiary truncate mt-0.5">{user.role}</p>
-              </div>
-            </div>
+              <LogOut className="h-4 w-4 flex-shrink-0" />
+              Logout
+            </button>
           </div>
         )}
         <TricolorBar animated shimmer />
