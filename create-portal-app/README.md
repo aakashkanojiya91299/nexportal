@@ -138,12 +138,13 @@ my-portal/
 │   │   ├── login/
 │   │   │   └── page.tsx            LoginPage (animated) or LoginPageSimple
 │   │   ├── dashboard/
-│   │   │   ├── layout.tsx          DashboardLayout + useJwtAuth
-│   │   │   ├── page.tsx            dashboard home page
-│   │   │   ├── users/page.tsx      Users management page
-│   │   │   ├── settings/page.tsx   Settings page
-│   │   │   ├── components/page.tsx Full component showcase
-│   │   │   └── onboarding/page.tsx 4-step multi-field onboarding form
+│   │   │   ├── layout.tsx              DashboardLayout + useJwtAuth
+│   │   │   ├── page.tsx                dashboard home page
+│   │   │   ├── users/page.tsx          Users management page
+│   │   │   ├── settings/page.tsx       Settings page
+│   │   │   ├── components/page.tsx     Full component showcase
+│   │   │   ├── onboarding/page.tsx     4-step multi-field onboarding form
+│   │   │   └── form-builder/page.tsx   Drag-and-drop form builder with preset fields
 │   │   └── api/
 │   │       └── auth/
 │   │           ├── login/route.ts  POST — signs JWT, sets httpOnly cookie
@@ -163,7 +164,7 @@ my-portal/
 │       ├── logo.svg                placeholder — replace with your logo
 │       └── powered-by-logo.svg
 ├── tailwind.config.ts
-├── next.config.ts                  transpilePackages: ['@lucifer91299/ui']
+├── next.config.ts                  transpilePackages + allowedDevOrigins for LAN/IP dev access
 └── .env.local                      NEXT_PUBLIC_API_URL, JWT_SECRET
 ```
 
@@ -240,6 +241,24 @@ Clean gradient card login with optional role-select splash. Best for SaaS or min
 - **jose 5** — JWT sign + verify
 - **Redux Toolkit + TanStack Query** (or React Query only)
 - **lucide-react** — icons
+- **@dnd-kit** — drag-and-drop for the Form Builder page
+
+---
+
+## LAN / IP access in dev
+
+The generated `next.config.ts` includes `allowedDevOrigins` so you can open the dev server from another device on your network (e.g. `http://192.168.1.x:3000`) without cross-origin errors.  
+Add your machine's LAN IP to the array if it differs from the scaffolded defaults:
+
+```ts
+// next.config.ts
+allowedDevOrigins: [
+  'http://localhost:3000',
+  'http://192.168.1.155:3000',   // ← your LAN IP
+],
+```
+
+> **Note:** `crypto.randomUUID()` requires HTTPS or `localhost`. The Form Builder uses a safe `generateId()` helper that falls back to a `Math.random()`-based UUID v4 when accessed over plain HTTP, so everything works on LAN without SSL.
 
 ---
 
@@ -263,6 +282,12 @@ See the full component and theming documentation at:
 ---
 
 ## Changelog
+
+### v1.1.25
+- **Form Builder page** — generated project now includes `/dashboard/form-builder`: a full drag-and-drop form builder with sortable question cards (`@dnd-kit`), 8 question types (short answer, paragraph, multiple choice, checkboxes, dropdown, date, file upload, section header), preset fields with built-in validation info (name, email, contact number, Aadhar, address, date of birth, state, gender), duplicate/delete/reorder, required toggle, and a settings tab with target audience, payment toggle, and fee field
+- **LAN/IP dev access** — `next.config.ts` now sets `allowedDevOrigins` to include localhost and the host's LAN IP so the dev server is accessible from other devices on the network without cross-origin errors
+- **`crypto.randomUUID` fix** — replaced all bare `crypto.randomUUID()` calls with a `generateId()` helper that falls back to a RFC4122 UUID v4 via `Math.random()` when running over plain HTTP (e.g. accessed by IP), fixing a crash on non-secure origins
+- **UI version bump** — generated projects now use `@lucifer91299/ui@^1.1.43`
 
 ### v1.1.14
 - **UI version bump** — generated projects now use `@lucifer91299/ui@^1.1.22` (NumberInput redesign, Input password toggle, HeaderNav, Drawer animation)

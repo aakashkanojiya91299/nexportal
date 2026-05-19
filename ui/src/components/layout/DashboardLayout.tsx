@@ -30,6 +30,8 @@ export interface DashboardLayoutProps {
   breadcrumbHomeLabel?: string
   /** Start the sidebar in collapsed state (persisted to localStorage) */
   defaultCollapsed?: boolean
+  /** href for the Settings link in the header-variant profile dropdown (default: /dashboard/settings) */
+  settingsHref?: string
   className?: string
   style?: React.CSSProperties
 }
@@ -105,19 +107,22 @@ function ProfileMenu({ user, onLogout, settingsHref = '/dashboard/settings' }: P
       {/* Dropdown */}
       {open && (
         <div
-          className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white shadow-xl border border-separator-opaque overflow-hidden z-[60] animate-in fade-in-0 zoom-in-95 duration-100"
-          style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)' }}
+          className="absolute right-0 top-full mt-2 w-56 rounded-2xl bg-white border border-separator-opaque overflow-hidden z-[60] animate-in fade-in-0 zoom-in-95 duration-100"
+          style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.18), 0 4px 12px rgba(0,0,0,0.10)' }}
         >
-          {/* User info header */}
+          {/* Top tricolor stripe */}
+          <TricolorBar height={3} animated shimmer />
+
+          {/* User info header — solid primary, fully opaque */}
           <div
-            className="px-4 py-3.5 border-b border-separator-opaque"
-            style={{ background: 'var(--primary-soft, rgba(0,0,128,0.05))' }}
+            className="px-4 py-3.5 border-b border-white/10"
+            style={{ background: 'var(--primary, #000080)' }}
           >
             <div className="flex items-center gap-3">
               <UserAvatar name={user.name} />
               <div className="min-w-0">
-                <p className="text-callout font-semibold text-label-primary truncate leading-tight">{user.name}</p>
-                <p className="text-[11px] text-label-tertiary truncate mt-0.5">{user.role}</p>
+                <p className="text-callout font-semibold text-white truncate leading-tight">{user.name}</p>
+                <p className="text-[11px] text-white/70 truncate mt-0.5">{user.role}</p>
               </div>
             </div>
           </div>
@@ -127,9 +132,9 @@ function ProfileMenu({ user, onLogout, settingsHref = '/dashboard/settings' }: P
             <a
               href={settingsHref}
               onClick={() => setOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-callout font-medium text-label-secondary hover:bg-surface-secondary/80 hover:text-label-primary transition-colors"
+              className="flex items-center gap-3 px-4 py-2.5 text-callout font-medium text-label-primary hover:bg-surface-secondary transition-colors"
             >
-              <Settings className="h-4 w-4 flex-shrink-0 text-label-tertiary" />
+              <Settings className="h-4 w-4 flex-shrink-0 text-label-secondary" />
               Settings
             </a>
           </div>
@@ -138,7 +143,7 @@ function ProfileMenu({ user, onLogout, settingsHref = '/dashboard/settings' }: P
             <button
               type="button"
               onClick={() => { setOpen(false); onLogout() }}
-              className="flex w-full items-center gap-3 px-4 py-2.5 text-callout font-medium text-red-500 hover:bg-red-50/80 transition-colors"
+              className="flex w-full items-center gap-3 px-4 py-2.5 text-callout font-semibold text-red-600 hover:bg-red-50 transition-colors"
             >
               <LogOut className="h-4 w-4 flex-shrink-0" />
               Sign out
@@ -165,6 +170,7 @@ export function DashboardLayout({
   breadcrumbHomeHref,
   breadcrumbHomeLabel,
   defaultCollapsed = false,
+  settingsHref = '/dashboard/settings',
   className,
   style,
 }: DashboardLayoutProps) {
@@ -188,7 +194,7 @@ export function DashboardLayout({
   if (sidebar === 'header') {
     return (
       <div className={cn('flex flex-col min-h-screen bg-surface-secondary', className)} style={style}>
-        <HeaderNav {...commonProps} />
+        <HeaderNav {...commonProps} settingsHref={settingsHref} />
         <main className="flex-1 overflow-auto pt-[52px] lg:pt-0">
           {children}
         </main>
@@ -222,10 +228,10 @@ export function DashboardLayout({
 
         {/* Desktop top header bar */}
         <div className="hidden lg:block flex-shrink-0 px-4 pt-4">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm animate-in fade-in slide-in-from-top-2 duration-300 ease-out">
-            {/* Clip only the tricolor bar to the card's top corners */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden animate-slide-up" style={{ animationDuration: '0.35s', animationTimingFunction: 'cubic-bezier(0.22,1,0.36,1)', animationFillMode: 'both' }}>
+            {/* Top tricolor — start corner */}
             <div className="overflow-hidden rounded-t-2xl">
-              <TricolorBar height={3} />
+              <TricolorBar height={3} animated shimmer />
             </div>
             <div className="px-5 py-3 flex items-center justify-between gap-4">
               {/* Left: breadcrumbs */}
@@ -243,6 +249,10 @@ export function DashboardLayout({
               <div className="flex-shrink-0">
                 <ProfileMenu user={user} onLogout={onLogout} />
               </div>
+            </div>
+            {/* Bottom tricolor — end corner (reversed) */}
+            <div className="overflow-hidden rounded-b-2xl" style={{ transform: 'scaleX(-1)' }}>
+              <TricolorBar height={3} animated shimmer />
             </div>
           </div>
         </div>

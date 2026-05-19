@@ -27,7 +27,7 @@ export interface ScaffoldOptions {
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.34',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.57',
     '@dnd-kit/core': '^6.3.1',
     '@dnd-kit/sortable': '^10.0.0',
     '@dnd-kit/utilities': '^3.2.2',
@@ -90,7 +90,10 @@ import preset from '@lucifer91299/ui/tailwind/preset'
 // Do NOT override color tokens here — that would bypass runtime theming.
 const config: Config = {
   presets: [preset],
-  content: ['./src/**/*.{ts,tsx}'],
+  content: [
+    './src/**/*.{ts,tsx}',
+    './node_modules/@lucifer91299/ui/dist/index.js',
+  ],
   plugins: [],
 }
 
@@ -238,20 +241,11 @@ export function Providers({ children }: { children: ReactNode }) {
 
 export function genLoginPage(o: ScaffoldOptions): string {
   const isAnimated = o.loginStyle !== 'simple'
-  const component  = isAnimated ? 'LoginPage' : 'LoginPageSimple'
-  const credField  = isAnimated ? 'identifier' : 'email'
 
-  const poweredByProp = isAnimated
-    ? `      poweredBy={{
-        logoSrc: "/brand/powered-by-logo.svg",
-        text: "Powered by",
-        href: "#",
-      }}`
-    : ''
+  if (!isAnimated) {
+    return `'use client'
 
-  return `'use client'
-
-import { ${component} } from '@lucifer91299/ui'
+import { LoginPageSimple } from '@lucifer91299/ui'
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
@@ -260,14 +254,14 @@ export default function Login() {
   const [error, setError]         = useState<string | null>(null)
   const router = useRouter()
 
-  const handleSubmit = async (creds: { ${credField}: string; password: string }) => {
+  const handleSubmit = async (creds: { email: string; password: string }) => {
     setError(null)
     setIsLoading(true)
     try {
       const res = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: creds.${credField}, password: creds.password }),
+        body: JSON.stringify({ email: creds.email, password: creds.password }),
         credentials: 'include',
       })
       const data = await res.json()
@@ -281,16 +275,717 @@ export default function Login() {
   }
 
   return (
-    <${component}
+    <LoginPageSimple
       projectName="${o.projectName}"
-      projectSubtitle="Sign in to continue"
+      projectSubtitle="Sign in to your account"
       logoSrc="/brand/logo.svg"
       onSubmit={handleSubmit}
       isLoading={isLoading}
       error={error}
-${poweredByProp}
+      registerLinks={[
+        { label: 'Create account', href: '/register' },
+      ]}
     />
   )
+}
+`
+  }
+
+  return `'use client'
+
+import { AuthPageShell, TricolorBar, Button } from '@lucifer91299/ui'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { ArrowRight, Eye, EyeOff, AlertCircle } from 'lucide-react'
+
+// ── Social icon SVGs (inline — brand colour applied on hover) ─────────────────
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
+    </svg>
+  )
+}
+function FacebookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" fill="currentColor" aria-hidden="true">
+      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073Z" />
+    </svg>
+  )
+}
+function InstagramIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-[18px] h-[18px]" fill="currentColor" aria-hidden="true">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919C8.416 2.175 8.796 2.163 12 2.163Zm0-2.163C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0Zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324ZM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8Zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881Z" />
+    </svg>
+  )
+}
+function XIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-[16px] h-[16px]" fill="currentColor" aria-hidden="true">
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231ZM17.083 19.77h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+    </svg>
+  )
+}
+
+// ── Social link button ────────────────────────────────────────────────────────
+function SocialIconLink({ label, href, brand, icon }: {
+  label: string; href: string; brand: string; icon: React.ReactNode
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+      style={{
+        color:       hovered ? brand         : undefined,
+        borderColor: hovered ? brand + '55'  : undefined,
+        boxShadow:   hovered ? '0 6px 18px ' + brand + '33' : undefined,
+      }}
+      className="w-10 h-10 rounded-full bg-white/80 hover:bg-white border border-gray-200 flex items-center justify-center text-gray-500 shadow-sm backdrop-blur-sm transition-all duration-150 hover:-translate-y-0.5 focus:outline-none"
+    >
+      {icon}
+    </a>
+  )
+}
+
+const SOCIAL_LINKS = [
+  { label: 'WhatsApp',  href: '#', brand: '#25D366', icon: <WhatsAppIcon /> },
+  { label: 'Facebook',  href: '#', brand: '#1877F2', icon: <FacebookIcon /> },
+  { label: 'Instagram', href: '#', brand: '#E4405F', icon: <InstagramIcon /> },
+  { label: 'X',         href: '#', brand: '#000000', icon: <XIcon /> },
+]
+
+// ── Page ──────────────────────────────────────────────────────────────────────
+export default function Login() {
+  const [identifier,   setIdentifier]   = useState('')
+  const [password,     setPassword]     = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading,    setIsLoading]    = useState(false)
+  const [error,        setError]        = useState<string | null>(null)
+  const router = useRouter()
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    if (!identifier.trim()) { setError('Email is required'); return }
+    if (!password.trim())   { setError('Password is required'); return }
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: identifier.trim(), password }),
+        credentials: 'include',
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Invalid credentials'); return }
+      router.replace('/dashboard')
+    } catch {
+      setError('Login failed. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <AuthPageShell
+      backgroundGradient="linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)"
+      ambientColors={[[255,153,51],[19,136,8],[0,0,128]]}
+      poweredBy={{ logoSrc: '/brand/powered-by-logo.svg', text: 'Powered by', href: '#' }}
+    >
+      <div className="relative z-10 w-full max-w-sm flex flex-col items-center">
+
+        {/* ── Logo + title ── */}
+        <div className="mb-5 flex items-center gap-3.5">
+          <img
+            src="/brand/logo.svg"
+            alt="${o.projectName} logo"
+            className="w-14 h-14 object-contain rounded-full flex-shrink-0"
+          />
+          <div className="flex flex-col leading-tight">
+            <h1
+              className="text-[19px] font-bold tracking-tight whitespace-nowrap"
+              style={{ color: 'var(--primary, #000080)', letterSpacing: '-0.01em' }}
+            >
+              ${o.projectName}
+            </h1>
+            <p className="text-[13px] text-gray-400 mt-1">Sign in to continue</p>
+          </div>
+        </div>
+
+        {/* ── Card — tricolor bar covers both start and end corners ── */}
+        <div
+          className="w-full bg-white rounded-2xl overflow-hidden"
+          style={{ boxShadow: '0 12px 40px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04)' }}
+        >
+          {/* Top tricolor */}
+          <TricolorBar height={3} animated shimmer />
+
+          <div className="px-7 py-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
+
+              {/* ── Email ── */}
+              <div>
+                <label htmlFor="identifier" className="block text-subhead font-medium text-label-primary mb-2">
+                  Email address
+                </label>
+                <input
+                  id="identifier"
+                  type="email"
+                  value={identifier}
+                  onChange={e => { setIdentifier(e.target.value); setError(null) }}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className="input-base"
+                />
+              </div>
+
+              {/* ── Password ── */}
+              <div>
+                <label htmlFor="password" className="block text-subhead font-medium text-label-primary mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    value={password}
+                    onChange={e => { setPassword(e.target.value); setError(null) }}
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
+                    className={'input-base' + (password ? ' pr-11' : '')}
+                  />
+                  {password && (
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(v => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-pressed={showPassword}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Error banner ── */}
+              {error && (
+                <div className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-3.5 py-3">
+                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                  <p className="text-sm text-red-600">{error}</p>
+                </div>
+              )}
+
+              {/* ── Submit ── */}
+              <div className="pt-1">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full h-11 text-sm font-semibold"
+                  isLoading={isLoading}
+                >
+                  {!isLoading && (
+                    <span className="flex items-center justify-center gap-2">
+                      Sign In <ArrowRight className="w-4 h-4" />
+                    </span>
+                  )}
+                </Button>
+              </div>
+
+              {/* ── Forgot password ── */}
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => router.push('/forgot-password')}
+                  className="text-sm font-semibold transition-colors duration-150 focus:outline-none"
+                  style={{ color: 'var(--primary, #000080)' }}
+                  onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent, #FF9933)')}
+                  onMouseLeave={e => (e.currentTarget.style.color = 'var(--primary, #000080)')}
+                >
+                  Forgot Password?
+                </button>
+              </div>
+
+            </form>
+          </div>
+
+          {/* Bottom tricolor (reversed) — covers end corner same as CJ admin */}
+          <div style={{ transform: 'scaleX(-1)' }}>
+            <TricolorBar height={3} animated shimmer />
+          </div>
+        </div>
+
+        {/* ── Registration link ── */}
+        <div className="mt-5 flex items-center justify-center">
+          <a
+            href="/register"
+            className="flex items-center gap-1.5 text-[13px] font-semibold transition-colors duration-150 focus:outline-none"
+            style={{ color: 'var(--primary, #000080)' }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--accent, #FF9933)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--primary, #000080)')}
+          >
+            Create account <ArrowRight className="w-3 h-3" />
+          </a>
+        </div>
+
+        {/* ── Social links ── */}
+        <div className="mt-5 flex flex-col items-center">
+          <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-gray-400 mb-3">
+            Connect with us
+          </p>
+          <div className="flex items-center gap-3">
+            {SOCIAL_LINKS.map(link => (
+              <SocialIconLink key={link.label} {...link} />
+            ))}
+          </div>
+        </div>
+
+      </div>
+    </AuthPageShell>
+  )
+}
+`
+}
+
+export function genForgotPasswordPage(o: ScaffoldOptions): string {
+  return `'use client'
+
+import { ForgotPasswordPage } from '@lucifer91299/ui'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+export default function ForgotPassword() {
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError]         = useState<string | null>(null)
+  const [isSuccess, setIsSuccess] = useState(false)
+  const router = useRouter()
+
+  const handleSubmit = async (email: string) => {
+    setError(null)
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Could not send reset link'); return }
+      setIsSuccess(true)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <ForgotPasswordPage
+      // ── Identity ──────────────────────────────────────────────────────────
+      projectName="${o.projectName}"
+      projectSubtitle="Reset your password"
+      logoSrc="/brand/logo.svg"
+      logoAlt="${o.projectName} logo"
+      logoSize={56}
+
+      // ── State ─────────────────────────────────────────────────────────────
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
+      error={error}
+      isSuccess={isSuccess}
+
+      // ── Success screen text ───────────────────────────────────────────────
+      successMessage="Check your email"
+      successSubMessage="We've sent a password reset link to your email address. Follow the link to create a new password."
+
+      // ── Navigation ────────────────────────────────────────────────────────
+      onBackToLogin={() => router.push('/login')}
+      backToLoginHref="/login"
+
+      // ── Powered-by badge ──────────────────────────────────────────────────
+      poweredBy={{
+        logoSrc: "/brand/powered-by-logo.svg",
+        text: "Powered by",
+        href: "#",
+      }}
+
+      // ── Background ────────────────────────────────────────────────────────
+      // backgroundGradient="linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)"
+      // ambientColors={[[255,153,51],[19,136,8],[0,0,128]]}
+      // socialLinks={[...]}
+    />
+  )
+}
+`
+}
+
+export function genResetPasswordPage(o: ScaffoldOptions): string {
+  return `'use client'
+
+import { ResetPasswordPage } from '@lucifer91299/ui'
+import React, { useState, useEffect, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+
+function ResetPasswordContent() {
+  const router       = useRouter()
+  const searchParams = useSearchParams()
+  const token        = searchParams.get('token') ?? ''
+
+  const [isValidating, setIsValidating] = useState(true)
+  const [isValid, setIsValid]           = useState(false)
+  const [isLoading, setIsLoading]       = useState(false)
+  const [error, setError]               = useState<string | null>(null)
+  const [isSuccess, setIsSuccess]       = useState(false)
+
+  // Validate token on mount
+  useEffect(() => {
+    if (!token) { setIsValidating(false); return }
+    fetch(\`/api/auth/reset-password/validate?token=\${encodeURIComponent(token)}\`)
+      .then(r => r.json())
+      .then(d => setIsValid(d.valid === true))
+      .catch(() => setIsValid(false))
+      .finally(() => setIsValidating(false))
+  }, [token])
+
+  const handleSubmit = async (password: string) => {
+    setError(null)
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Could not reset password'); return }
+      setIsSuccess(true)
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <ResetPasswordPage
+      // ── Identity ──────────────────────────────────────────────────────────
+      projectName="${o.projectName}"
+      projectSubtitle="Set a new password"
+      logoSrc="/brand/logo.svg"
+      logoAlt="${o.projectName} logo"
+      logoSize={56}
+
+      // ── Token validation state ─────────────────────────────────────────────
+      isValidating={isValidating}
+      isValid={isValid}
+
+      // ── Form state ────────────────────────────────────────────────────────
+      onSubmit={handleSubmit}
+      isLoading={isLoading}
+      error={error}
+      isSuccess={isSuccess}
+
+      // ── Password rules ────────────────────────────────────────────────────
+      minPasswordLength={6}
+
+      // ── Custom messages ───────────────────────────────────────────────────
+      validatingMessage="Checking reset link…"
+      invalidMessage="Reset link expired"
+      invalidSubMessage="This reset link is invalid, expired, or has already been used. Please request a new one."
+      successMessage="Password updated"
+      successSubMessage="Your password has been changed. You can now sign in with your new password."
+
+      // ── Navigation ────────────────────────────────────────────────────────
+      onBackToLogin={() => router.push('/login')}
+      backToLoginHref="/login"
+
+      // ── Powered-by badge ──────────────────────────────────────────────────
+      poweredBy={{
+        logoSrc: "/brand/powered-by-logo.svg",
+        text: "Powered by",
+        href: "#",
+      }}
+
+      // ── Background ────────────────────────────────────────────────────────
+      // backgroundGradient="linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)"
+      // ambientColors={[[255,153,51],[19,136,8],[0,0,128]]}
+    />
+  )
+}
+
+export default function ResetPassword() {
+  return (
+    <Suspense>
+      <ResetPasswordContent />
+    </Suspense>
+  )
+}
+`
+}
+
+export function genRegisterPage(o: ScaffoldOptions): string {
+  return `'use client'
+
+import { RegisterPage } from '@lucifer91299/ui'
+import { Input, Select, PhoneInput } from '@lucifer91299/ui'
+import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
+
+const STEPS = [
+  { label: 'Account',  description: 'Email and password' },
+  { label: 'Profile',  description: 'Personal details' },
+  { label: 'Review',   description: 'Confirm and submit' },
+]
+
+export default function Register() {
+  const router = useRouter()
+  const [currentStep, setCurrentStep] = useState(0)
+  const [isLoading, setIsLoading]     = useState(false)
+  const [error, setError]             = useState<string | null>(null)
+
+  // Form state
+  const [email, setEmail]       = useState('')
+  const [password, setPassword] = useState('')
+  const [name, setName]         = useState('')
+  const [phone, setPhone]       = useState('')
+  const [role, setRole]         = useState('')
+
+  const handleNext = () => {
+    setError(null)
+    // Add your step validation here
+    if (currentStep === 0 && !email) { setError('Email is required'); return }
+    if (currentStep === 0 && !password) { setError('Password is required'); return }
+    if (currentStep === 1 && !name) { setError('Name is required'); return }
+    setCurrentStep(s => s + 1)
+  }
+
+  const handleSubmit = async () => {
+    setError(null)
+    setIsLoading(true)
+    try {
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, name, phone, role }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setError(data.error ?? 'Registration failed'); return }
+      router.replace('/login')
+    } catch {
+      setError('Something went wrong. Please try again.')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  return (
+    <RegisterPage
+      // ── Identity ──────────────────────────────────────────────────────────
+      projectName="${o.projectName}"
+      projectSubtitle="Create your account"
+      logoSrc="/brand/logo.svg"
+      logoAlt="${o.projectName} logo"
+      logoSize={40}
+
+      // ── Steps ─────────────────────────────────────────────────────────────
+      steps={STEPS}
+      currentStep={currentStep}
+
+      // ── Navigation ────────────────────────────────────────────────────────
+      onNext={handleNext}
+      onBack={() => { setError(null); setCurrentStep(s => s - 1) }}
+      onSubmit={handleSubmit}
+      nextLabel="Continue"
+      backLabel="Back"
+      submitLabel="Create Account"
+      isLoading={isLoading}
+      error={error}
+
+      // ── Login link ────────────────────────────────────────────────────────
+      onLoginLink={() => router.push('/login')}
+      loginLabel="Already have an account? Sign in"
+
+      // ── Layout ────────────────────────────────────────────────────────────
+      maxWidth="max-w-2xl"
+
+      // ── Powered-by badge ──────────────────────────────────────────────────
+      poweredBy={{
+        logoSrc: "/brand/powered-by-logo.svg",
+        text: "Powered by",
+        href: "#",
+      }}
+
+      // ── Background ────────────────────────────────────────────────────────
+      // backgroundGradient="linear-gradient(150deg, #f7f6f3 0%, #f1efe9 55%, #f5f2ed 100%)"
+      // ambientColors={[[255,153,51],[19,136,8],[0,0,128]]}
+      // socialLinks={[...]}
+    >
+      {/* ── Step 1: Account ─────────────────────────────────────────────── */}
+      {currentStep === 0 && (
+        <>
+          <Input
+            label="Email address"
+            type="email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            placeholder="you@example.com"
+            autoComplete="email"
+          />
+          <Input
+            label="Password"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            placeholder="Minimum 6 characters"
+            autoComplete="new-password"
+          />
+        </>
+      )}
+
+      {/* ── Step 2: Profile ─────────────────────────────────────────────── */}
+      {currentStep === 1 && (
+        <>
+          <Input
+            label="Full name"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            placeholder="Priya Mehta"
+          />
+          <PhoneInput
+            label="Phone number"
+            value={phone}
+            onChange={e => setPhone(e.target.value)}
+          />
+          <Select
+            label="Role"
+            value={role}
+            onChange={setRole}
+            options={[
+              { value: 'member',  label: 'Member'  },
+              { value: 'manager', label: 'Manager' },
+            ]}
+          />
+        </>
+      )}
+
+      {/* ── Step 3: Review ──────────────────────────────────────────────── */}
+      {currentStep === 2 && (
+        <div className="space-y-3">
+          <div className="bg-surface-secondary rounded-xl p-4 text-sm space-y-2">
+            <div className="flex justify-between">
+              <span className="text-label-tertiary">Email</span>
+              <span className="font-medium text-label-primary">{email}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-label-tertiary">Name</span>
+              <span className="font-medium text-label-primary">{name || '—'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-label-tertiary">Phone</span>
+              <span className="font-medium text-label-primary">{phone || '—'}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-label-tertiary">Role</span>
+              <span className="font-medium text-label-primary">{role || '—'}</span>
+            </div>
+          </div>
+          <p className="text-xs text-label-tertiary text-center">
+            Review your details above and click Create Account to proceed.
+          </p>
+        </div>
+      )}
+    </RegisterPage>
+  )
+}
+`
+}
+
+export function genForgotPasswordRoute(): string {
+  return `import { NextResponse } from 'next/server'
+
+export async function POST(request: Request) {
+  const { email } = (await request.json()) as { email?: string }
+
+  if (!email) {
+    return NextResponse.json({ error: 'Email is required' }, { status: 400 })
+  }
+
+  // TODO: implement your forgot-password logic here.
+  // 1. Look up the user by email.
+  // 2. Generate a secure reset token and store it (with expiry).
+  // 3. Send a reset email containing: /reset-password?token=<token>
+  //
+  // Example with a backend API:
+  // const res = await fetch(\`\${process.env.API_URL}/auth/forgot-password\`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ email }),
+  // })
+  // if (!res.ok) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+
+  // Always return 200 to avoid leaking whether the email exists.
+  return NextResponse.json({ ok: true })
+}
+`
+}
+
+export function genResetPasswordRoutes(): string {
+  return `import { NextResponse } from 'next/server'
+
+export async function POST(request: Request) {
+  const { token, password } = (await request.json()) as { token?: string; password?: string }
+
+  if (!token || !password) {
+    return NextResponse.json({ error: 'Token and password are required' }, { status: 400 })
+  }
+
+  // TODO: implement your reset-password logic here.
+  // 1. Look up the token in your store and check it hasn't expired.
+  // 2. Hash the new password and update the user record.
+  // 3. Invalidate / delete the token.
+  //
+  // Example with a backend API:
+  // const res = await fetch(\`\${process.env.API_URL}/auth/reset-password\`, {
+  //   method: 'POST',
+  //   headers: { 'Content-Type': 'application/json' },
+  //   body: JSON.stringify({ token, password }),
+  // })
+  // if (!res.ok) return NextResponse.json({ error: 'Invalid or expired token' }, { status: 400 })
+
+  return NextResponse.json({ ok: true })
+}
+`
+}
+
+export function genResetPasswordValidateRoute(): string {
+  return `import { NextResponse } from 'next/server'
+
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url)
+  const token = searchParams.get('token')
+
+  if (!token) {
+    return NextResponse.json({ valid: false })
+  }
+
+  // TODO: validate the reset token.
+  // Check that it exists in your store and hasn't expired.
+  //
+  // Example with a backend API:
+  // const res = await fetch(\`\${process.env.API_URL}/auth/reset-password/validate?token=\${token}\`)
+  // const data = await res.json()
+  // return NextResponse.json({ valid: res.ok && data.valid })
+
+  // Demo: treat any non-empty token as valid
+  return NextResponse.json({ valid: token.length > 0 })
 }
 `
 }
@@ -911,17 +1606,19 @@ export function genComponentsShowcasePage(): string {
 
 import React, { useState } from 'react'
 import {
-  PageShell, Breadcrumbs, Card, TricolorBar,
-  Badge, StatusBadge, AlertBanner, LoadingSpinner,
+  PageShell, Breadcrumbs, Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter, TricolorBar,
+  Badge, StatusBadge, AlertBanner, LoadingSpinner, PageLoader,
   Button, Input, Select, Textarea, Switch, Checkbox, RadioGroup, DatePicker, DateTimePicker,
   Dialog, Tooltip, Tabs, TabsList, TabsTrigger, TabsContent,
   Accordion, AccordionItem, Progress, Skeleton, SkeletonCard, SkeletonText,
+  TableSkeleton, GridSkeleton, ProfileSkeleton, SettingsSkeleton,
   Separator, Avatar, AvatarGroup, DataTable, ActionButtons, Stepper,
   StatsCard, EmptyState, FileUpload,
   Drawer, OTPInput, NumberInput, Slider, TagInput, Timeline, Popover,
   PortalBarChart, PortalLineChart, PortalAreaChart, PortalDonutChart,
   AttendanceCalendar, PhoneInput, ProfilePhotoInput, DropdownMenu,
   ImageViewer, useImageViewer, NotificationBell,
+  Combobox, ConfirmModal, AlertModal, DashboardFullPage, LanguageSwitcher,
 } from '@lucifer91299/ui'
 import { LayoutDashboard, Eye, Pencil, CheckCircle, Trash2 } from 'lucide-react'
 
@@ -1041,6 +1738,13 @@ export default function ComponentsPage() {
     { id: '4', title: 'Server warning',        message: 'CPU usage exceeded 85% for 10 minutes.',  time: new Date(Date.now() - 1000 * 60 * 60 * 3), read: true,  type: 'warning' as const },
     { id: '5', title: 'Upload failed',         message: 'Could not process roster_final.xlsx.',    time: new Date(Date.now() - 1000 * 60 * 60 * 7), read: true,  type: 'error'   as const },
   ])
+  // ── New component state ───────────────────────────────────────────────────
+  const [comboVal,       setComboVal]       = useState('')
+  const [confirmOpen2,   setConfirmOpen2]   = useState(false)
+  const [confirmVariant, setConfirmVariant] = useState<'danger' | 'warning' | 'info' | 'success'>('warning')
+  const [alertOpen,      setAlertOpen]      = useState(false)
+  const [alertVariant,   setAlertVariant]   = useState<'error' | 'warning' | 'info' | 'success'>('info')
+  const [language,       setLanguage]       = useState('en')
 
   return (
     <div className="p-6 space-y-14 max-w-5xl pb-20">
@@ -1115,6 +1819,39 @@ export default function ComponentsPage() {
           <AlertBanner variant="success">Success — your changes have been saved successfully.</AlertBanner>
           <AlertBanner variant="warning">Warning — this action cannot be undone.</AlertBanner>
           <AlertBanner variant="error">Error — failed to connect to the server.</AlertBanner>
+        </div>
+      </Section>
+
+      {/* ── Card ────────────────────────────────────────────────────────── */}
+      <Section id="cards" title="Card" subtitle="Composable card layout — root · header · title · description · content · footer.">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+          <Card>
+            <CardHeader>
+              <CardTitle>Basic card</CardTitle>
+              <CardDescription>Header with title and description</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-callout text-label-secondary">Body content goes inside CardContent. Combine with CardHeader and CardFooter as needed.</p>
+            </CardContent>
+            <CardFooter className="flex justify-end gap-2">
+              <Button variant="ghost" size="sm">Cancel</Button>
+              <Button variant="primary" size="sm">Save</Button>
+            </CardFooter>
+          </Card>
+
+          <Card variant="elevated">
+            <CardHeader>
+              <CardTitle>Elevated variant</CardTitle>
+              <CardDescription>Use variant="elevated" for a prominent shadow</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Input label="Full name" placeholder="Priya Mehta" />
+              <Input label="Email" type="email" placeholder="priya@example.com" />
+            </CardContent>
+            <CardFooter>
+              <Button variant="primary" size="sm" className="w-full">Submit</Button>
+            </CardFooter>
+          </Card>
         </div>
       </Section>
 
@@ -1535,7 +2272,7 @@ export default function ComponentsPage() {
             <LoadingSpinner size="sm" />
             <LoadingSpinner size="md" />
             <LoadingSpinner size="lg" />
-            <LoadingSpinner size="xl" />
+            <LoadingSpinner size="lg" />
             <Button variant="primary" isLoading>Loading state</Button>
           </Row>
         </Card>
@@ -1591,7 +2328,7 @@ export default function ComponentsPage() {
             searchable
             searchPlaceholder="Search members…"
             pagination
-            pageSize={5}
+            defaultPageSize={5}
           />
         </Card>
       </Section>
@@ -1858,7 +2595,295 @@ export default function ComponentsPage() {
 
       {/* ── TricolorBar ─────────────────────────────────────────────────── */}
       <Section id="tricolor" title="TricolorBar" subtitle="Brand accent bar — appears in sidebar header/footer and login card.">
-        <TricolorBar />
+        <TricolorBar shimmer />
+      </Section>
+
+      {/* ── PageLoader ──────────────────────────────────────────────────── */}
+      <Section id="page-loader" title="PageLoader + LoadingSpinner variants" subtitle="Full-screen loading gate + dual-ring and white spinner variants.">
+        <Card>
+          <CardContent>
+            <div className="flex flex-wrap gap-8 items-start">
+              <div className="rounded-xl border border-gray-200 overflow-hidden w-64 h-32 flex items-center justify-center bg-surface-secondary">
+                <div className="flex flex-col items-center gap-3">
+                  <LoadingSpinner size="lg" variant="dual" />
+                  <p className="text-callout text-label-secondary">Loading…</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <Label>Spinner variants (lg)</Label>
+                <Row>
+                  <div className="flex flex-col items-center gap-2">
+                    <LoadingSpinner size="lg" variant="default" />
+                    <span className="text-[11px] text-label-tertiary">default</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <LoadingSpinner size="lg" variant="dual" />
+                    <span className="text-[11px] text-label-tertiary">dual</span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2 bg-gray-800 rounded-xl px-4 py-2">
+                    <LoadingSpinner size="lg" variant="white" />
+                    <span className="text-[11px] text-white/60">white</span>
+                  </div>
+                </Row>
+                <Label>All sizes (dual)</Label>
+                <Row>
+                  {(['xs', 'sm', 'md', 'lg'] as const).map(s => (
+                    <div key={s} className="flex flex-col items-center gap-1.5">
+                      <LoadingSpinner size={s} variant="dual" />
+                      <span className="text-[11px] text-label-tertiary">{s}</span>
+                    </div>
+                  ))}
+                </Row>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* ── Combobox ────────────────────────────────────────────────────── */}
+      <Section id="combobox" title="Combobox" subtitle="Free-text input with a filtered suggestion dropdown. Type to search, or freely enter any value.">
+        <Card>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
+              <Combobox
+                label="Sport"
+                value={comboVal}
+                onChange={setComboVal}
+                placeholder="Type or select…"
+                options={[
+                  { value: 'shooting', label: 'Shooting' },
+                  { value: 'archery',  label: 'Archery' },
+                  { value: 'boxing',   label: 'Boxing' },
+                  { value: 'wrestling', label: 'Wrestling' },
+                  { value: 'weightlifting', label: 'Weightlifting' },
+                  { value: 'judo',     label: 'Judo' },
+                  { value: 'badminton', label: 'Badminton' },
+                  { value: 'tennis',   label: 'Tennis' },
+                ]}
+                helperText={comboVal ? \`Value: "\${comboVal}"\` : 'Start typing to filter options'}
+              />
+              <Combobox
+                label="With error"
+                value=""
+                onChange={() => {}}
+                placeholder="Required field"
+                options={[{ value: 'a', label: 'Option A' }, { value: 'b', label: 'Option B' }]}
+                error
+                errorText="This field is required"
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* ── ConfirmModal ────────────────────────────────────────────────── */}
+      <Section id="confirm-modal" title="ConfirmModal" subtitle="Opinionated confirm dialog — danger / warning / info / success with optional summary table and loading state.">
+        <Card>
+          <CardContent>
+            <div className="space-y-3">
+              <Row>
+                {(['danger', 'warning', 'info', 'success'] as const).map((v) => (
+                  <Button
+                    key={v}
+                    variant={v === 'danger' ? 'danger' : 'outline'}
+                    onClick={() => { setConfirmVariant(v); setConfirmOpen2(true) }}
+                  >
+                    {v.charAt(0).toUpperCase() + v.slice(1)}
+                  </Button>
+                ))}
+              </Row>
+              <p className="text-footnote text-label-tertiary">The <strong>Danger</strong> variant includes an optional summary table.</p>
+            </div>
+          </CardContent>
+        </Card>
+        <ConfirmModal
+          isOpen={confirmOpen2}
+          onClose={() => setConfirmOpen2(false)}
+          onConfirm={() => setConfirmOpen2(false)}
+          variant={confirmVariant}
+          title={
+            confirmVariant === 'danger' ? 'Delete record?' :
+            confirmVariant === 'warning' ? 'Unsaved changes' :
+            confirmVariant === 'success' ? 'Publish page?' : 'Confirm action'
+          }
+          message={[
+            confirmVariant === 'danger' ? 'This action cannot be undone. All associated data will be removed.' :
+            confirmVariant === 'warning' ? 'You have unsaved changes. Are you sure you want to leave?' :
+            confirmVariant === 'success' ? 'The page will be visible to all users after publishing.' :
+            'Are you sure you want to proceed with this action?',
+            '• All related data will be affected.',
+          ]}
+          tableData={confirmVariant === 'danger' ? {
+            headers: ['Item', 'Count'],
+            rows: [['Members', 42], ['Licences', 7], ['Orders', 3]],
+          } : undefined}
+          confirmText={confirmVariant === 'danger' ? 'Delete' : confirmVariant === 'success' ? 'Publish' : 'Confirm'}
+        />
+      </Section>
+
+      {/* ── AlertModal ──────────────────────────────────────────────────── */}
+      <Section id="alert-modal" title="AlertModal" subtitle="Single-button acknowledgment dialog — error / warning / info / success.">
+        <Card>
+          <CardContent>
+            <Row>
+              {(['error', 'warning', 'info', 'success'] as const).map((v) => (
+                <Button
+                  key={v}
+                  variant={v === 'error' ? 'danger' : 'outline'}
+                  onClick={() => { setAlertVariant(v); setAlertOpen(true) }}
+                >
+                  {v.charAt(0).toUpperCase() + v.slice(1)}
+                </Button>
+              ))}
+            </Row>
+          </CardContent>
+        </Card>
+        <AlertModal
+          isOpen={alertOpen}
+          onClose={() => setAlertOpen(false)}
+          variant={alertVariant}
+          title={
+            alertVariant === 'error' ? 'Something went wrong' :
+            alertVariant === 'warning' ? 'Heads up' :
+            alertVariant === 'success' ? 'Done!' : 'Information'
+          }
+          message={
+            alertVariant === 'error' ? 'The server returned a 500 error. Please try again later.' :
+            alertVariant === 'warning' ? 'This action will affect 12 members.' :
+            alertVariant === 'success' ? 'Your changes have been saved successfully.' :
+            'Your session will expire in 10 minutes.'
+          }
+        />
+      </Section>
+
+      {/* ── Skeleton presets ────────────────────────────────────────────── */}
+      <Section id="skeleton-presets" title="Skeleton Presets" subtitle="TableSkeleton · GridSkeleton · ProfileSkeleton · SettingsSkeleton — all built on the base Skeleton.">
+        <div className="space-y-8">
+          <div><Label>TableSkeleton (rows=4, cols=4)</Label><TableSkeleton rows={4} cols={4} /></div>
+          <div><Label>GridSkeleton (count=3)</Label><GridSkeleton count={3} /></div>
+          <div>
+            <Label>ProfileSkeleton</Label>
+            <div className="rounded-2xl border border-gray-100 bg-white p-6"><ProfileSkeleton /></div>
+          </div>
+          <div>
+            <Label>SettingsSkeleton</Label>
+            <div className="rounded-2xl border border-gray-100 bg-white p-6"><SettingsSkeleton /></div>
+          </div>
+        </div>
+      </Section>
+
+      {/* ── DashboardFullPage ───────────────────────────────────────────── */}
+      <Section id="dashboard-full-page" title="DashboardFullPage" subtitle="Full-bleed gradient surface for add / edit / detail flows. Bleeds to the edges of the content area.">
+        <Card>
+          <CardContent>
+            <div className="rounded-xl overflow-hidden border border-gray-200" style={{ height: 180 }}>
+              <DashboardFullPage className="!min-h-0 h-full flex items-center justify-center">
+                <div className="text-center">
+                  <p className="text-title3 font-semibold text-label-primary">Full-bleed surface</p>
+                  <p className="text-callout text-label-secondary mt-1">bg-gradient-to-b from-[#eceef2] via-[#e6e8ed] to-[#eef0f4]</p>
+                </div>
+              </DashboardFullPage>
+            </div>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* ── Badge extended variants ─────────────────────────────────────── */}
+      <Section id="badge-extended" title="Badge — Extended Variants" subtitle="New variants: expired · dead · navy · saffron · green (matching the sales frontend status system).">
+        <Card>
+          <CardContent className="space-y-4">
+            <div>
+              <Label>Original</Label>
+              <Row>
+                <Badge variant="primary">Primary</Badge>
+                <Badge variant="active">Active</Badge>
+                <Badge variant="pending">Pending</Badge>
+                <Badge variant="inactive">Inactive</Badge>
+                <Badge variant="rejected">Rejected</Badge>
+              </Row>
+            </div>
+            <div>
+              <Label>New</Label>
+              <Row>
+                <Badge variant="expired">Expired</Badge>
+                <Badge variant="dead">Dead</Badge>
+                <Badge variant="navy">Navy</Badge>
+                <Badge variant="saffron">Saffron</Badge>
+                <Badge variant="green">Green</Badge>
+              </Row>
+            </div>
+          </CardContent>
+        </Card>
+      </Section>
+
+      {/* ── Card hoverable ──────────────────────────────────────────────── */}
+      <Section id="card-hoverable" title="Card — Hoverable prop" subtitle="Pass hoverable for cursor-pointer + lift + primary-color border on hover.">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <Card hoverable>
+            <CardContent>
+              <p className="font-semibold text-label-primary">Hoverable</p>
+              <p className="text-callout text-label-secondary mt-1">Lift + border on hover</p>
+            </CardContent>
+          </Card>
+          <Card hoverable variant="elevated">
+            <CardContent>
+              <p className="font-semibold text-label-primary">Elevated + hoverable</p>
+              <p className="text-callout text-label-secondary mt-1">Stronger base shadow</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardContent>
+              <p className="font-semibold text-label-primary">Normal card</p>
+              <p className="text-callout text-label-secondary mt-1">No hover effect</p>
+            </CardContent>
+          </Card>
+        </div>
+      </Section>
+
+      {/* ── LanguageSwitcher ────────────────────────────────────────────── */}
+      <Section id="language-switcher" title="LanguageSwitcher" subtitle="Generic i18n dropdown. Configurable options, size, onDark background, and dropUp direction.">
+        <Card>
+          <CardContent>
+            <div className="flex flex-wrap gap-8 items-end">
+              <div>
+                <Label>Default (md)</Label>
+                <LanguageSwitcher
+                  options={[
+                    { code: 'en', label: 'English', shortLabel: 'EN' },
+                    { code: 'hi', label: 'हिन्दी',  shortLabel: 'HI', nativeLabel: 'हिन्दी' },
+                    { code: 'mr', label: 'Marathi', shortLabel: 'MR', nativeLabel: 'मराठी' },
+                  ]}
+                  value={language}
+                  onChange={setLanguage}
+                />
+              </div>
+              <div>
+                <Label>Compact (sm)</Label>
+                <LanguageSwitcher
+                  options={[
+                    { code: 'en', label: 'English', shortLabel: 'EN' },
+                    { code: 'hi', label: 'हिन्दी',  shortLabel: 'HI', nativeLabel: 'हिन्दी' },
+                  ]}
+                  value={language}
+                  onChange={setLanguage}
+                  size="sm"
+                />
+              </div>
+              <div className="bg-gray-800 rounded-xl px-4 py-3">
+                <Label>On dark</Label>
+                <LanguageSwitcher
+                  options={[
+                    { code: 'en', label: 'English', shortLabel: 'EN' },
+                    { code: 'hi', label: 'हिन्दी',  shortLabel: 'HI', nativeLabel: 'हिन्दी' },
+                  ]}
+                  value={language}
+                  onChange={setLanguage}
+                  onDark
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </Section>
 
     </div>
@@ -1870,7 +2895,7 @@ export default function ComponentsPage() {
 export function genFormBuilderPage(): string {
   return `'use client'
 
-import { useState, useRef, useEffect, useCallback } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import {
   DndContext, closestCenter, KeyboardSensor, PointerSensor,
   useSensor, useSensors,
@@ -1888,7 +2913,7 @@ import {
   ChevronDown, ChevronLeft, ChevronRight,
   BookOpen, Save, Send, Settings, ListChecks, ShieldCheck, MapPin,
 } from 'lucide-react'
-import { Card, CardContent, Button, Input, Select, Textarea } from '@lucifer91299/ui'
+import { Card, CardContent, Button, Input, Select, Textarea, Switch } from '@lucifer91299/ui'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -2324,8 +3349,18 @@ function SortableQuestionCard({ question, onUpdate, onDuplicate, onDelete, hasEr
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function generateId(): string {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID()
+  }
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+  })
+}
+
 function createQuestion(order: number): QuestionObject {
-  return { id: crypto.randomUUID(), type: 'short_answer', label: '', required: false, order }
+  return { id: generateId(), type: 'short_answer', label: '', required: false, order }
 }
 
 // ── FormBuilderPage ───────────────────────────────────────────────────────────
@@ -2381,7 +3416,7 @@ export default function FormBuilderPage() {
 
   const duplicateQuestion = (id: string) => {
     const idx   = questions.findIndex(q => q.id === id)
-    const clone = { ...questions[idx], id: crypto.randomUUID(), order: idx + 1 }
+    const clone = { ...questions[idx], id: generateId(), order: idx + 1 }
     setQuestions([...questions.slice(0, idx + 1), clone, ...questions.slice(idx + 1)].map((q, i) => ({ ...q, order: i })))
   }
 
@@ -2429,7 +3464,7 @@ export default function FormBuilderPage() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0"
           style={{ background: 'var(--primary-soft, rgba(0,0,128,0.07))' }}>
-          <BookOpen className="w-4.5 h-4.5" style={{ color: 'var(--primary, #000080)' }} />
+          <BookOpen className="w-[18px] h-[18px]" style={{ color: 'var(--primary, #000080)' }} />
         </div>
         <div>
           <h1 className="text-xl font-bold text-label-primary leading-tight">Form Builder</h1>
@@ -2517,16 +3552,12 @@ export default function FormBuilderPage() {
               ]}
             />
 
-            <div className="flex items-center justify-between p-3.5 bg-gray-50 rounded-xl">
-              <div>
-                <p className="text-sm font-medium text-gray-700">Payment Required</p>
-                <p className="text-xs text-gray-400">Users must pay to submit this form</p>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                <input type="checkbox" className="sr-only peer" checked={paymentRequired} onChange={e => setPayment(e.target.checked)} />
-                <div className="w-11 h-6 bg-gray-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:after:translate-x-full" />
-              </label>
-            </div>
+            <Switch
+              label="Payment Required"
+              description="Users must pay to submit this form"
+              checked={paymentRequired}
+              onChange={setPayment}
+            />
 
             {paymentRequired && (
               <Input
@@ -2632,7 +3663,7 @@ export default function OnboardingPage() {
   const [name,     setName]     = useState('')
   const [email,    setEmail]    = useState('')
   const [phone,    setPhone]    = useState('')
-  const [dob,      setDob]      = useState<Date | null>(null)
+  const [dob,      setDob]      = useState('')
   const [apptTime, setApptTime] = useState('')
   const [bio,      setBio]      = useState('')
 
@@ -2765,9 +3796,9 @@ export default function OnboardingPage() {
             <div>
               <p className="text-[12px] font-semibold text-label-secondary uppercase tracking-wider mb-2">Notifications</p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <Switch label="Email alerts"  checked={notifs}     onChange={setNotifs}     helperText="Activity & security" />
-                <Switch label="Newsletter"    checked={newsletter} onChange={setNewsletter} helperText="Monthly updates" />
-                <Switch label="Dark mode"     checked={darkMode}   onChange={setDarkMode}   helperText="Use dark theme" />
+                <Switch label="Email alerts"  checked={notifs}     onChange={setNotifs} />
+                <Switch label="Newsletter"    checked={newsletter} onChange={setNewsletter} />
+                <Switch label="Dark mode"     checked={darkMode}   onChange={setDarkMode} />
               </div>
             </div>
             <Separator />

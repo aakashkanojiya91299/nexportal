@@ -18,9 +18,9 @@ export const LoginCard = forwardRef<HTMLDivElement, LoginCardProps>(
         className,
       )}
     >
-      <TricolorBar animated />
+      <TricolorBar animated shimmer />
       <div className="p-8">{children}</div>
-      <TricolorBar />
+      <TricolorBar shimmer />
     </div>
   ),
 )

@@ -75,6 +75,16 @@
 
   .btn-danger        { @apply btn bg-red-500 !text-white px-4 py-2.5 hover:bg-red-600; }
   .btn-outline       { @apply btn border border-separator-opaque bg-white !text-label-primary px-4 py-2.5 hover:bg-gray-50; }
+  .btn-ghost         { @apply btn bg-transparent !text-label-secondary px-4 py-2.5 hover:bg-surface-secondary; }
+  .btn-secondary {
+    @apply btn border px-4 py-2.5;
+    border-color: color-mix(in srgb, var(--primary, #000080) 20%, transparent);
+    background-color: #fff;
+    color: var(--primary, #000080);
+  }
+  .btn-secondary:hover { background-color: var(--primary-soft, rgba(0,0,128,0.06)); }
+  .btn-gray   { @apply btn bg-gray-100 !text-label-secondary px-4 py-2.5 hover:bg-gray-200; }
+  .btn-plain  { @apply btn bg-transparent !text-label-secondary px-4 py-2.5 hover:underline hover:!text-label-primary; }
 
   /* Button sizes */
   .btn-sm            { @apply text-footnote px-3 py-1.5; }
@@ -121,6 +131,28 @@
     transform-origin: left;
     transform: scaleX(0);
     animation: tricolorSweep 2s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+  }
+
+  /* Infinite shimmer — background-position slides slowly across the bar */
+  .tricolor-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+  .tricolor-shimmer::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to right,
+      var(--tc1, var(--accent, #FF9933))  0%,
+      var(--tc1, var(--accent, #FF9933))  25%,
+      var(--tc2, #ffffff)                  45%,
+      var(--tc2, #ffffff)                  55%,
+      var(--tc3, var(--success, #138808))  75%,
+      var(--tc3, var(--success, #138808))  100%
+    );
+    background-size: 200% 100%;
+    animation: tricolorShimmer 60s ease-in-out infinite;
   }
 
   /* Page layout helpers */
@@ -233,6 +265,11 @@
 @keyframes tricolorSweep {
   from { transform: scaleX(0); }
   to   { transform: scaleX(1); }
+}
+@keyframes tricolorShimmer {
+  0%   { background-position: 100% 0; }
+  50%  { background-position: 0% 0; }
+  100% { background-position: 100% 0; }
 }
 @keyframes meshMove {
   0%   { background-position: 0% 50%; }

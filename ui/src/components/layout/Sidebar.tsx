@@ -100,7 +100,7 @@ export function Sidebar({
     boxShadow: '0 2px 8px color-mix(in srgb, var(--primary, #000080) 30%, transparent)',
   }
 
-  const SidebarBody = (
+  const makeSidebarBody = (showHeader: boolean) => (
     <aside
       className={cn(
         'flex flex-col h-full bg-white border-r border-separator-opaque overflow-hidden transition-all duration-300',
@@ -109,35 +109,37 @@ export function Sidebar({
       )}
       style={style}
     >
-      {/* ── Header ──────────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0">
-        <TricolorBar />
-        <div
-          className={cn(
-            'flex items-center border-b border-separator-opaque',
-            collapsed ? 'flex-col justify-center px-2 py-3 gap-2' : 'gap-3 px-4 py-3',
-          )}
-        >
-          <div className={cn('flex items-center gap-3 min-w-0', collapsed ? 'justify-center w-full' : 'flex-1')}>
-            <div
-              className={cn(
-                'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden',
-                collapsed ? 'w-10 h-10' : 'w-14 h-14',
-              )}
-            >
-              <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'lg'} />
-            </div>
-            {!collapsed && (
-              <div className="min-w-0 flex-1">
-                <h1 className="text-subhead font-bold truncate leading-tight" style={{ color: 'var(--primary, #000080)' }}>
-                  {projectName}
-                </h1>
-                <p className="text-[10px] font-medium text-label-tertiary uppercase tracking-wider mt-0.5">Admin Portal</p>
-              </div>
+      {/* ── Header (desktop only) ───────────────────────────────────────── */}
+      {showHeader && (
+        <div className="flex-shrink-0">
+          <TricolorBar animated shimmer />
+          <div
+            className={cn(
+              'flex items-center border-b border-separator-opaque',
+              collapsed ? 'flex-col justify-center px-2 py-3 gap-2' : 'gap-3 px-4 py-3',
             )}
+          >
+            <div className={cn('flex items-center gap-3 min-w-0', collapsed ? 'justify-center w-full' : 'flex-1')}>
+              <div
+                className={cn(
+                  'flex-shrink-0 rounded-xl flex items-center justify-center overflow-hidden',
+                  collapsed ? 'w-10 h-10' : 'w-14 h-14',
+                )}
+              >
+                <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size={collapsed ? 'sm' : 'lg'} />
+              </div>
+              {!collapsed && (
+                <div className="min-w-0 flex-1">
+                  <h1 className="text-subhead font-bold truncate leading-tight" style={{ color: 'var(--primary, #000080)' }}>
+                    {projectName}
+                  </h1>
+                  <p className="text-[10px] font-medium text-label-tertiary uppercase tracking-wider mt-0.5">Admin Portal</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* ── Nav ─────────────────────────────────────────────────────────── */}
       <nav
@@ -281,7 +283,7 @@ export function Sidebar({
             </div>
           </div>
         )}
-        <TricolorBar />
+        <TricolorBar animated shimmer />
       </div>
     </aside>
   )
@@ -290,7 +292,7 @@ export function Sidebar({
     <>
       {/* ── Mobile top bar ─────────────────────────────────────────────── */}
       <div className="fixed left-0 right-0 top-0 z-50 border-b border-separator-opaque bg-white/95 shadow-sm backdrop-blur-sm lg:hidden">
-        <TricolorBar />
+        <TricolorBar animated shimmer />
         <div className="flex items-center justify-between px-4 py-2.5">
           <button
             type="button"
@@ -305,9 +307,6 @@ export function Sidebar({
             >
               <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="md" />
             </div>
-            <span className="text-callout font-bold" style={{ color: 'var(--primary, #000080)' }}>
-              {projectName}
-            </span>
           </div>
           {/* Mobile profile menu */}
           <div ref={mobileMenuRef} className="relative">
@@ -361,19 +360,19 @@ export function Sidebar({
         />
       )}
 
-      {/* Mobile drawer */}
+      {/* Mobile drawer — no logo/name header (already in mobile top bar) */}
       <div
         className={cn(
           'fixed top-0 left-0 z-40 h-screen pt-[52px] lg:hidden transition-transform duration-300 ease-in-out',
           isMobileOpen ? 'translate-x-0' : '-translate-x-full',
         )}
       >
-        {SidebarBody}
+        {makeSidebarBody(false)}
       </div>
 
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — full header with logo and name */}
       <div className="hidden lg:flex h-screen sticky top-0">
-        {SidebarBody}
+        {makeSidebarBody(true)}
       </div>
 
       {/* Floating collapse toggle — desktop only, fixed at sidebar right edge */}

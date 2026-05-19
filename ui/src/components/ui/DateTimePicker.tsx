@@ -328,7 +328,7 @@ export function DateTimePicker({
         </button>
 
         {open && (
-          <div className="absolute top-full left-0 mt-1.5 z-[9999] bg-white rounded-2xl border border-separator shadow-lg overflow-hidden">
+          <div className="absolute top-full left-0 mt-1.5 z-[9999] bg-white rounded-2xl border border-separator shadow-lg overflow-hidden w-[min(calc(100vw-1rem),560px)] sm:w-auto">
 
             {/* ── Days surface: left=calendar, right=time on desktop ── */}
             {surface === 'days' && (
@@ -336,7 +336,7 @@ export function DateTimePicker({
                 <div className="flex flex-col sm:flex-row">
 
                   {/* ── LEFT: Calendar ── */}
-                  <div className="p-3 sm:w-72 flex-shrink-0 sm:border-r sm:border-separator">
+                  <div className="p-3 w-full sm:w-72 flex-shrink-0 sm:border-r sm:border-separator">
                     <div className="flex items-center justify-between mb-3">
                       <button type="button" onClick={() => setVisible((v) => subMonths(v, 1))}
                         className="p-1.5 rounded-lg hover:bg-surface-secondary text-label-secondary transition-colors">

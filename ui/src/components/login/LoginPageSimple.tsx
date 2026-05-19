@@ -1,11 +1,17 @@
 'use client'
 
-import React, { useState, type ReactNode } from 'react'
-import { AlertCircle } from 'lucide-react'
+import React, { useState, useCallback } from 'react'
+import {
+  motion, AnimatePresence,
+  useMotionValue, useSpring,
+} from 'framer-motion'
+import { AlertCircle, ArrowRight } from 'lucide-react'
 import { cn } from '../../lib/cn'
-import { BrandLogo } from '../layout/BrandLogo'
 import { Button } from '../ui/Button'
 import { Input } from '../ui/Input'
+import { LoginCard } from './LoginCard'
+import { LoginHeader } from './LoginHeader'
+import { ParticleBg } from './ParticleBg'
 import { RoleSelectSplash, type RoleOption } from './RoleSelectSplash'
 
 export interface RegisterLink {
@@ -19,20 +25,31 @@ export interface LoginPageSimpleProps {
   logoSrc: string
   logoAlt?: string
 
-  /** Called on submit — return { role } when multiple roles are possible */
   onSubmit: (creds: { email: string; password: string }) => Promise<{ role?: string }>
   isLoading: boolean
   error: string | null
 
-  /** If provided, shown as role-select splash when login returns role='both' or multiple */
   roles?: RoleOption[]
   onRoleSelect?: (roleKey: string) => void
 
-  /** Extra links below the form (e.g. register coach, set password) */
   registerLinks?: RegisterLink[]
 
   className?: string
   style?: React.CSSProperties
+}
+
+function useParallax() {
+  const nx = useMotionValue(0.5)
+  const ny = useMotionValue(0.5)
+  const sx = useSpring(nx, { stiffness: 45, damping: 18 })
+  const sy = useSpring(ny, { stiffness: 45, damping: 18 })
+
+  const onMouseMove = useCallback((e: React.MouseEvent) => {
+    nx.set(e.clientX / window.innerWidth)
+    ny.set(e.clientY / window.innerHeight)
+  }, [nx, ny])
+
+  return { sx, sy, onMouseMove }
 }
 
 export function LoginPageSimple({
@@ -53,6 +70,7 @@ export function LoginPageSimple({
   const [password, setPassword] = useState('')
   const [validationError, setValidationError] = useState<string | null>(null)
   const [showRoleSplash, setShowRoleSplash] = useState(false)
+  const { onMouseMove } = useParallax()
 
   const displayError = error ?? validationError
 
@@ -61,11 +79,8 @@ export function LoginPageSimple({
     setValidationError(null)
     if (!email.trim())    { setValidationError('Email is required'); return }
     if (!password.trim()) { setValidationError('Password is required'); return }
-
     const result = await onSubmit({ email: email.trim(), password })
-    if (result?.role === 'both' && roles?.length) {
-      setShowRoleSplash(true)
-    }
+    if (result?.role === 'both' && roles?.length) setShowRoleSplash(true)
   }
 
   if (showRoleSplash && roles?.length && onRoleSelect) {
@@ -82,71 +97,124 @@ export function LoginPageSimple({
 
   return (
     <div
-      className={cn(
-        'min-h-screen bg-gradient-to-br from-surface-secondary to-white flex items-center justify-center p-4',
-        className,
-      )}
+      className={cn('relative h-screen overflow-hidden flex items-center justify-center', className)}
       style={style}
+      onMouseMove={onMouseMove}
     >
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <div className="flex justify-center mb-4">
-            <BrandLogo src={logoSrc} alt={logoAlt ?? projectName} size="lg" />
-          </div>
-          <h1 className="text-title2 font-semibold" style={{ color: 'var(--primary, #000080)' }}>
-            {projectName}
-          </h1>
-          <p className="text-body text-gray-600 mt-1">{projectSubtitle}</p>
-        </div>
+      {/* Animated mesh background */}
+      <div className="login-bg" />
+      <div className="login-bg-grid" />
 
-        <div className="bg-white rounded-2xl shadow-lg p-8">
-          <form onSubmit={handleSubmit} className="space-y-5" noValidate>
-            <Input
-              label="Email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              autoComplete="email"
-              autoFocus
-            />
-            <Input
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your password"
-              autoComplete="current-password"
-            />
+      {/* Ambient orbs */}
+      <div className="login-parallax-orbs">
+        <div className="login-bg-orb login-bg-orb-1" />
+        <div className="login-bg-orb login-bg-orb-2" />
+        <div className="login-bg-orb login-bg-orb-3" />
+      </div>
 
-            {displayError && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                <p className="text-sm text-red-600">{displayError}</p>
-              </div>
-            )}
+      {/* Particle canvas */}
+      <ParticleBg />
 
-            <Button type="submit" variant="primary" className="w-full" isLoading={isLoading}>
-              Sign In
-            </Button>
-          </form>
+      {/* Center content */}
+      <div className="relative z-10 w-full max-w-sm px-4 flex flex-col items-center">
 
-          {registerLinks && registerLinks.length > 0 && (
-            <div className="mt-6 space-y-2 text-center">
-              {registerLinks.map(({ label, href }) => (
-                <p key={href} className="text-subhead text-label-secondary">
-                  <a
-                    href={href}
-                    className="font-medium hover:underline"
-                    style={{ color: 'var(--primary, #000080)' }}
+        {/* Logo + title */}
+        <motion.div
+          initial={{ opacity: 0, y: -18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: [0.25, 0.1, 0.25, 1] }}
+          className="w-full mb-6"
+        >
+          <LoginHeader
+            logoSrc={logoSrc}
+            logoAlt={logoAlt}
+            projectName={projectName}
+            projectSubtitle={projectSubtitle}
+          />
+        </motion.div>
+
+        {/* Login card — shimmer tricolor top + bottom */}
+        <motion.div
+          initial={{ opacity: 0, y: 28, scale: 0.97 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.65, delay: 0.12, ease: [0.25, 0.1, 0.25, 1] }}
+          className="w-full"
+        >
+          <LoginCard>
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              <Input
+                label="Email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                autoComplete="email"
+                autoFocus
+              />
+              <Input
+                label="Password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                autoComplete="current-password"
+              />
+
+              <AnimatePresence>
+                {displayError && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                    transition={{ duration: 0.2 }}
+                    className="flex items-start gap-2.5 bg-red-50 border border-red-200 rounded-xl px-3.5 py-3"
                   >
-                    {label}
-                  </a>
-                </p>
-              ))}
-            </div>
-          )}
-        </div>
+                    <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-600">{displayError}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              <div className="pt-1">
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full h-11"
+                  isLoading={isLoading}
+                >
+                  {!isLoading && (
+                    <span className="flex items-center justify-center gap-2">
+                      Sign In <ArrowRight className="w-4 h-4" />
+                    </span>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </LoginCard>
+        </motion.div>
+
+        {/* Register / extra links */}
+        {registerLinks && registerLinks.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.28, ease: [0.25, 0.1, 0.25, 1] }}
+            className="mt-5 flex flex-row items-center justify-center gap-3 flex-wrap"
+          >
+            {registerLinks.map(({ label, href }, i) => (
+              <div key={href} className="flex items-center gap-3">
+                {i > 0 && <span className="text-gray-300 text-sm">|</span>}
+                <a
+                  href={href}
+                  className="text-[13px] font-semibold hover:underline transition-colors duration-150"
+                  style={{ color: 'var(--primary, #000080)' }}
+                >
+                  {label}
+                </a>
+              </div>
+            ))}
+          </motion.div>
+        )}
       </div>
     </div>
   )

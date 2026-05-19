@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { cn } from '../../lib/cn'
+import { TricolorBar } from './TricolorBar'
 
 // ── Social icon SVGs ─────────────────────────────────────────────────────────
 
@@ -135,7 +136,7 @@ export function PageFooter({
             </a>
           )}
         </div>
-        <div className="tricolor-bar" />
+        <TricolorBar shimmer />
       </div>
     </footer>
   )

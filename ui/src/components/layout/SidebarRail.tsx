@@ -80,7 +80,7 @@ export function SidebarRail({
       >
         {/* Header */}
         <div className="flex-shrink-0">
-          <TricolorBar />
+          <TricolorBar shimmer />
           <div className="flex justify-center py-4 border-b border-separator-opaque">
             <div
               className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -121,7 +121,7 @@ export function SidebarRail({
           <div className="flex flex-col items-center py-3 px-2">
             <UserAvatar name={user.name} />
           </div>
-          <TricolorBar />
+          <TricolorBar shimmer />
         </div>
       </aside>
 

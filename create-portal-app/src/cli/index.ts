@@ -10,6 +10,8 @@ import {
   genNavConfig, genDashboardLayout, genReduxStore, genAuthSlice,
   genRootPage, genDashboardHomePage, genUsersPage, genSettingsPage,
   genComponentsShowcasePage, genFormBuilderPage, genOnboardingPage,
+  genForgotPasswordPage, genResetPasswordPage, genRegisterPage,
+  genForgotPasswordRoute, genResetPasswordRoutes, genResetPasswordValidateRoute,
 } from '../templates'
 
 // ── File helpers ───────────────────────────────────────────────────────────────
@@ -271,21 +273,27 @@ function scaffold(opts: ScaffoldOptions): number {
     exclude: ['node_modules'],
   }, null, 2))
 
-  w(f('src/app/globals.css'),                          genGlobalsCSS())
-  w(f('src/app/layout.tsx'),                           genRootLayout(opts))
-  w(f('src/app/page.tsx'),                             genRootPage())
-  w(f('src/app/login/page.tsx'),                       genLoginPage(opts))
-  w(f('src/app/dashboard/layout.tsx'),                 genDashboardLayout(opts))
-  w(f('src/app/dashboard/page.tsx'),                   genDashboardHomePage(opts))
-  w(f('src/app/dashboard/users/page.tsx'),             genUsersPage(opts))
-  w(f('src/app/dashboard/settings/page.tsx'),          genSettingsPage(opts))
-  w(f('src/app/dashboard/components/page.tsx'),        genComponentsShowcasePage())
-  w(f('src/app/dashboard/form-builder/page.tsx'),      genFormBuilderPage())
-  w(f('src/app/dashboard/onboarding/page.tsx'),        genOnboardingPage())
-  w(f('src/app/api/auth/login/route.ts'),              genLoginRoute(opts))
-  w(f('src/app/api/auth/user/route.ts'),               genUserRoute(opts))
-  w(f('src/app/api/auth/session/route.ts'),            genSessionRoute(opts))
-  w(f('src/app/api/auth/logout/route.ts'),             genLogoutRoute(opts))
+  w(f('src/app/globals.css'),                                    genGlobalsCSS())
+  w(f('src/app/layout.tsx'),                                     genRootLayout(opts))
+  w(f('src/app/page.tsx'),                                       genRootPage())
+  w(f('src/app/login/page.tsx'),                                 genLoginPage(opts))
+  w(f('src/app/forgot-password/page.tsx'),                       genForgotPasswordPage(opts))
+  w(f('src/app/reset-password/page.tsx'),                        genResetPasswordPage(opts))
+  w(f('src/app/register/page.tsx'),                              genRegisterPage(opts))
+  w(f('src/app/dashboard/layout.tsx'),                           genDashboardLayout(opts))
+  w(f('src/app/dashboard/page.tsx'),                             genDashboardHomePage(opts))
+  w(f('src/app/dashboard/users/page.tsx'),                       genUsersPage(opts))
+  w(f('src/app/dashboard/settings/page.tsx'),                    genSettingsPage(opts))
+  w(f('src/app/dashboard/components/page.tsx'),                  genComponentsShowcasePage())
+  w(f('src/app/dashboard/form-builder/page.tsx'),                genFormBuilderPage())
+  w(f('src/app/dashboard/onboarding/page.tsx'),                  genOnboardingPage())
+  w(f('src/app/api/auth/login/route.ts'),                        genLoginRoute(opts))
+  w(f('src/app/api/auth/user/route.ts'),                         genUserRoute(opts))
+  w(f('src/app/api/auth/session/route.ts'),                      genSessionRoute(opts))
+  w(f('src/app/api/auth/logout/route.ts'),                       genLogoutRoute(opts))
+  w(f('src/app/api/auth/forgot-password/route.ts'),              genForgotPasswordRoute())
+  w(f('src/app/api/auth/reset-password/route.ts'),               genResetPasswordRoutes())
+  w(f('src/app/api/auth/reset-password/validate/route.ts'),      genResetPasswordValidateRoute())
   w(f('src/providers/index.tsx'),                      genProviders(opts))
   w(f('src/lib/api.ts'),                               genApiClient(opts))
   w(f('src/components/layout/nav-config.tsx'),         genNavConfig(opts))

@@ -1,6 +1,6 @@
 # `@lucifer91299/ui`
 
-> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 55+ production-ready components.
+> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 65+ production-ready components. Includes `TricolorBar` with sweep and infinite shimmer animations.
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
@@ -35,7 +35,11 @@ npx @lucifer91299/create-portal-app my-portal
   - [Accordion](#accordion)
   - [Tooltip & Popover](#tooltip--popover)
   - [Avatar & AvatarGroup](#avatar--avatargroup)
-  - [Progress, Skeleton, LoadingSpinner](#progress-skeleton-loadingspinner)
+  - [Progress, Skeleton, LoadingSpinner, PageLoader](#progress-skeleton-loadingspinner-pageloader)
+  - [Combobox](#combobox)
+  - [ConfirmModal](#confirmmodal)
+  - [AlertModal](#alertmodal)
+  - [Skeleton Presets](#skeleton-presets)
   - [Toast](#toast)
   - [StatsCard & EmptyState](#statscard--emptystate)
   - [FileUpload](#fileupload)
@@ -54,6 +58,8 @@ npx @lucifer91299/create-portal-app my-portal
   - [LoginPageSimple (Clean)](#loginpagesimple-clean)
   - [DashboardLayout](#dashboardlayout)
   - [HeaderNav](#headernav)
+  - [DashboardFullPage](#dashboardfullpage)
+  - [LanguageSwitcher](#languageswitcher)
   - [Layout Primitives](#layout-primitives)
 - [Auth Hooks](#auth-hooks)
 - [Auth API routes](#auth-api-routes)
@@ -242,7 +248,7 @@ Because the theme system uses CSS variables, you can override individual token v
 | `PageShell` | ✓ | ✓ | |
 | `PageFooter` | ✓ | ✓ | |
 | `BrandLogo` | ✓ | ✓ | |
-| `TricolorBar` | ✓ | ✓ | merged with bar gradient/height |
+| `TricolorBar` | ✓ | ✓ | merged with bar gradient/height; `shimmer` uses pseudo-element |
 | `SocialLinks` | ✓ | ✓ | |
 | `PoweredBy` | ✓ | ✓ | |
 
@@ -258,9 +264,12 @@ import { Button } from '@lucifer91299/ui'
 <Button variant="primary">Save</Button>
 <Button variant="accent">Highlight</Button>
 <Button variant="tinted">Tinted</Button>
+<Button variant="secondary">Secondary</Button>  {/* bordered, primary colour */}
+<Button variant="gray">Gray</Button>            {/* gray fill */}
 <Button variant="outline">Cancel</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="plain">Plain / link</Button>   {/* text-only, hover underline */}
 <Button variant="danger">Delete</Button>
-<Button variant="ghost">Link style</Button>
 
 <Button size="sm">Small</Button>
 <Button size="md">Medium</Button>   {/* default */}
@@ -269,6 +278,18 @@ import { Button } from '@lucifer91299/ui'
 <Button isLoading>Saving…</Button>
 <Button disabled>Disabled</Button>
 ```
+
+| Variant | Appearance |
+|---|---|
+| `primary` | Solid — CSS-variable primary colour |
+| `accent` | Solid — CSS-variable accent colour |
+| `tinted` | Soft primary-colour fill |
+| `secondary` | White background, primary-colour border & text |
+| `gray` | Gray-100 fill, secondary label text |
+| `outline` | White with opaque separator border |
+| `ghost` | Transparent, secondary label text |
+| `plain` | Fully transparent, hover underline |
+| `danger` | Red-500 fill |
 
 ---
 
@@ -520,11 +541,19 @@ import { Switch, Checkbox, RadioGroup } from '@lucifer91299/ui'
 ```tsx
 import { Badge, StatusBadge } from '@lucifer91299/ui'
 
+{/* Original variants */}
 <Badge variant="primary">Primary</Badge>
 <Badge variant="active">Active</Badge>
 <Badge variant="pending">Pending</Badge>
 <Badge variant="inactive">Inactive</Badge>
 <Badge variant="rejected">Rejected</Badge>
+
+{/* Extended variants (sales frontend parity) */}
+<Badge variant="expired">Expired</Badge>    {/* neutral ring */}
+<Badge variant="dead">Dead</Badge>          {/* dark/filled */}
+<Badge variant="navy">Navy</Badge>          {/* primary soft */}
+<Badge variant="saffron">Saffron</Badge>    {/* accent soft */}
+<Badge variant="green">Green</Badge>        {/* success soft */}
 
 {/* Auto-styled workflow states */}
 <StatusBadge status="active" />
@@ -536,6 +565,19 @@ import { Badge, StatusBadge } from '@lucifer91299/ui'
 <StatusBadge status="scheduled" />
 <StatusBadge status="cancelled" />
 ```
+
+| Variant | Style |
+|---------|-------|
+| `active` | Green |
+| `pending` | Amber |
+| `inactive` | Gray |
+| `rejected` | Red |
+| `primary` | Primary color |
+| `expired` | Neutral + ring |
+| `dead` | Dark filled |
+| `navy` | Primary soft bg |
+| `saffron` | Accent soft bg |
+| `green` | Success soft bg |
 
 ---
 
@@ -615,6 +657,20 @@ const columns = [
 ---
 
 ### Card, Separator, AlertBanner
+
+`Card` now accepts a `hoverable` prop for cursor-pointer + hover lift + primary-color border highlight.
+
+```tsx
+<Card hoverable>
+  <CardContent>Click me!</CardContent>
+</Card>
+
+<Card hoverable variant="elevated">
+  <CardContent>Elevated + hoverable</CardContent>
+</Card>
+```
+
+### Card, Separator, AlertBanner (original)
 
 ```tsx
 import { Card, Separator, AlertBanner } from '@lucifer91299/ui'
@@ -781,24 +837,60 @@ import { Avatar, AvatarGroup } from '@lucifer91299/ui'
 
 ---
 
-### Progress, Skeleton, LoadingSpinner
+### Progress, Skeleton, LoadingSpinner, PageLoader
 
 ```tsx
-import { Progress, Skeleton, SkeletonCard, SkeletonText, LoadingSpinner } from '@lucifer91299/ui'
+import {
+  Progress, Skeleton, SkeletonCard, SkeletonText,
+  TableSkeleton, GridSkeleton, ProfileSkeleton, SettingsSkeleton,
+  LoadingSpinner, PageLoader,
+} from '@lucifer91299/ui'
 
 <Progress label="Upload" value={68} showValue />
 <Progress value={90} variant="success" size="lg" />
 <Progress value={45} variant="warning" />
 <Progress value={15} variant="danger"  size="sm" />
 
+{/* Base skeletons */}
 <SkeletonCard />
 <SkeletonText lines={3} />
 <Skeleton className="h-12 w-12" rounded="full" />
 
-<LoadingSpinner size="sm" />
-<LoadingSpinner size="md" />
-<LoadingSpinner size="lg" />
+{/* Spinner variants */}
+<LoadingSpinner size="md" variant="default" />   {/* single ring (original) */}
+<LoadingSpinner size="md" variant="dual" />       {/* primary outer + accent inner (reverse) */}
+<LoadingSpinner size="md" variant="white" />      {/* white — for dark backgrounds */}
+
+{/* Full-screen loading gate */}
+<PageLoader label="Loading…" />
 ```
+
+### Skeleton Presets
+
+Full-page skeleton layouts for common dashboard patterns.
+
+```tsx
+import { TableSkeleton, GridSkeleton, ProfileSkeleton, SettingsSkeleton } from '@lucifer91299/ui'
+
+{/* Configurable rows × cols table */}
+<TableSkeleton rows={5} cols={5} />
+
+{/* Grid of card skeletons */}
+<GridSkeleton count={6} />
+
+{/* Profile: avatar + info + detail grid */}
+<ProfileSkeleton />
+
+{/* Settings: sidebar tabs + content panel */}
+<SettingsSkeleton />
+```
+
+| Component | Props |
+|---|---|
+| `TableSkeleton` | `rows` (default 5), `cols` (default 5), `className` |
+| `GridSkeleton` | `count` (default 6), `className` |
+| `ProfileSkeleton` | `className` |
+| `SettingsSkeleton` | `className` |
 
 ---
 
@@ -1481,7 +1573,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 ### HeaderNav
 
-Horizontal top navigation bar — logo + brand name, scrollable pill links, dropdown groups, and a profile menu. Used automatically when `sidebar="header"` is passed to `DashboardLayout`.
+Horizontal top navigation bar — logo + brand name, scrollable pill links, dropdown groups, a profile menu, and an optional settings gear icon. Used automatically when `sidebar="header"` is passed to `DashboardLayout`.
+
+Now matches the **sales frontend** style: gradient background, `TricolorBar shimmer` at the **bottom** of the bar, `rounded-full` nav pills, polished profile button with name + role visible.
 
 ```tsx
 import { HeaderNav } from '@lucifer91299/ui'
@@ -1493,6 +1587,8 @@ import { HeaderNav } from '@lucifer91299/ui'
   user={{ name: 'Admin User', role: 'Admin' }}
   pathname={pathname}
   onLogout={logout}
+  configHref="/dashboard/settings"  // optional — shows settings gear icon
+  configLabel="Settings"
 />
 ```
 
@@ -1518,6 +1614,211 @@ type NavGroup = {
 
 ---
 
+### Combobox
+
+Free-text input with a filtered suggestion dropdown. The user can type freely (autocomplete) or pick from the filtered list.
+
+```tsx
+import { Combobox } from '@lucifer91299/ui'
+
+const [sport, setSport] = useState('')
+
+<Combobox
+  label="Sport"
+  value={sport}
+  onChange={setSport}
+  placeholder="Type or select…"
+  options={[
+    { value: 'shooting',  label: 'Shooting' },
+    { value: 'archery',   label: 'Archery' },
+    { value: 'boxing',    label: 'Boxing' },
+    { value: 'wrestling', label: 'Wrestling' },
+  ]}
+  helperText="Type to filter or enter a custom value"
+/>
+
+{/* With error */}
+<Combobox
+  label="Category"
+  value={cat}
+  onChange={setCat}
+  options={options}
+  error
+  errorText="This field is required"
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | — | Current text (free text or selected label) |
+| `onChange` | `(v: string) => void` | — | Called on every keystroke or option click |
+| `options` | `ComboboxOption[]` | — | `{ value, label, disabled? }` |
+| `label` | `string` | — | Field label |
+| `placeholder` | `string` | `'Type or select…'` | |
+| `error` | `boolean` | `false` | Red border |
+| `errorText` | `string` | — | Error message below |
+| `helperText` | `string` | — | Helper text (hidden when errorText is set) |
+| `maxDropdownHeight` | `number` | `260` | Max px height of dropdown list |
+
+---
+
+### ConfirmModal
+
+Opinionated confirm dialog with 4 variants, multi-line message support, optional summary table, and a loading state on the confirm button.
+
+```tsx
+import { ConfirmModal } from '@lucifer91299/ui'
+
+const [open, setOpen] = useState(false)
+
+<Button variant="danger" onClick={() => setOpen(true)}>Delete</Button>
+
+<ConfirmModal
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  onConfirm={async () => { await deleteRecord(); setOpen(false) }}
+  variant="danger"         // 'danger' | 'warning' | 'info' | 'success'
+  title="Delete record?"
+  message={[
+    'This action cannot be undone.',
+    '• All associated data will be removed.',
+  ]}
+  confirmText="Delete"
+  cancelText="Cancel"
+  isLoading={deleting}
+/>
+
+{/* With optional summary table */}
+<ConfirmModal
+  isOpen={open}
+  onClose={() => setOpen(false)}
+  onConfirm={confirm}
+  variant="warning"
+  title="Process renewal?"
+  message="The following members will be renewed:"
+  tableData={{
+    headers: ['Member', 'Fee'],
+    rows: [['Priya Mehta', '₹2,500'], ['Arjun Sharma', '₹2,500']],
+  }}
+  confirmText="Proceed"
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isOpen` | `boolean` | — | Controls visibility |
+| `onClose` | `() => void` | — | Backdrop click / cancel button |
+| `onConfirm` | `() => void` | — | Confirm button click |
+| `variant` | `'danger' \| 'warning' \| 'info' \| 'success'` | `'warning'` | Icon + confirm button colour |
+| `title` | `string` | — | Modal heading |
+| `message` | `string \| string[]` | — | Body text. Array items separated by lines; items starting with `•` are indented |
+| `tableData` | `{ headers: string[], rows: (string\|number)[][] }` | — | Optional summary table below message |
+| `confirmText` | `string` | `'Confirm'` | |
+| `cancelText` | `string` | `'Cancel'` | |
+| `isLoading` | `boolean` | `false` | Shows spinner + "Processing…" on confirm button |
+
+---
+
+### AlertModal
+
+Single-button acknowledgment dialog. Use when no cancel action is needed — just an "Okay" to dismiss.
+
+```tsx
+import { AlertModal } from '@lucifer91299/ui'
+
+<AlertModal
+  isOpen={alertOpen}
+  onClose={() => setAlertOpen(false)}
+  variant="error"   // 'error' | 'warning' | 'info' | 'success'
+  title="Something went wrong"
+  message="The server returned a 500 error. Please try again later."
+/>
+
+{/* Multi-line message */}
+<AlertModal
+  isOpen={alertOpen}
+  onClose={() => setAlertOpen(false)}
+  variant="success"
+  title="Done!"
+  message={['Your changes have been saved.', 'An email confirmation has been sent.']}
+  okText="Got it"
+/>
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isOpen` | `boolean` | — | Controls visibility |
+| `onClose` | `() => void` | — | Dismiss / backdrop click |
+| `variant` | `'error' \| 'warning' \| 'info' \| 'success'` | `'info'` | Icon + button colour |
+| `title` | `string` | — | Modal heading |
+| `message` | `string \| string[]` | — | Body text |
+| `okText` | `string` | `'Okay'` | Dismiss button label |
+
+---
+
+### DashboardFullPage
+
+Full-bleed gradient surface for add / edit / detail flows. Bleeds edge-to-edge inside the dashboard content area.
+
+```tsx
+import { DashboardFullPage, dashboardFullPageSurfaceClass } from '@lucifer91299/ui'
+
+{/* Component */}
+<DashboardFullPage>
+  <PageShell title="Add Product" actions={<Button>Save</Button>} />
+  {/* form content */}
+</DashboardFullPage>
+
+{/* Class string — apply to an existing element */}
+<div className={dashboardFullPageSurfaceClass}>
+  ...
+</div>
+```
+
+The component applies `-mx-6 -mt-6` bleed, a subtle `bg-gradient-to-b from-[#eceef2] via-[#e6e8ed] to-[#eef0f4]` background, and `min-h-[calc(100dvh-3.5rem)]` so it fills the viewport.
+
+---
+
+### LanguageSwitcher
+
+Generic i18n dropdown. Accepts any list of language options and fires `onChange` with the selected code. Framework-agnostic — wire it to any i18n library.
+
+```tsx
+import { LanguageSwitcher } from '@lucifer91299/ui'
+
+const [lang, setLang] = useState('en')
+
+<LanguageSwitcher
+  options={[
+    { code: 'en', label: 'English',  shortLabel: 'EN' },
+    { code: 'hi', label: 'हिन्दी',   shortLabel: 'HI', nativeLabel: 'हिन्दी' },
+    { code: 'mr', label: 'Marathi',  shortLabel: 'MR', nativeLabel: 'मराठी' },
+  ]}
+  value={lang}
+  onChange={setLang}
+/>
+
+{/* Compact icon-only */}
+<LanguageSwitcher options={options} value={lang} onChange={setLang} size="sm" />
+
+{/* For dark headers/footers */}
+<LanguageSwitcher options={options} value={lang} onChange={setLang} onDark />
+
+{/* Open upwards (footer placement) */}
+<LanguageSwitcher options={options} value={lang} onChange={setLang} dropUp />
+```
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `options` | `LanguageOption[]` | EN + HI | `{ code, label, shortLabel?, nativeLabel? }` |
+| `value` | `string` | — | Active language code |
+| `onChange` | `(code: string) => void` | — | |
+| `size` | `'sm' \| 'md'` | `'md'` | `sm` = icon-only, `md` = shortLabel + chevron |
+| `onDark` | `boolean` | `false` | Lighter text/hover for dark backgrounds |
+| `dropUp` | `boolean` | `false` | Open menu upward (for footer placement) |
+
+---
+
 ### Layout Primitives
 
 Smaller building-block components you can use inside or outside the dashboard layout.
@@ -1535,11 +1836,17 @@ import {
 {/* Logo — sizes: 'sm' (32px) | 'md' (48px) | 'lg' (64px) | 'xl' (80px) */}
 <BrandLogo src="/brand/logo.svg" alt="My Portal" size="xl" className="rounded-xl" />
 
-{/* Animated Indian tricolor bar */}
+{/* One-time left-to-right entrance sweep */}
 <TricolorBar animated height={4} />
+
+{/* Continuous infinite shimmer (matches admin frontend style) */}
+<TricolorBar shimmer height={3} />
 
 {/* Override colors */}
 <TricolorBar colors={['#e11d48', '#ffffff', '#2563eb']} height={3} />
+
+{/* Shimmer with custom colors */}
+<TricolorBar shimmer colors={['#e11d48', '#ffffff', '#2563eb']} height={4} />
 
 {/* Social media links row */}
 <SocialLinks
@@ -1573,7 +1880,7 @@ import {
 | Component | Key props |
 |-----------|-----------|
 | `BrandLogo` | `src`, `alt`, `size` (`sm`/`md`/`lg`/`xl`), `className`, `style` |
-| `TricolorBar` | `colors`, `animated`, `height`, `className`, `style` |
+| `TricolorBar` | `colors`, `animated`, `shimmer`, `height`, `className`, `style` |
 | `SocialLinks` | `links` (`{ icon, href, label }`), `className`, `style` |
 | `PoweredBy` | `logoSrc`, `text`, `href`, `className`, `style` |
 | `PageShell` | `title`, `subtitle`, `actions`, `controls`, `breadcrumbs`, `backButton`, `className`, `style` |
@@ -1853,6 +2160,38 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 ---
 
 ## Changelog
+
+### v1.1.54
+- **Button** — added `secondary`, `gray`, `plain` variants (sales-frontend parity)
+- **HeaderNav** — exported as a standalone component (`import { HeaderNav } from '@lucifer91299/ui'`)
+- **Fix** — `groupIcon` rendered as ReactNode correctly (was accidentally typed as component)
+
+### v1.1.53
+
+**New components (sales frontend parity):**
+
+- **`PageLoader`** — full-screen centered loading state with dual-ring spinner + label. Exported alongside `LoadingSpinner`.
+- **`LoadingSpinner` — `variant` prop** — new `variant="dual"` (primary outer ring + accent inner ring, reverse spin) and `variant="white"` (for dark backgrounds). Original single-ring is `variant="default"`.
+- **`Combobox`** — free-text input with a portal-positioned filtered suggestion dropdown. Supports `label`, `error`, `errorText`, `helperText`, `disabled`, `maxDropdownHeight`.
+- **`ConfirmModal`** — opinionated confirm dialog with `danger`/`warning`/`info`/`success` variants, multi-line message, optional `tableData` summary, and `isLoading` state on confirm button.
+- **`AlertModal`** — single-button acknowledgment dialog. Same 4 variants; `okText` prop.
+- **`TableSkeleton`** — configurable rows × cols skeleton table.
+- **`GridSkeleton`** — responsive grid of card skeletons.
+- **`ProfileSkeleton`** — avatar + info + 6-cell detail grid layout.
+- **`SettingsSkeleton`** — sidebar tabs + wide content panel layout.
+- **`DashboardFullPage`** — full-bleed gradient surface (`-mx-6 -mt-6`) for add/edit/detail flows. Also exports `dashboardFullPageSurfaceClass` string.
+- **`LanguageSwitcher`** — generic i18n dropdown with `options`, `size` (`sm`/`md`), `onDark`, `dropUp` props.
+
+**Updates:**
+
+- **`Badge`** — added `expired`, `dead`, `navy`, `saffron`, `green` variants (parity with sales frontend status system).
+- **`Card`** — added `hoverable` prop: cursor-pointer + hover lift + primary-color border highlight.
+- **`HeaderNav`** — redesigned to match sales frontend: gradient background, `TricolorBar shimmer` moved to **bottom** of bar, `rounded-full` nav pills, polished profile button with name+role, optional `configHref`/`configLabel` settings gear icon.
+- **All `TricolorBar` usages inside the library** (`Sidebar`, `HeaderNav`, `DashboardLayout`, `SidebarRail`, `LoginCard`) updated to include `shimmer` prop.
+
+### v1.1.44
+
+- **`TricolorBar` — `shimmer` prop**: new `shimmer?: boolean` prop adds a continuous infinite shimmer animation where the background-position slides slowly across the bar (60 s, ease-in-out, infinite). Resolved theme colors are passed as `--tc1`/`--tc2`/`--tc3` CSS custom properties to a `::before` pseudo-element so the animation respects the active theme. Works alongside custom `colors`. `animated` (one-time entrance sweep) and `shimmer` (infinite loop) are independent — pass whichever variant suits the context. CSS keyframe `tricolorShimmer` added to both `globals.css` and `dist/styles/components.css`.
 
 ### v1.1.33
 

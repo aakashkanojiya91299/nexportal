@@ -68,7 +68,7 @@ export function TabsList({ children, className }: TabsListProps) {
     <div
       role="tablist"
       className={cn(
-        'flex items-center gap-0.5',
+        'flex items-center gap-0.5 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden',
         variant === 'line' && 'border-b border-separator-opaque',
         variant === 'pill' && 'bg-surface-secondary rounded-xl p-1 gap-1',
         variant === 'card' && 'bg-white rounded-xl border border-separator-opaque p-1 gap-1 shadow-sm',
