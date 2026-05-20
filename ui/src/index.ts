@@ -58,8 +58,35 @@ export { Skeleton, SkeletonText, SkeletonCard, TableSkeleton, GridSkeleton, Prof
 export type { SkeletonProps, TableSkeletonProps } from './components/ui/Skeleton'
 export { Separator } from './components/ui/Separator'
 export type { SeparatorProps } from './components/ui/Separator'
-export { Dialog } from './components/ui/Dialog'
-export type { DialogProps } from './components/ui/Dialog'
+export {
+  Dialog,
+  DialogRoot,
+  DialogTrigger,
+  DialogPortal,
+  DialogOverlay,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogBody,
+  DialogFooter,
+  DialogClose,
+} from './components/ui/Dialog'
+export type {
+  DialogProps,
+  DialogRootProps,
+  DialogTriggerProps,
+  DialogPortalProps,
+  DialogOverlayProps,
+  DialogContentProps,
+  DialogHeaderProps,
+  DialogTitleProps,
+  DialogDescriptionProps,
+  DialogBodyProps,
+  DialogFooterProps,
+  DialogCloseProps,
+  DialogSize,
+} from './components/ui/Dialog'
 export { Tabs, TabsList, TabsTrigger, TabsContent } from './components/ui/Tabs'
 export type { TabsProps, TabsListProps, TabsTriggerProps, TabsContentProps } from './components/ui/Tabs'
 export { Accordion, AccordionItem } from './components/ui/Accordion'
@@ -156,6 +183,56 @@ export { LoginHeader } from './components/login/LoginHeader'
 export { RoleSelectSplash } from './components/login/RoleSelectSplash'
 export type { RoleSelectSplashProps, RoleOption } from './components/login/RoleSelectSplash'
 export { ParticleBg } from './components/login/ParticleBg'
+
+// ── Missing shadcn-equivalent components ─────────────────────────────────────
+export { Alert, AlertTitle, AlertDescription } from './components/ui/Alert'
+export type { AlertProps, AlertVariant, AlertTitleProps, AlertDescriptionProps } from './components/ui/Alert'
+export {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogAction,
+  AlertDialogCancel,
+} from './components/ui/AlertDialog'
+export type {
+  AlertDialogProps,
+  AlertDialogTriggerProps,
+  AlertDialogContentProps,
+  AlertDialogHeaderProps,
+  AlertDialogTitleProps,
+  AlertDialogDescriptionProps,
+  AlertDialogFooterProps,
+  AlertDialogActionProps,
+  AlertDialogCancelProps,
+} from './components/ui/AlertDialog'
+export {
+  Table, TableHeader, TableBody, TableFooter,
+  TableRow, TableHead, TableCell, TableCaption,
+} from './components/ui/Table'
+export type { TableProps } from './components/ui/Table'
+export { Label } from './components/ui/Label'
+export type { LabelProps } from './components/ui/Label'
+export {
+  Pagination, PaginationContent, PaginationItem,
+  PaginationLink, PaginationPrevious, PaginationNext,
+  PaginationEllipsis, PaginationBar,
+} from './components/ui/Pagination'
+export type { PaginationBarProps, PaginationLinkProps } from './components/ui/Pagination'
+export { ScrollArea, ScrollBar } from './components/ui/ScrollArea'
+export type { ScrollAreaProps, ScrollBarProps } from './components/ui/ScrollArea'
+export { Toggle, ToggleGroup, ToggleGroupItem } from './components/ui/Toggle'
+export type {
+  ToggleProps, ToggleGroupProps, ToggleGroupItemProps,
+  ToggleVariant, ToggleSize,
+} from './components/ui/Toggle'
+export { Collapsible, CollapsibleTrigger, CollapsibleContent } from './components/ui/Collapsible'
+export type {
+  CollapsibleProps, CollapsibleTriggerProps, CollapsibleContentProps,
+} from './components/ui/Collapsible'
 
 // ── Utilities ─────────────────────────────────────────────────────────────
 export { cn } from './lib/cn'

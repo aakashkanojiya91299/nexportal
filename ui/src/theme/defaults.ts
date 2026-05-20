@@ -56,7 +56,7 @@ export const builtInThemes = {
     success:          '#22C55E',
     'success-soft':   'rgba(34, 197, 94, 0.12)',
     'success-hover':  'rgba(34, 197, 94, 0.9)',
-    sidebar:          'both' as const,
+    sidebar:          'full' as const,
     loginStyle:       'simple' as const,
   },
 } satisfies Record<string, PortalTheme>

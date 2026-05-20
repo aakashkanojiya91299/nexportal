@@ -1,6 +1,6 @@
 # `@lucifer91299/ui`
 
-> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 65+ production-ready components. Includes `TricolorBar` with sweep and infinite shimmer animations.
+> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 80+ production-ready components. Full shadcn/ui-compatible composable API. Includes `TricolorBar` with sweep and infinite shimmer animations.
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
@@ -28,9 +28,17 @@ npx @lucifer91299/create-portal-app my-portal
   - [Switch, Checkbox, RadioGroup](#switch-checkbox-radiogroup)
   - [Badge & StatusBadge](#badge--statusbadge)
   - [DataTable](#datatable)
+  - [Alert](#alert)
+  - [AlertDialog](#alertdialog)
   - [Card, Separator, AlertBanner](#card-separator-alertbanner)
-  - [Dialog](#dialog)
+  - [Dialog (composable)](#dialog-composable)
   - [Drawer](#drawer)
+  - [Label](#label)
+  - [Table](#table)
+  - [Pagination](#pagination)
+  - [ScrollArea](#scrollarea)
+  - [Toggle & ToggleGroup](#toggle--togglegroup)
+  - [Collapsible](#collapsible)
   - [Tabs](#tabs)
   - [Accordion](#accordion)
   - [Tooltip & Popover](#tooltip--popover)
@@ -123,7 +131,7 @@ export default createTheme({
   success:     '#138808',
   projectName: 'My Portal',
   logoSrc:     '/brand/logo.svg',
-  sidebar:     'full',      // 'full' | 'rail' | 'both' | 'header'
+  sidebar:     'full',      // 'full' | 'rail' | 'header'
   loginStyle:  'animated',  // 'animated' | 'simple'
 })
 ```
@@ -656,6 +664,92 @@ const columns = [
 
 ---
 
+### Alert
+
+Inline contextual alert with 5 variants, optional title, dismiss button, and custom icon.
+
+```tsx
+import { Alert, AlertTitle, AlertDescription } from '@lucifer91299/ui'
+
+<Alert variant="info" title="Heads up" dismissible>
+  Your session will expire in 30 minutes.
+</Alert>
+
+<Alert variant="success">
+  <AlertTitle>Saved!</AlertTitle>
+  <AlertDescription>Your changes have been applied successfully.</AlertDescription>
+</Alert>
+
+<Alert variant="warning" title="Almost full" dismissible>
+  You have used 90% of your storage quota.
+</Alert>
+
+<Alert variant="destructive" icon={null}>
+  Payment failed — please update your billing details.
+</Alert>
+```
+
+| Variant | Appearance |
+|---|---|
+| `default` | Neutral surface |
+| `info` | Blue |
+| `success` | Green |
+| `warning` | Amber |
+| `destructive` | Red |
+
+| Prop | Type | Description |
+|---|---|---|
+| `variant` | `AlertVariant` | Color variant (default `'default'`) |
+| `title` | `string` | Bold heading inside the alert |
+| `dismissible` | `boolean` | Show × dismiss button — unmounts on click |
+| `icon` | `ReactNode \| null` | Override icon. Pass `null` to hide icon entirely |
+
+---
+
+### AlertDialog
+
+Composable destructive-confirmation dialog — identical API to shadcn/ui `AlertDialog`. Built on `DialogRoot` so theming, animation, and portal behaviour are inherited.
+
+```tsx
+import {
+  AlertDialog, AlertDialogTrigger, AlertDialogContent,
+  AlertDialogHeader, AlertDialogTitle, AlertDialogDescription,
+  AlertDialogFooter, AlertDialogAction, AlertDialogCancel,
+} from '@lucifer91299/ui'
+
+<AlertDialog>
+  <AlertDialogTrigger asChild>
+    <Button variant="danger">Delete account</Button>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+      <AlertDialogDescription>
+        This action cannot be undone. Your account and all data will be permanently deleted.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction onClick={handleDelete}>Delete account</AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+| Component | Role |
+|---|---|
+| `AlertDialog` | Context root (controlled: `open` + `onOpenChange`, or uncontrolled: `defaultOpen`) |
+| `AlertDialogTrigger` | Opens the dialog. `asChild` forwards click to child |
+| `AlertDialogContent` | Modal panel (always `size="sm"`, no built-in close button) |
+| `AlertDialogHeader` | Wrapper for title + description |
+| `AlertDialogTitle` | Accessible heading |
+| `AlertDialogDescription` | Body copy |
+| `AlertDialogFooter` | Button row |
+| `AlertDialogAction` | Red confirm button — does **not** auto-close; wire your handler directly |
+| `AlertDialogCancel` | Cancel button — auto-closes the dialog |
+
+---
+
 ### Card, Separator, AlertBanner
 
 `Card` now accepts a `hoverable` prop for cursor-pointer + hover lift + primary-color border highlight.
@@ -689,7 +783,82 @@ import { Card, Separator, AlertBanner } from '@lucifer91299/ui'
 
 ---
 
-### Dialog
+### Dialog (composable)
+
+Full shadcn/ui-compatible composable API **plus** the original all-in-one `Dialog` (100% backward compatible).
+
+#### Composable (shadcn-style)
+
+```tsx
+import {
+  DialogRoot, DialogTrigger, DialogContent,
+  DialogHeader, DialogTitle, DialogDescription,
+  DialogBody, DialogFooter, DialogClose,
+} from '@lucifer91299/ui'
+
+{/* Uncontrolled — trigger handles open/close automatically */}
+<DialogRoot>
+  <DialogTrigger asChild>
+    <Button variant="outline">Edit profile</Button>
+  </DialogTrigger>
+  <DialogContent size="lg">
+    <DialogHeader>
+      <DialogTitle>Edit profile</DialogTitle>
+      <DialogDescription>Update your name and role below.</DialogDescription>
+    </DialogHeader>
+    <DialogBody>
+      <Input label="Full name" />
+    </DialogBody>
+    <DialogFooter>
+      <DialogClose asChild>
+        <Button variant="ghost">Cancel</Button>
+      </DialogClose>
+      <Button variant="primary" onClick={save}>Save</Button>
+    </DialogFooter>
+  </DialogContent>
+</DialogRoot>
+
+{/* Full-screen — covers entire viewport, slide-up animation */}
+<DialogContent fullScreen>
+  <DialogHeader>
+    <DialogTitle>Full-screen panel</DialogTitle>
+  </DialogHeader>
+  <DialogBody noPadding>
+    ...edge-to-edge content...
+  </DialogBody>
+</DialogContent>
+
+{/* Controlled */}
+<DialogRoot open={open} onOpenChange={setOpen}>
+  ...
+</DialogRoot>
+```
+
+| Component | Role |
+|---|---|
+| `DialogRoot` | Context root. `open` / `defaultOpen` / `onOpenChange` |
+| `DialogTrigger` | Opens dialog. `asChild` forwards click to child element |
+| `DialogPortal` | Renders children into `document.body` (or custom `container`) |
+| `DialogOverlay` | Semi-transparent backdrop |
+| `DialogContent` | Modal panel — `size`, `fullScreen`, `hideCloseButton` |
+| `DialogHeader` | Groups title + description with bottom border |
+| `DialogTitle` | `<h2>` with design-system typography |
+| `DialogDescription` | Subtitle below title |
+| `DialogBody` | Scrollable content area. `noPadding` for edge-to-edge |
+| `DialogFooter` | Sticky footer. `align="left \| right \| between"` |
+| `DialogClose` | Closes dialog. `asChild` to wrap any element |
+
+**`DialogContent` props:**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `size` | `'sm' \| 'md' \| 'lg' \| 'xl' \| '2xl' \| 'full'` | `'md'` | Max-width preset |
+| `fullScreen` | `boolean` | `false` | Covers entire viewport, rounded-none |
+| `hideCloseButton` | `boolean` | `false` | Hide built-in × button |
+| `onEscapeKeyDown` | `(e: KeyboardEvent) => void` | — | Call `e.preventDefault()` to prevent close |
+| `onPointerDownOutside` | `() => void` | — | Called when backdrop is clicked |
+
+#### All-in-one (original API — still works)
 
 ```tsx
 import { Dialog } from '@lucifer91299/ui'
@@ -699,7 +868,8 @@ import { Dialog } from '@lucifer91299/ui'
   onClose={() => setOpen(false)}
   title="Edit profile"
   description="Update your name and role."
-  size="md"   // 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  size="md"        // 'sm' | 'md' | 'lg' | 'xl' | '2xl' | 'full'
+  fullScreen={false}
   footer={
     <>
       <Button variant="ghost" onClick={() => setOpen(false)}>Cancel</Button>
@@ -710,6 +880,238 @@ import { Dialog } from '@lucifer91299/ui'
   <Input label="Full name" />
 </Dialog>
 ```
+
+---
+
+### Label
+
+Accessible form label with optional required asterisk and disabled state.
+
+```tsx
+import { Label } from '@lucifer91299/ui'
+
+<Label htmlFor="email">Email address</Label>
+<Label htmlFor="name" required>Full name</Label>
+<Label disabled>Disabled field</Label>
+```
+
+| Prop | Type | Description |
+|---|---|---|
+| `required` | `boolean` | Appends a red `*` asterisk |
+| `disabled` | `boolean` | Reduces opacity to 60% |
+
+---
+
+### Table
+
+Raw semantic table primitives — styled for the design system. Use these when you need full control over layout (e.g. comparison tables, invoices). For data grids with sorting/filtering/pagination, use `DataTable`.
+
+```tsx
+import {
+  Table, TableHeader, TableBody, TableFooter,
+  TableRow, TableHead, TableCell, TableCaption,
+} from '@lucifer91299/ui'
+
+<Table>
+  <TableCaption>Recent invoices</TableCaption>
+  <TableHeader>
+    <TableRow>
+      <TableHead>Invoice</TableHead>
+      <TableHead>Status</TableHead>
+      <TableHead className="text-right">Amount</TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>
+    {invoices.map((inv) => (
+      <TableRow key={inv.id}>
+        <TableCell className="font-medium">{inv.id}</TableCell>
+        <TableCell><StatusBadge status={inv.status} /></TableCell>
+        <TableCell className="text-right tabular-nums">{inv.amount}</TableCell>
+      </TableRow>
+    ))}
+  </TableBody>
+  <TableFooter>
+    <TableRow>
+      <TableCell colSpan={2}>Total</TableCell>
+      <TableCell className="text-right font-semibold">₹12,500</TableCell>
+    </TableRow>
+  </TableFooter>
+</Table>
+```
+
+`Table` wraps itself in `overflow-auto` by default. Pass `scrollable={false}` to disable.
+
+---
+
+### Pagination
+
+Standalone pagination for any list or infinite scroll. Also works as low-level composable primitives.
+
+#### High-level controlled (`PaginationBar`)
+
+```tsx
+import { PaginationBar } from '@lucifer91299/ui'
+
+<PaginationBar
+  page={currentPage}
+  total={totalItems}
+  pageSize={10}
+  onPageChange={setCurrentPage}
+  siblingCount={1}
+  showInfo             // shows "Showing 1–10 of 87"
+/>
+```
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `page` | `number` | — | Current page (1-based) |
+| `total` | `number` | — | Total number of items |
+| `pageSize` | `number` | — | Items per page |
+| `onPageChange` | `(page: number) => void` | — | Called on page change |
+| `siblingCount` | `number` | `1` | Page numbers shown each side of current |
+| `showInfo` | `boolean` | `true` | Show "Showing X–Y of Z" |
+
+#### Low-level composable
+
+```tsx
+import {
+  Pagination, PaginationContent, PaginationItem,
+  PaginationPrevious, PaginationLink, PaginationEllipsis, PaginationNext,
+} from '@lucifer91299/ui'
+
+<Pagination>
+  <PaginationContent>
+    <PaginationItem><PaginationPrevious href="#" /></PaginationItem>
+    <PaginationItem><PaginationLink href="#" isActive>1</PaginationLink></PaginationItem>
+    <PaginationItem><PaginationLink href="#">2</PaginationLink></PaginationItem>
+    <PaginationItem><PaginationEllipsis /></PaginationItem>
+    <PaginationItem><PaginationNext href="#" /></PaginationItem>
+  </PaginationContent>
+</Pagination>
+```
+
+---
+
+### ScrollArea
+
+Custom scroll container with a design-system-styled thin scrollbar track/thumb.
+
+```tsx
+import { ScrollArea } from '@lucifer91299/ui'
+
+{/* Vertical scroll (default) */}
+<ScrollArea className="h-72 rounded-xl border border-separator-opaque p-4">
+  {longContent}
+</ScrollArea>
+
+{/* Horizontal scroll */}
+<ScrollArea orientation="horizontal" className="w-full">
+  <div className="flex gap-4 w-max">{items}</div>
+</ScrollArea>
+
+{/* Both axes */}
+<ScrollArea orientation="both" className="h-96 w-full">
+  {largeContent}
+</ScrollArea>
+
+{/* Hidden scrollbar (scroll still works) */}
+<ScrollArea hideScrollbar className="h-48">
+  {content}
+</ScrollArea>
+```
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `orientation` | `'vertical' \| 'horizontal' \| 'both'` | `'vertical'` | Scroll axis |
+| `hideScrollbar` | `boolean` | `false` | Hide scrollbar track while preserving scroll |
+
+---
+
+### Toggle & ToggleGroup
+
+Two-state toggle button and grouped toggles (single-select or multi-select). Identical API to shadcn/ui.
+
+```tsx
+import { Toggle, ToggleGroup, ToggleGroupItem } from '@lucifer91299/ui'
+import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
+
+{/* Single toggle — uncontrolled */}
+<Toggle aria-label="Bold" defaultPressed>
+  <Bold className="h-4 w-4" />
+</Toggle>
+
+{/* Single toggle — controlled */}
+<Toggle pressed={bold} onPressedChange={setBold} variant="outline">
+  <Bold className="h-4 w-4" />
+</Toggle>
+
+{/* ToggleGroup — single select */}
+<ToggleGroup type="single" value={align} onValueChange={setAlign}>
+  <ToggleGroupItem value="left"   aria-label="Align left">  <AlignLeft className="h-4 w-4" /></ToggleGroupItem>
+  <ToggleGroupItem value="center" aria-label="Align center"><AlignCenter className="h-4 w-4" /></ToggleGroupItem>
+  <ToggleGroupItem value="right"  aria-label="Align right"> <AlignRight className="h-4 w-4" /></ToggleGroupItem>
+</ToggleGroup>
+
+{/* ToggleGroup — multi select */}
+<ToggleGroup type="multiple" value={formats} onValueChange={setFormats} variant="outline">
+  <ToggleGroupItem value="bold"><Bold className="h-4 w-4" /></ToggleGroupItem>
+  <ToggleGroupItem value="italic"><Italic className="h-4 w-4" /></ToggleGroupItem>
+  <ToggleGroupItem value="underline"><Underline className="h-4 w-4" /></ToggleGroupItem>
+</ToggleGroup>
+```
+
+**`Toggle` props:**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `pressed` | `boolean` | — | Controlled pressed state |
+| `defaultPressed` | `boolean` | `false` | Initial uncontrolled state |
+| `onPressedChange` | `(v: boolean) => void` | — | |
+| `variant` | `'default' \| 'outline'` | `'default'` | Visual style |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | |
+
+**`ToggleGroup` props:** Same `variant` + `size` inherited by items. `type="single"` → `string` value. `type="multiple"` → `string[]` value.
+
+---
+
+### Collapsible
+
+Expand / collapse content area with smooth height animation. Identical API to shadcn/ui.
+
+```tsx
+import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@lucifer91299/ui'
+import { ChevronsUpDown } from 'lucide-react'
+
+{/* Uncontrolled */}
+<Collapsible defaultOpen>
+  <CollapsibleTrigger asChild>
+    <Button variant="ghost" className="w-full justify-between">
+      Repositories <ChevronsUpDown className="h-4 w-4" />
+    </Button>
+  </CollapsibleTrigger>
+  <CollapsibleContent>
+    <div className="space-y-1 pt-2">
+      <p>@radix-ui/react-collapsible</p>
+      <p>@radix-ui/react-dialog</p>
+    </div>
+  </CollapsibleContent>
+</Collapsible>
+
+{/* Controlled */}
+<Collapsible open={isOpen} onOpenChange={setIsOpen}>
+  <CollapsibleTrigger>Toggle</CollapsibleTrigger>
+  <CollapsibleContent>Hidden content</CollapsibleContent>
+</Collapsible>
+```
+
+| Prop | Type | Description |
+|---|---|---|
+| `open` | `boolean` | Controlled open state |
+| `defaultOpen` | `boolean` | Initial uncontrolled state |
+| `onOpenChange` | `(open: boolean) => void` | |
+| `disabled` | `boolean` | Prevents toggling |
+
+`CollapsibleTrigger` accepts `asChild` to forward the click to any child element.
 
 ---
 
@@ -1515,7 +1917,7 @@ import { User, Shield } from 'lucide-react'
 
 ### DashboardLayout
 
-Responsive layout supporting four sidebar variants. Handles navigation, user info, logout, and mobile drawer automatically.
+Responsive layout supporting three sidebar variants. Handles navigation, user info, notifications, settings shortcut, logout, and mobile drawer automatically.
 
 ```tsx
 'use client'
@@ -1545,12 +1947,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   return (
     <DashboardLayout
       navGroups={navGroups}
-      sidebar="full"   // 'full' | 'rail' | 'both' | 'header'
+      sidebar="full"   // 'full' | 'rail' | 'header'
       projectName="My Portal"
       logoSrc="/brand/logo.svg"
       user={{ name: String(user?.name ?? 'User'), role: String(user?.role ?? '') }}
       pathname={pathname}
       onLogout={logout}
+      notificationsEndpoint="/api/notifications"
+      settingsHref="/dashboard/settings"
     >
       {children}
     </DashboardLayout>
@@ -1562,10 +1966,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
 | Value | Description |
 |-------|-------------|
-| `full` | Wide sidebar with group headings, nav labels, and collapsible sections |
+| `full` | Wide sidebar with group headings, nav labels, and collapsible sections. Includes mobile hamburger + drawer. |
 | `rail` | Icon-only narrow sidebar |
-| `both` | Full on desktop, rail on mobile/tablet |
 | `header` | Horizontal top nav bar — see [HeaderNav](#headernav) |
+
+**Header action props (v1.1.71+):**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `notificationsEndpoint` | `string` | — | API URL polled for notifications. When set, a `NotificationBell` appears in the header. |
+| `showNotifications` | `boolean` | `true` | Hide the bell even when `notificationsEndpoint` is set. |
+| `settingsHref` | `string` | — | If provided, a circular settings gear icon appears in the header, with an active state when the current path starts with this href. |
+| `showSettings` | `boolean` | `true` | Hide the settings icon even when `settingsHref` is set. |
+| `onNavigate` | `(url: string) => void` | — | Called when a notification link or "View all" is clicked — use with Next.js `router.push`. |
 
 > `icon` and `groupIcon` accept **pre-rendered JSX** (`ReactNode`), not component types. Always pass `<Icon className="w-4 h-4" />`, not `Icon`.
 
@@ -2042,7 +2455,7 @@ export default createTheme({
   'success-hover':  'rgba(19, 136, 8, 0.9)',
 
   // Layout
-  sidebar:          'full',      // 'full' | 'rail' | 'both' | 'header'
+  sidebar:          'full',      // 'full' | 'rail' | 'header'
   loginStyle:       'animated',  // 'animated' | 'simple'
 
   // Identity
@@ -2160,6 +2573,42 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 ---
 
 ## Changelog
+
+### v1.1.71
+
+**`DashboardLayout` — C&J-style header actions:**
+
+- **`NotificationBell` integrated into header**: pass `notificationsEndpoint="/api/notifications"` and the layout fetches, displays, and manages notifications automatically — no manual wiring needed. The bell appears between `headerActions` and the settings icon. Controlled by the new `showNotifications` prop (default `true`).
+- **Settings gear icon**: pass `settingsHref="/dashboard/settings"` to render a circular settings button in the header. The icon transitions to the primary colour with a matching border when `pathname` starts with `settingsHref` (active state). Controlled by `showSettings` prop (default `true`).
+- **Gradient separator**: a vertical `linear-gradient` divider renders between the settings/bell group and the `UserChip` when either is visible.
+- **`UserChip` gradient avatar**: the user avatar background is now a `linear-gradient(135deg, var(--primary) 0%, color-mix(…accent…) 100%)` — matches the brand theme automatically.
+- **New `onNavigate` prop**: `(url: string) => void` — forwarded to `NotificationBell` so clicking notification links calls `router.push` instead of doing a full page navigation.
+
+**Breaking: `SidebarVariant` — `'both'` removed:**
+
+- `SidebarVariant` is now `'full' | 'rail' | 'header'`. The `'both'` variant has been removed — `'full'` already handles mobile natively via its built-in hamburger topbar and drawer. The default sidebar in `createTheme` has changed from `'both'` to `'full'`.
+- **Migration**: replace any `sidebar="both"` or `sidebar: 'both'` with `sidebar="full"`.
+
+### v1.1.70
+
+**New components (shadcn/ui parity):**
+
+- **`Alert`** — inline contextual alert with `default | info | success | warning | destructive` variants, optional `title`, `dismissible` (self-unmounting), and `icon` override. Sub-elements: `AlertTitle`, `AlertDescription`.
+- **`AlertDialog`** — full composable destructive-confirmation dialog built on `DialogRoot`. All 9 shadcn-equivalent parts: `AlertDialog`, `AlertDialogTrigger`, `AlertDialogContent`, `AlertDialogHeader`, `AlertDialogTitle`, `AlertDialogDescription`, `AlertDialogFooter`, `AlertDialogAction`, `AlertDialogCancel`.
+- **`Table`** — raw semantic table primitives: `Table`, `TableHeader`, `TableBody`, `TableFooter`, `TableRow`, `TableHead`, `TableCell`, `TableCaption`. Styled with design-system tokens. `Table` wraps itself in an `overflow-auto` scrollable container by default (`scrollable={false}` to opt out).
+- **`Label`** — accessible `<label>` with `required` asterisk and `disabled` opacity. Integrates via `htmlFor` with any input.
+- **`Pagination`** — standalone pagination component. High-level: `PaginationBar` (controlled — `page`, `total`, `pageSize`, `onPageChange`, `showInfo`). Low-level composables: `Pagination`, `PaginationContent`, `PaginationItem`, `PaginationLink`, `PaginationPrevious`, `PaginationNext`, `PaginationEllipsis`.
+- **`ScrollArea`** — custom scroll container with design-system-styled thin scrollbar. `orientation` (`vertical | horizontal | both`), `hideScrollbar` prop. Exports `ScrollBar` decorative primitive.
+- **`Toggle`** + **`ToggleGroup`** — two-state toggle button and grouped toggles. `Toggle`: `pressed`, `defaultPressed`, `onPressedChange`, `variant` (`default | outline`), `size` (`sm | md | lg`). `ToggleGroup`: `type="single"` (string value) or `type="multiple"` (string[] value). `ToggleGroupItem` inherits variant/size from group. Active items use `--primary` CSS variable.
+- **`Collapsible`** — expand/collapse content with smooth CSS height animation (260ms cubic-bezier). Composable: `Collapsible` (root with `open | defaultOpen | onOpenChange | disabled`), `CollapsibleTrigger` (`asChild` supported), `CollapsibleContent` (animated height).
+
+**Dialog upgrade:**
+
+- **`Dialog` — full composable API** added alongside the existing all-in-one `Dialog`. New exports: `DialogRoot`, `DialogTrigger`, `DialogPortal`, `DialogOverlay`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogBody`, `DialogFooter`, `DialogClose`. `DialogContent` gains `size="2xl"`, `fullScreen` prop (slide-up animation), `onEscapeKeyDown`, `onPointerDownOutside`. Original `Dialog` (open/onClose/title/description/size/footer) is **100% backward compatible** — it now internally uses the composable primitives.
+
+**PageShell layout fix:**
+
+- `PageShell` header row changed from `flex-col → sm:flex-row` to `flex-row flex-wrap` always — `actions` slot now correctly appears on the right side of the title even in narrower sidebar-constrained content areas.
 
 ### v1.1.54
 - **Button** — added `secondary`, `gray`, `plain` variants (sales-frontend parity)

@@ -27,7 +27,7 @@ export function PageShell({
   return (
     <div className={cn('mb-6 lg:mb-8', className)} style={style}>
       {breadcrumbs}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-4">
+      <div className="flex flex-row flex-wrap items-start justify-between gap-x-4 gap-y-2 mb-4">
         <div className="flex items-start gap-3 min-w-0">
           {backButton}
           <div className="min-w-0">

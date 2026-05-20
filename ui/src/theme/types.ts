@@ -1,4 +1,4 @@
-export type SidebarVariant = 'full' | 'rail' | 'both' | 'header'
+export type SidebarVariant = 'full' | 'rail' | 'header'
 export type LoginStyle = 'animated' | 'simple'
 export type BorderRadiusPreset = 'apple' | 'rounded' | 'sharp'
 

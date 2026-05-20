@@ -144,12 +144,6 @@ export function DashboardLayout({
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
       {sidebar === 'full' && <Sidebar {...commonProps} collapsed={collapsed} onToggleCollapse={toggleCollapsed} />}
       {sidebar === 'rail' && <SidebarRail {...commonProps} />}
-      {sidebar === 'both' && (
-        <>
-          <div className="hidden lg:flex"><Sidebar {...commonProps} collapsed={collapsed} onToggleCollapse={toggleCollapsed} /></div>
-          <div className="flex lg:hidden"><SidebarRail {...commonProps} /></div>
-        </>
-      )}
 
       {/* ── Right side: top-bar + content ────────────────────────────────── */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
@@ -180,7 +174,7 @@ export function DashboardLayout({
                     onNavigate={onNavigate}
                   />
                 )}
-                {showSettings && (
+                {showSettings && settingsHref && (
                   <a
                     href={settingsHref}
                     title="Settings"
