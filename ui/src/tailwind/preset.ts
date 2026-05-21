@@ -1,20 +1,15 @@
-import type { Config } from 'tailwindcss'
 import { join } from 'path'
 
 /**
- * @lucifer91299/ui Tailwind preset
+ * @lucifer91299/ui Tailwind v3 JS preset (legacy)
  *
- * Usage in tailwind.config.ts:
- *   presets: [require('@lucifer91299/ui/tailwind/preset')]
+ * For Tailwind v4, import the CSS preset instead:
+ *   @import "@lucifer91299/ui/tailwind/preset.css";
  *
- * Override any token by extending in your own theme — the preset uses `extend`
- * so your project colors are merged, not replaced.
- *
- * Color tokens use CSS variables so ThemeProvider can swap them at runtime:
- *   --primary, --accent, --success (and their -soft, -rgb variants)
+ * This JS preset is retained for backward compatibility only.
  */
 
-const preset: Config = {
+const preset = {
   // Scan SDK's own dist bundle so all utility classes used in components are generated
   content: [
     join(__dirname, '..', 'index.js'),

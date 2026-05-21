@@ -9,7 +9,7 @@ import {
 } from 'lucide-react'
 import { cn } from '../../lib/cn'
 import { Checkbox }   from './Checkbox'
-import { Skeleton }   from './Skeleton'
+import { TableSkeleton } from './Skeleton'
 import { EmptyState } from './EmptyState'
 import { Button }     from './Button'
 import { Tooltip }    from './Tooltip'
@@ -49,7 +49,11 @@ export interface DataTableProps<T = any> {
   defaultPageSize?: number
   pageSizeOptions?: number[]
   selectable?: boolean
-  onSelectionChange?: (items: T[]) => void
+  onSelectionChange?: (items: T[], keys: (string | number)[]) => void
+  /** Controlled: pass a set of row keys to override internal selection state */
+  selectedKeys?: (string | number)[]
+  /** Extra ReactNode rendered inside the blue selection bar (e.g. bulk-action buttons) */
+  selectionActions?: React.ReactNode
   striped?: boolean
   compact?: boolean
   stickyHeader?: boolean
@@ -104,6 +108,8 @@ export function DataTable<T extends Record<string, any>>({
   pageSizeOptions = DEFAULT_PAGE_SIZES,
   selectable = false,
   onSelectionChange,
+  selectedKeys: controlledSelectedKeys,
+  selectionActions,
   striped = false,
   compact = false,
   stickyHeader = false,
@@ -120,7 +126,9 @@ export function DataTable<T extends Record<string, any>>({
   const [sortDir,       setSortDir]       = useState<SortDir>(null)
   const [page,          setPage]          = useState(1)
   const [pageSize,      setPageSize]      = useState(defaultPageSize)
-  const [selected,      setSelected]      = useState<Set<string | number>>(new Set())
+  const [internalSelected, setInternalSelected] = useState<Set<string | number>>(new Set())
+  const isControlled = controlledSelectedKeys !== undefined
+  const selected = isControlled ? new Set(controlledSelectedKeys) : internalSelected
   const [openFilter,    setOpenFilter]    = useState<string | null>(null)
 
   // ── Filtered + sorted data ──────────────────────────────────────────────────
@@ -179,19 +187,22 @@ export function DataTable<T extends Record<string, any>>({
   }
 
   // ── Selection ───────────────────────────────────────────────────────────────
+  function applyNext(next: Set<string | number>) {
+    if (!isControlled) setInternalSelected(next)
+    const keys = [...next]
+    onSelectionChange?.(data.filter((r) => next.has(keyExtractor(r))), keys)
+  }
   function toggleRow(id: string | number) {
     const next = new Set(selected)
     if (next.has(id)) next.delete(id); else next.add(id)
-    setSelected(next)
-    onSelectionChange?.(data.filter((r) => next.has(keyExtractor(r))))
+    applyNext(next)
   }
   function toggleAll() {
     const allIds = visibleRows.map(keyExtractor)
     const allSel = allIds.every((id) => selected.has(id))
     const next = new Set(selected)
     allIds.forEach((id) => (allSel ? next.delete(id) : next.add(id)))
-    setSelected(next)
-    onSelectionChange?.(data.filter((r) => next.has(keyExtractor(r))))
+    applyNext(next)
   }
 
   const allVisibleSelected = visibleRows.length > 0 && visibleRows.every((r) => selected.has(keyExtractor(r)))
@@ -211,6 +222,27 @@ export function DataTable<T extends Record<string, any>>({
   const hasColumnControls = columns.some((c) => c.searchable || c.filterOptions?.length)
   const cellPadY = compact ? 'py-2' : 'py-3'
   const totalColspan = columns.length + (selectable ? 1 : 0) + (rowActions ? 1 : 0)
+
+  if (isLoading) {
+    const colCount = Math.max(totalColspan, 1)
+    return (
+      <div
+        className={cn('flex flex-col bg-white rounded-xl border border-gray-200 overflow-hidden', className)}
+        style={{ boxShadow: '0 1px 2px rgba(0,0,0,0.04), 0 2px 8px rgba(0,0,0,0.04)', ...style }}
+      >
+        {(title || description || searchable || toolbar) && (
+          <div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-200">
+            <div className="min-w-0 flex-1">
+              {title       && <p className="text-sm font-semibold text-gray-900 leading-tight">{title}</p>}
+              {description && <p className="text-xs text-gray-400 mt-0.5">{description}</p>}
+            </div>
+            {toolbar && <div className="flex items-center gap-2 shrink-0">{toolbar}</div>}
+          </div>
+        )}
+        <TableSkeleton rows={loadingRows} cols={colCount} className="border-0 shadow-none rounded-none" />
+      </div>
+    )
+  }
 
   return (
     <div
@@ -257,17 +289,19 @@ export function DataTable<T extends Record<string, any>>({
       {/* ── Selection announcement bar ──────────────────────────────────────── */}
       {selectable && someSelected && (
         <div
-          className="flex items-center justify-between px-4 py-2 text-xs font-medium text-white"
+          className="flex items-center justify-between gap-3 px-4 py-2 text-xs font-medium text-white"
           style={{ background: 'var(--primary,#000080)' }}
         >
           <span>{selected.size} row{selected.size !== 1 ? 's' : ''} selected</span>
-          {/* Button ghost doesn't work here on dark bg — keep plain inline */}
-          <button
-            onClick={() => { setSelected(new Set()); onSelectionChange?.([]) }}
-            className="text-white/70 hover:text-white underline underline-offset-2 transition-colors text-xs"
-          >
-            Clear
-          </button>
+          <div className="flex items-center gap-3">
+            {selectionActions}
+            <button
+              onClick={() => applyNext(new Set())}
+              className="text-white/70 hover:text-white underline underline-offset-2 transition-colors text-xs"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       )}
 
@@ -408,29 +442,8 @@ export function DataTable<T extends Record<string, any>>({
 
           <tbody className="divide-y divide-gray-200">
 
-            {/* Loading skeleton — uses Skeleton component */}
-            {isLoading && Array.from({ length: loadingRows }).map((_, i) => (
-              <tr key={i}>
-                {selectable && (
-                  <td className="px-4 py-3">
-                    <Skeleton className="h-4 w-4" rounded="sm" />
-                  </td>
-                )}
-                {columns.map((col, ci) => (
-                  <td key={col.key} className={cn('px-4', cellPadY)}>
-                    <Skeleton
-                      rounded="full"
-                      className="h-3.5"
-                      style={{ width: `${40 + (i * 17 + ci * 13) % 45}%` }}
-                    />
-                  </td>
-                ))}
-                {rowActions && <td />}
-              </tr>
-            ))}
-
             {/* Empty state — uses EmptyState component */}
-            {!isLoading && visibleRows.length === 0 && (
+            {visibleRows.length === 0 && (
               <tr>
                   <td colSpan={totalColspan}>
                   <EmptyState
@@ -450,7 +463,7 @@ export function DataTable<T extends Record<string, any>>({
             )}
 
             {/* Data rows — matching C&J px-4 py-3 row height */}
-            {!isLoading && visibleRows.map((item, index) => {
+            {visibleRows.map((item, index) => {
               const id = keyExtractor(item)
               const isSelected = selected.has(id)
               const isClickable = !!(onRowClick || selectable)

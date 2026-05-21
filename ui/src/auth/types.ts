@@ -45,6 +45,11 @@ export interface UseJwtAuthOptions {
   loginPath?: string
   /** Polling interval ms. Default: 300_000 (5 min) */
   validateInterval?: number
+  /**
+   * sessionStorage key used to persist user across remounts (back nav, Strict Mode).
+   * Set to null to disable caching. Default: 'jwt_auth_user'
+   */
+  cacheKey?: string | null
 }
 
 export interface UseJwtAuthResult {

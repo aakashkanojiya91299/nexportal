@@ -1,7 +1,8 @@
 'use client'
 
-import React, { type ReactNode } from 'react'
+import React, { type ReactNode, useState, useCallback } from 'react'
 import { cn } from '../../lib/cn'
+import { Checkbox } from './Checkbox'
 
 /**
  * Raw semantic table primitives — identical API to shadcn/ui Table.
@@ -169,3 +170,116 @@ export const TableCaption = React.forwardRef<
   />
 ))
 TableCaption.displayName = 'TableCaption'
+
+// ─── TableCheckboxHead ────────────────────────────────────────────────────────
+
+export interface TableCheckboxHeadProps extends React.ThHTMLAttributes<HTMLTableCellElement> {
+  checked: boolean
+  indeterminate?: boolean
+  onChange: () => void
+}
+
+export const TableCheckboxHead = React.forwardRef<HTMLTableCellElement, TableCheckboxHeadProps>(
+  ({ checked, indeterminate = false, onChange, className, ...props }, ref) => (
+    <TableHead ref={ref} className={cn('w-10 pr-2', className)} {...props}>
+      <Checkbox size="sm" checked={checked} indeterminate={indeterminate} onChange={onChange} />
+    </TableHead>
+  ),
+)
+TableCheckboxHead.displayName = 'TableCheckboxHead'
+
+// ─── TableCheckboxCell ────────────────────────────────────────────────────────
+
+export interface TableCheckboxCellProps extends React.TdHTMLAttributes<HTMLTableCellElement> {
+  checked: boolean
+  onChange: () => void
+}
+
+export const TableCheckboxCell = React.forwardRef<HTMLTableCellElement, TableCheckboxCellProps>(
+  ({ checked, onChange, className, ...props }, ref) => (
+    <TableCell
+      ref={ref}
+      className={cn('w-10 pr-2', className)}
+      onClick={(e) => { e.stopPropagation(); onChange() }}
+      {...props}
+    >
+      <Checkbox size="sm" checked={checked} onChange={onChange} />
+    </TableCell>
+  ),
+)
+TableCheckboxCell.displayName = 'TableCheckboxCell'
+
+// ─── useTableSelection ────────────────────────────────────────────────────────
+
+export interface UseTableSelectionResult<T> {
+  selectedKeys: Set<string | number>
+  selectedItems: T[]
+  selectedCount: number
+  isSelected: (item: T) => boolean
+  isAllSelected: boolean
+  isIndeterminate: boolean
+  toggleRow: (item: T) => void
+  toggleAll: () => void
+  clearSelection: () => void
+}
+
+/**
+ * Headless selection hook for use with the raw Table primitives.
+ *
+ * @example
+ * const { isSelected, isAllSelected, isIndeterminate, toggleRow, toggleAll, selectedItems } =
+ *   useTableSelection(rows, (r) => r.id)
+ */
+export function useTableSelection<T>(
+  items: T[],
+  keyExtractor: (item: T) => string | number,
+): UseTableSelectionResult<T> {
+  const [selectedKeys, setSelectedKeys] = useState<Set<string | number>>(new Set())
+
+  const isSelected = useCallback(
+    (item: T) => selectedKeys.has(keyExtractor(item)),
+    [selectedKeys, keyExtractor],
+  )
+
+  const toggleRow = useCallback(
+    (item: T) => {
+      const key = keyExtractor(item)
+      setSelectedKeys((prev) => {
+        const next = new Set(prev)
+        if (next.has(key)) next.delete(key); else next.add(key)
+        return next
+      })
+    },
+    [keyExtractor],
+  )
+
+  const toggleAll = useCallback(() => {
+    setSelectedKeys((prev) => {
+      const allKeys = items.map(keyExtractor)
+      const allSel = allKeys.every((k) => prev.has(k))
+      const next = new Set(prev)
+      if (allSel) { allKeys.forEach((k) => next.delete(k)) }
+      else        { allKeys.forEach((k) => next.add(k))    }
+      return next
+    })
+  }, [items, keyExtractor])
+
+  const clearSelection = useCallback(() => setSelectedKeys(new Set()), [])
+
+  const allKeys = items.map(keyExtractor)
+  const isAllSelected   = allKeys.length > 0 && allKeys.every((k) => selectedKeys.has(k))
+  const isIndeterminate = !isAllSelected && allKeys.some((k) => selectedKeys.has(k))
+  const selectedItems   = items.filter((item) => selectedKeys.has(keyExtractor(item)))
+
+  return {
+    selectedKeys,
+    selectedItems,
+    selectedCount: selectedKeys.size,
+    isSelected,
+    isAllSelected,
+    isIndeterminate,
+    toggleRow,
+    toggleAll,
+    clearSelection,
+  }
+}

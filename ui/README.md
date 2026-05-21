@@ -1,6 +1,6 @@
 # `@lucifer91299/ui`
 
-> Next.js 15 portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 80+ production-ready components. Full shadcn/ui-compatible composable API. Includes `TricolorBar` with sweep and infinite shimmer animations.
+> Next.js portal design system — animated login, dashboard layout, JWT auth hooks, full theming, and 90+ production-ready components. Full shadcn/ui-compatible composable API. **40 Apache ECharts chart types** (open-source). Includes `TricolorBar` with sweep and infinite shimmer animations.
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/ui)](https://www.npmjs.com/package/@lucifer91299/ui)
@@ -56,7 +56,8 @@ npx @lucifer91299/create-portal-app my-portal
   - [Slider](#slider)
   - [TagInput](#taginput)
   - [Timeline](#timeline)
-  - [Charts](#charts)
+  - [Charts (Recharts)](#charts)
+  - [Apache ECharts — 40 chart types](#apache-echarts--40-chart-types)
   - [ImageViewer](#imageviewer)
   - [DropdownMenu](#dropdownmenu)
   - [PhoneInput](#phoneinput)
@@ -591,7 +592,7 @@ import { Badge, StatusBadge } from '@lucifer91299/ui'
 
 ### DataTable
 
-Fully-featured table with sorting, global search, per-column filters, row selection, pagination, and a toolbar slot.
+Fully-featured data grid with sorting, global search, per-column filters, pagination, row actions, and multi-row checkbox selection. Selection supports both uncontrolled (internal state) and **controlled** (external state) modes, plus a `selectionActions` slot for bulk-action buttons.
 
 ```tsx
 import { DataTable, StatusBadge, ActionButtons } from '@lucifer91299/ui'
@@ -614,38 +615,70 @@ const columns = [
     ],
     render: (row) => <StatusBadge status={row.status} />,
   },
-  {
-    key: 'actions',
-    header: '',
-    align: 'right',
-    render: (row) => (
-      <ActionButtons
-        showEdit
-        showDelete
-        onEdit={() => openEdit(row)}
-        onDelete={() => deleteRow(row.id)}
-      />
-    ),
-  },
 ]
 
+// ── Uncontrolled selection (internal state) ───────────────────────────────────
 <DataTable
   title="Members"
-  description="All registered users"
   columns={columns}
   data={rows}
   keyExtractor={(r) => r.id}
   searchable
-  searchPlaceholder="Search by name…"
   pagination
   defaultPageSize={10}
-  pageSizeOptions={[5, 10, 25, 50]}
   selectable
-  onSelectionChange={(selected) => console.log(selected)}
+  onSelectionChange={(items, keys) => console.log(items, keys)}
   striped
   toolbar={<Button size="sm">Export CSV</Button>}
 />
+
+// ── Controlled selection + bulk-action bar ────────────────────────────────────
+const [selectedIds, setSelectedIds] = useState<string[]>([])
+
+<DataTable
+  columns={columns}
+  data={rows}
+  keyExtractor={(r) => r.id}
+  selectable
+  selectedKeys={selectedIds}
+  onSelectionChange={(_, keys) => setSelectedIds(keys as string[])}
+  selectionActions={
+    <button
+      onClick={() => handleBulkDelete(selectedIds)}
+      className="text-white/80 hover:text-white underline text-xs"
+    >
+      Delete {selectedIds.length}
+    </button>
+  }
+/>
 ```
+
+**`DataTable` props:**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `columns` | `TableColumn[]` | — | Column definitions |
+| `data` | `T[]` | — | Row data |
+| `keyExtractor` | `(item) => string \| number` | — | Unique row key |
+| `isLoading` | `boolean` | `false` | Show skeleton |
+| `loadingRows` | `number` | `6` | Skeleton row count |
+| `searchable` | `boolean` | `false` | Global search bar |
+| `searchPlaceholder` | `string` | `'Search…'` | |
+| `pagination` | `boolean` | `false` | Enable pagination |
+| `defaultPageSize` | `number` | `10` | |
+| `pageSizeOptions` | `number[]` | `[10,25,50,100]` | |
+| `selectable` | `boolean` | `false` | Checkbox column for multi-select |
+| `selectedKeys` | `(string \| number)[]` | — | **Controlled** — overrides internal selection state |
+| `onSelectionChange` | `(items, keys) => void` | — | Fires on every selection change |
+| `selectionActions` | `ReactNode` | — | Slot rendered inside the blue selection bar (bulk-action buttons) |
+| `striped` | `boolean` | `false` | Alternating row shading |
+| `compact` | `boolean` | `false` | Reduced cell padding |
+| `stickyHeader` | `boolean` | `false` | Freeze header on scroll |
+| `title` | `string` | — | Card heading |
+| `description` | `string` | — | Card sub-heading |
+| `toolbar` | `ReactNode` | — | Top-right toolbar slot |
+| `rowActions` | `(item, index) => ReactNode` | — | Per-row actions column |
+| `actionsHeader` | `string` | `''` | Header label for actions column |
 
 **`TableColumn` props:**
 
@@ -940,6 +973,84 @@ import {
 ```
 
 `Table` wraps itself in `overflow-auto` by default. Pass `scrollable={false}` to disable.
+
+#### Multi-row selection in Table
+
+Use `TableCheckboxHead`, `TableCheckboxCell`, and the `useTableSelection` hook to add checkbox multi-select to any raw `Table`.
+
+```tsx
+import {
+  Table, TableHeader, TableBody, TableRow, TableHead, TableCell,
+  TableCheckboxHead, TableCheckboxCell,
+  useTableSelection,
+} from '@lucifer91299/ui'
+
+function InvoiceTable({ invoices }: { invoices: Invoice[] }) {
+  const {
+    isSelected, isAllSelected, isIndeterminate,
+    toggleRow, toggleAll,
+    selectedItems, selectedCount,
+  } = useTableSelection(invoices, (inv) => inv.id)
+
+  return (
+    <>
+      {selectedCount > 0 && (
+        <p className="text-sm mb-2">{selectedCount} selected</p>
+      )}
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {/* Select-all checkbox */}
+            <TableCheckboxHead
+              checked={isAllSelected}
+              indeterminate={isIndeterminate}
+              onChange={toggleAll}
+            />
+            <TableHead>Invoice</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead className="text-right">Amount</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {invoices.map((inv) => (
+            <TableRow
+              key={inv.id}
+              data-state={isSelected(inv) ? 'selected' : undefined}
+            >
+              {/* Per-row checkbox */}
+              <TableCheckboxCell
+                checked={isSelected(inv)}
+                onChange={() => toggleRow(inv)}
+              />
+              <TableCell>{inv.id}</TableCell>
+              <TableCell><StatusBadge status={inv.status} /></TableCell>
+              <TableCell className="text-right tabular-nums">{inv.amount}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </>
+  )
+}
+```
+
+**`useTableSelection` return values:**
+
+| Field | Type | Description |
+|---|---|---|
+| `selectedKeys` | `Set<string \| number>` | Raw set of selected row keys |
+| `selectedItems` | `T[]` | Selected row objects |
+| `selectedCount` | `number` | Count of selected rows |
+| `isSelected` | `(item) => boolean` | Check if a row is selected |
+| `isAllSelected` | `boolean` | All rows in `items` are selected |
+| `isIndeterminate` | `boolean` | Some (but not all) rows selected — for header checkbox |
+| `toggleRow` | `(item) => void` | Toggle a single row |
+| `toggleAll` | `() => void` | Select all / deselect all |
+| `clearSelection` | `() => void` | Clear all selections |
+
+**`TableCheckboxHead` props:** `checked`, `indeterminate?`, `onChange` — plus all native `<th>` attributes.
+
+**`TableCheckboxCell` props:** `checked`, `onChange` — plus all native `<td>` attributes.
 
 ---
 
@@ -1605,6 +1716,413 @@ const data = [
 | `outerRadius` | — | — | — | ✓ | Outer ring radius (default `78%`) |
 | `className` | ✓ | ✓ | ✓ | ✓ | CSS class on wrapper div |
 | `style` | ✓ | ✓ | ✓ | ✓ | Inline style on wrapper div |
+
+---
+
+### Apache ECharts — 40 chart types
+
+Production-grade interactive charts powered by [Apache ECharts](https://echarts.apache.org) (**Apache-2.0 licence — 100% open source, free for commercial use**). All charts are themed to the design system using CSS variables (`--primary`, `--accent`, `--success`), load asynchronously (skeleton shown until ready), and accept an `options` prop for full ECharts control. Every chart supports a `watermark` prop (diagonal overlay text) and a `showDownload` prop (save-as-PNG button).
+
+> **Install peer deps first:**
+> ```bash
+> npm install echarts echarts-for-react
+> ```
+
+Source files (each ≤400 lines):
+- `EChartsBase.tsx` — shared theme utils, types, skeleton, renderer (watermark + download)
+- `EChartsLine.tsx` — Line, Spline, StepLine, StackedLine, Area, AreaSpline, StackedArea, AreaRange
+- `EChartsBar.tsx` — Column, Bar, StackedColumn, StackedBar, ColumnRange, Waterfall, BarLabelRotation, DataZoomColumn, BrushColumn
+- `EChartsMixed.tsx` — Finance (Candlestick + Volume + MA + DataZoom)
+- `EChartsPie.tsx` — Pie, Donut, Nightingale, Funnel, Polar/Radar
+- `EChartsScatter.tsx` — Scatter, EffectScatter, Bubble, BoxPlot, Candlestick
+- `EChartsGaugeHeatmap.tsx` — Gauge, SolidGauge, Heatmap, CalendarHeatmap
+- `EChartsHierarchy.tsx` — Treemap, Tree, Sunburst
+- `EChartsFlowAdvanced.tsx` — Graph, Sankey, Parallel, ThemeRiver, PictorialBar
+
+---
+
+#### All 40 chart types
+
+| # | Component | Type | Use case |
+|---|-----------|------|----------|
+| 1 | `HCLineChart` | Line | Trends over time |
+| 2 | `HCSplineChart` | Spline (smooth) | Smooth trend lines |
+| 3 | `HCStepLineChart` | Step Line | Discrete state changes |
+| 4 | `HCStackedLineChart` | Stacked Line | Cumulative trends |
+| 5 | `HCAreaChart` | Area | Volume over time |
+| 6 | `HCAreaSplineChart` | Area Spline | Smooth area fill |
+| 7 | `HCStackedAreaChart` | Stacked Area | Cumulative area fill |
+| 8 | `HCAreaRangeChart` | Area Range | High/low bands |
+| 9 | `HCColumnChart` | Column (vertical) | Category comparison |
+| 10 | `HCBarChart` | Bar (horizontal) | Ranked comparison |
+| 11 | `HCStackedColumnChart` | Stacked Column | Part-to-whole comparison |
+| 12 | `HCStackedBarChart` | Stacked Bar (horizontal) | Horizontal part-to-whole |
+| 13 | `HCColumnRangeChart` | Column Range | Min/max per category |
+| 14 | `HCWaterfallChart` | Waterfall | Running total changes |
+| 15 | `HCBarLabelRotationChart` | Bar Label Rotation | Many categories with angled labels |
+| 16 | `HCDataZoomColumnChart` | DataZoom Column | Large-scale data with scroll/zoom |
+| 17 | `HCBrushColumnChart` | Brush Select Column | Drag-to-select region |
+| 18 | `HCFinanceChart` | Finance / Stock | Candlestick + Volume + MA + DataZoom |
+| 19 | `HCPieChart` | Pie | Part-to-whole |
+| 20 | `HCDonutChart` | Donut | Part-to-whole with center |
+| 21 | `HCNightingaleChart` | Nightingale / Rose | Radial bar comparison |
+| 22 | `HCFunnelChart` | Funnel | Conversion pipeline |
+| 23 | `HCScatterChart` | Scatter | Correlation / distribution |
+| 24 | `HCEffectScatterChart` | Effect Scatter (ripple) | Highlighted data points |
+| 25 | `HCBubbleChart` | Bubble | 3-variable comparison |
+| 26 | `HCBoxPlotChart` | Box Plot | Statistical distribution |
+| 27 | `HCCandlestickChart` | Candlestick / K-Line | OHLC financial data |
+| 28 | `HCGaugeChart` | Angular Gauge | KPI dial / speedometer |
+| 29 | `HCSolidGaugeChart` | Solid Gauge (arc) | Percentage / progress |
+| 30 | `HCHeatmapChart` | Heatmap (cartesian) | Density / matrix |
+| 31 | `HCCalendarHeatmapChart` | Calendar Heatmap | Activity over a year |
+| 32 | `HCTreemapChart` | Treemap | Hierarchical proportion |
+| 33 | `HCTreeChart` | Tree Diagram | Org chart / hierarchy |
+| 34 | `HCSunburstChart` | Sunburst | Drill-down hierarchy |
+| 35 | `HCGraphChart` | Graph / Network | Force-directed network |
+| 36 | `HCSankeyChart` | Sankey | Flow / energy diagram |
+| 37 | `HCParallelChart` | Parallel Coordinates | Multi-dimensional data |
+| 38 | `HCThemeRiverChart` | Theme River | Stream / flow over time |
+| 39 | `HCPictorialBarChart` | Pictorial Bar | Icon-based bar chart |
+| 40 | `HCPolarChart` | Polar / Radar / Spider | Multi-axis comparison |
+
+---
+
+#### Common props (all charts)
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `title` | `string` | — | Chart title |
+| `subtitle` | `string` | — | Subtitle below title |
+| `height` | `number` | `280` | Chart height in px |
+| `className` | `string` | — | CSS class on wrapper |
+| `style` | `React.CSSProperties` | — | Inline style on wrapper |
+| `options` | `EChartsOption` | — | Deep-merged override — full Apache ECharts API |
+
+---
+
+#### 1–6. Line / Spline / Area / Area Spline / Column / Bar
+
+```tsx
+import { HCLineChart, HCColumnChart, HCBarChart, HCAreaChart } from '@lucifer91299/ui'
+
+const categories = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']
+
+const series = [
+  { name: 'Revenue',  data: [420, 550, 490, 610, 730, 680] },
+  { name: 'Expenses', data: [280, 310, 270, 340, 390, 360] },
+]
+
+<HCLineChart    categories={categories} series={series} title="Monthly Revenue" height={300} />
+<HCSplineChart  categories={categories} series={series} title="Smooth Trend" />
+<HCAreaChart    categories={categories} series={series} title="Volume" />
+<HCAreaSplineChart categories={categories} series={series} title="Smooth Area" />
+<HCColumnChart  categories={categories} series={series} title="Comparison" stacked />
+<HCBarChart     categories={categories} series={series} title="Horizontal" showDataLabels />
+```
+
+**Shared props for these 6:**
+
+| Prop | Type | Default | Description |
+|---|---|---|---|
+| `categories` | `string[]` | — | X-axis labels |
+| `series` | `HCSeries[]` | — | `{ name, data, color? }` |
+| `xAxisTitle` / `yAxisTitle` | `string` | — | Axis titles |
+| `stacked` | `boolean` | `false` | Stack series |
+| `showLegend` | `boolean` | `true` | |
+| `showDataLabels` | `boolean` | `false` | Show value labels on bars/points |
+| `showGrid` | `boolean` | `true` | Show horizontal grid lines |
+
+---
+
+#### 7. Pie Chart
+
+```tsx
+import { HCPieChart } from '@lucifer91299/ui'
+
+<HCPieChart
+  title="Revenue split"
+  data={[
+    { name: 'Memberships', y: 58, color: '#000080' },
+    { name: 'Sessions',    y: 28 },
+    { name: 'Merchandise', y: 14 },
+  ]}
+  showDataLabels
+  showLegend
+/>
+```
+
+---
+
+#### 8. Donut Chart
+
+```tsx
+import { HCDonutChart } from '@lucifer91299/ui'
+
+<HCDonutChart
+  title="Status breakdown"
+  innerSize="55%"
+  data={[
+    { name: 'Active',   y: 63 },
+    { name: 'Pending',  y: 21 },
+    { name: 'Inactive', y: 16 },
+  ]}
+/>
+```
+
+---
+
+#### 9. Scatter Chart
+
+```tsx
+import { HCScatterChart } from '@lucifer91299/ui'
+
+<HCScatterChart
+  title="Height vs Weight"
+  xAxisTitle="Height (cm)"
+  yAxisTitle="Weight (kg)"
+  series={[
+    { name: 'Male',   data: [[170, 70], [175, 78], [180, 82], [165, 65]] },
+    { name: 'Female', data: [[160, 55], [165, 60], [158, 52], [172, 68]] },
+  ]}
+/>
+```
+
+---
+
+#### 10. Bubble Chart
+
+```tsx
+import { HCBubbleChart } from '@lucifer91299/ui'
+
+<HCBubbleChart
+  title="Market analysis"
+  xAxisTitle="Value"
+  yAxisTitle="Growth"
+  series={[
+    {
+      name: 'Products',
+      data: [
+        { x: 95, y: 95, z: 13.8, name: 'A' },
+        { x: 86, y: 76, z: 14.7, name: 'B' },
+        { x: 80, y: 102, z: 23.5, name: 'C' },
+      ],
+    },
+  ]}
+/>
+```
+
+---
+
+#### 11. Angular Gauge
+
+```tsx
+import { HCGaugeChart } from '@lucifer91299/ui'
+
+<HCGaugeChart
+  value={72}
+  min={0}
+  max={100}
+  label="Performance"
+  suffix="%"
+  height={240}
+/>
+```
+
+---
+
+#### 12. Solid Gauge
+
+```tsx
+import { HCSolidGaugeChart } from '@lucifer91299/ui'
+
+<HCSolidGaugeChart
+  value={68}
+  min={0}
+  max={100}
+  label="Completion"
+  suffix="%"
+  color="#000080"
+  height={200}
+/>
+```
+
+---
+
+#### 13. Heatmap
+
+```tsx
+import { HCHeatmapChart } from '@lucifer91299/ui'
+
+<HCHeatmapChart
+  title="Sales by Day & Hour"
+  xCategories={['Mon', 'Tue', 'Wed', 'Thu', 'Fri']}
+  yCategories={['Morning', 'Afternoon', 'Evening']}
+  data={[
+    [0, 0, 10], [1, 0, 19], [2, 0, 8],  [3, 0, 24], [4, 0, 67],
+    [0, 1, 92], [1, 1, 58], [2, 1, 78], [3, 1, 117],[4, 1, 48],
+    [0, 2, 35], [1, 2, 15], [2, 2, 123],[3, 2, 64], [4, 2, 52],
+  ]}
+  showDataLabels
+/>
+```
+
+---
+
+#### 14. Treemap
+
+```tsx
+import { HCTreemapChart } from '@lucifer91299/ui'
+
+<HCTreemapChart
+  title="Budget allocation"
+  data={[
+    { name: 'Marketing',   value: 6 },
+    { name: 'Engineering', value: 15 },
+    { name: 'Sales',       value: 10 },
+    { name: 'Support',     value: 4  },
+    { name: 'Operations',  value: 8  },
+  ]}
+/>
+```
+
+---
+
+#### 15. Waterfall Chart
+
+```tsx
+import { HCWaterfallChart } from '@lucifer91299/ui'
+
+<HCWaterfallChart
+  title="Revenue Bridge"
+  categories={['Start', 'Sales', 'Refunds', 'Expenses', 'Net']}
+  data={[
+    { y: 120000 },
+    { y: 32000 },
+    { y: -12000 },
+    { y: -25000 },
+    { isSum: true, y: 0 },
+  ]}
+  yAxisTitle="₹"
+/>
+```
+
+---
+
+#### 16. Funnel Chart
+
+```tsx
+import { HCFunnelChart } from '@lucifer91299/ui'
+
+<HCFunnelChart
+  title="Sales Funnel"
+  data={[
+    { name: 'Leads',      y: 5000 },
+    { name: 'Qualified',  y: 3200 },
+    { name: 'Proposal',   y: 1800 },
+    { name: 'Negotiation',y: 900  },
+    { name: 'Won',        y: 450  },
+  ]}
+/>
+```
+
+---
+
+#### 17. Polar / Radar / Spider Chart
+
+```tsx
+import { HCPolarChart } from '@lucifer91299/ui'
+
+<HCPolarChart
+  title="Athlete Profile"
+  polarType="area"    // 'line' | 'column' | 'area'
+  categories={['Speed', 'Strength', 'Endurance', 'Agility', 'Technique']}
+  series={[
+    { name: 'Athlete A', data: [90, 75, 80, 85, 70] },
+    { name: 'Athlete B', data: [65, 88, 72, 60, 95] },
+  ]}
+/>
+```
+
+---
+
+#### 18. Area Range Chart
+
+```tsx
+import { HCAreaRangeChart } from '@lucifer91299/ui'
+
+<HCAreaRangeChart
+  title="Temperature Range"
+  yAxisTitle="°C"
+  categories={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun']}
+  series={[
+    { name: 'Temperature', data: [[7, 14], [4, 12], [8, 17], [12, 22], [17, 28], [21, 33]] },
+  ]}
+/>
+```
+
+---
+
+#### 19. Column Range Chart
+
+```tsx
+import { HCColumnRangeChart } from '@lucifer91299/ui'
+
+<HCColumnRangeChart
+  title="Working Hours"
+  yAxisTitle="Hour"
+  categories={['Mon', 'Tue', 'Wed', 'Thu', 'Fri']}
+  series={[
+    { name: 'Shift A', data: [[8, 16], [8, 14], [9, 17], [8, 13], [9, 15]] },
+    { name: 'Shift B', data: [[16, 0], [14, 0], [17, 0], [13, 0], [15, 0]] },
+  ]}
+/>
+```
+
+---
+
+#### 20. Box Plot Chart
+
+```tsx
+import { HCBoxPlotChart } from '@lucifer91299/ui'
+
+<HCBoxPlotChart
+  title="Score Distribution"
+  yAxisTitle="Score"
+  categories={['Q1', 'Q2', 'Q3', 'Q4']}
+  series={[
+    {
+      name: 'Scores',
+      // [low, q1, median, q3, high]
+      data: [
+        [52, 65, 70, 78, 95],
+        [55, 68, 74, 83, 98],
+        [48, 60, 68, 77, 92],
+        [58, 72, 80, 88, 99],
+      ],
+    },
+  ]}
+/>
+```
+
+---
+
+#### Full ECharts override
+
+Every component accepts an `options` prop that is deep-merged on top of the generated options — giving full access to the Apache ECharts API:
+
+```tsx
+<HCColumnChart
+  categories={cats}
+  series={series}
+  options={{
+    chart:      { backgroundColor: '#1a1a2e' },
+    xAxis:      { labels: { style: { color: '#ccc' } } },
+    yAxis:      { gridLineColor: '#2a2a4e' },
+    plotOptions:{ column: { borderRadius: 8, groupPadding: 0.1 } },
+  }}
+/>
+```
 
 ---
 
@@ -2573,6 +3091,107 @@ npx @lucifer91299/create-portal-app my-portal --yes --local-ui=../../packages/ui
 ---
 
 ## Changelog
+
+### v1.1.78
+
+**Multi-row checkbox selection for `DataTable` and `Table`:**
+
+`DataTable` — new props:
+
+| Prop | Description |
+|---|---|
+| `selectedKeys` | Controlled mode — pass selected row keys from outside; DataTable stops managing its own selection state |
+| `selectionActions` | `ReactNode` slot rendered inside the blue selection bar alongside the count — ideal for bulk-action buttons |
+| `onSelectionChange` | Signature extended: now receives `(items: T[], keys: (string \| number)[])` — both the full row objects and the raw keys |
+
+`Table` — three new exports:
+
+| Export | Description |
+|---|---|
+| `TableCheckboxHead` | Drop-in `<th>` with a Checkbox for select-all; accepts `checked`, `indeterminate`, `onChange` |
+| `TableCheckboxCell` | Drop-in `<td>` with a Checkbox for per-row selection; accepts `checked`, `onChange` |
+| `useTableSelection(items, keyExtractor)` | Headless hook that manages selection state for any raw `Table` — returns `isSelected`, `isAllSelected`, `isIndeterminate`, `toggleRow`, `toggleAll`, `clearSelection`, `selectedItems`, `selectedCount` |
+
+---
+
+### v1.1.77
+
+**Charts expanded to 40 types — bar variants, finance chart, watermark & download:**
+
+4 new `HC*` chart components added. Every chart now supports `watermark` and `showDownload` props.
+
+| New component | Description |
+|---|---|
+| `HCBarLabelRotationChart` | Column chart with rotated axis labels — ideal for many categories |
+| `HCDataZoomColumnChart` | Column chart with DataZoom slider/inside scroll for large datasets |
+| `HCBrushColumnChart` | Column chart with brush drag-to-select region tool |
+| `HCFinanceChart` | Full stock chart: candlestick + volume bars + MA lines + DataZoom |
+
+New props on **all** charts:
+- `watermark?: string` — semi-transparent diagonal text overlay (e.g. `"CONFIDENTIAL"`)
+- `showDownload?: boolean` — save-as-PNG toolbox button (top-right)
+
+---
+
+### v1.1.76
+
+**Charts expanded to 36 types — full ECharts series coverage:**
+
+16 new `HC*` chart components added. Source split into 7 focused files (each ≤400 lines).
+
+| New component | ECharts type |
+|---|---|
+| `HCStackedLineChart` | line + stack |
+| `HCStepLineChart` | line + step |
+| `HCStackedAreaChart` | line + stack + areaStyle |
+| `HCStackedColumnChart` | bar + stack (vertical) |
+| `HCStackedBarChart` | bar + stack (horizontal) |
+| `HCNightingaleChart` | pie + roseType: 'area' |
+| `HCEffectScatterChart` | effectScatter |
+| `HCCandlestickChart` | candlestick (OHLC) |
+| `HCTreeChart` | tree |
+| `HCSunburstChart` | sunburst |
+| `HCCalendarHeatmapChart` | heatmap + calendar |
+| `HCGraphChart` | graph (force/circular) |
+| `HCSankeyChart` | sankey |
+| `HCParallelChart` | parallel |
+| `HCThemeRiverChart` | themeRiver |
+| `HCPictorialBarChart` | pictorialBar |
+
+All new charts: CSS-variable themed · lazy-loaded with skeleton · `options` deep-merge escape hatch.
+
+---
+
+### v1.1.72
+
+**Apache ECharts integration — 20 new chart types (replaces proprietary Highcharts):**
+
+Install optional peer deps: `npm install echarts echarts-for-react`
+
+| # | Component | Chart type |
+|---|-----------|------------|
+| 1 | `HCLineChart` | Line |
+| 2 | `HCSplineChart` | Spline (smooth line) |
+| 3 | `HCAreaChart` | Area |
+| 4 | `HCAreaSplineChart` | Area Spline (smooth area) |
+| 5 | `HCColumnChart` | Column (vertical bars) |
+| 6 | `HCBarChart` | Bar (horizontal bars) |
+| 7 | `HCPieChart` | Pie |
+| 8 | `HCDonutChart` | Donut (pie with `innerSize`) |
+| 9 | `HCScatterChart` | Scatter plot |
+| 10 | `HCBubbleChart` | Bubble (3-variable) |
+| 11 | `HCGaugeChart` | Angular gauge (speedometer) |
+| 12 | `HCSolidGaugeChart` | Solid gauge (arc) |
+| 13 | `HCHeatmapChart` | Heatmap |
+| 14 | `HCTreemapChart` | Treemap |
+| 15 | `HCWaterfallChart` | Waterfall |
+| 16 | `HCFunnelChart` | Funnel |
+| 17 | `HCPolarChart` | Polar / Radar / Spider |
+| 18 | `HCAreaRangeChart` | Area Range (high/low band) |
+| 19 | `HCColumnRangeChart` | Column Range |
+| 20 | `HCBoxPlotChart` | Box Plot (statistical) |
+
+All charts: design-system themed via CSS variables · async lazy-load (skeleton until ready) · `options` deep-merge escape hatch · `className` + `style` props.
 
 ### v1.1.71
 

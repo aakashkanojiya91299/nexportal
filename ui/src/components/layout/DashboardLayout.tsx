@@ -142,7 +142,14 @@ export function DashboardLayout({
     <div className={cn('flex min-h-screen bg-surface-secondary', className)} style={style}>
 
       {/* ── Sidebar ──────────────────────────────────────────────────────── */}
-      {sidebar === 'full' && <Sidebar {...commonProps} collapsed={collapsed} onToggleCollapse={toggleCollapsed} />}
+      {sidebar === 'full' && (
+        <Sidebar
+          {...commonProps}
+          collapsed={collapsed}
+          onToggleCollapse={toggleCollapsed}
+          onNavigate={onNavigate}
+        />
+      )}
       {sidebar === 'rail' && <SidebarRail {...commonProps} />}
 
       {/* ── Right side: top-bar + content ────────────────────────────────── */}
@@ -179,6 +186,7 @@ export function DashboardLayout({
                     href={settingsHref}
                     title="Settings"
                     aria-label="Settings"
+                    onClick={(e) => { if (onNavigate) { e.preventDefault(); onNavigate(settingsHref) } }}
                     className={cn(
                       'flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border bg-white shadow-sm transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2',
                       pathname.startsWith(settingsHref)

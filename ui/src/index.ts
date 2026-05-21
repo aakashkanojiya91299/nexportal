@@ -128,6 +128,88 @@ export type { AlertModalProps, AlertModalVariant } from './components/ui/AlertMo
 export { LanguageSwitcher } from './components/ui/LanguageSwitcher'
 export type { LanguageSwitcherProps, LanguageOption } from './components/ui/LanguageSwitcher'
 
+// ── Apache ECharts charts (Apache-2.0, open source) ──────────────────────────
+// Peer deps: npm install echarts echarts-for-react
+export {
+  HCLineChart,
+  HCSplineChart,
+  HCAreaChart,
+  HCAreaSplineChart,
+  HCColumnChart,
+  HCBarChart,
+  HCPieChart,
+  HCDonutChart,
+  HCScatterChart,
+  HCBubbleChart,
+  HCGaugeChart,
+  HCSolidGaugeChart,
+  HCHeatmapChart,
+  HCTreemapChart,
+  HCWaterfallChart,
+  HCFunnelChart,
+  HCPolarChart,
+  HCAreaRangeChart,
+  HCColumnRangeChart,
+  HCBoxPlotChart,
+  HCStackedLineChart,
+  HCStackedAreaChart,
+  HCStepLineChart,
+  HCStackedColumnChart,
+  HCStackedBarChart,
+  HCNightingaleChart,
+  HCEffectScatterChart,
+  HCCandlestickChart,
+  HCTreeChart,
+  HCSunburstChart,
+  HCCalendarHeatmapChart,
+  HCGraphChart,
+  HCSankeyChart,
+  HCParallelChart,
+  HCThemeRiverChart,
+  HCPictorialBarChart,
+  HCBarLabelRotationChart,
+  HCDataZoomColumnChart,
+  HCBrushColumnChart,
+  HCFinanceChart,
+} from './components/charts/EChartsCharts'
+export type {
+  ChartDataPoint,
+  ChartSeries as HCChartSeries,
+  BaseChartProps,
+  ScatterChartProps,
+  BubbleChartProps,
+  GaugeChartProps,
+  HeatmapChartProps,
+  TreemapChartProps,
+  TreemapItem,
+  WaterfallChartProps,
+  PolarChartProps,
+  AreaRangeChartProps,
+  ColumnRangeChartProps,
+  BoxPlotChartProps,
+  StepLineChartProps,
+  EffectScatterChartProps,
+  CandlestickChartProps,
+  TreeNode,
+  TreeChartProps,
+  SunburstItem,
+  SunburstChartProps,
+  CalendarHeatmapChartProps,
+  GraphNode,
+  GraphLink,
+  GraphChartProps,
+  SankeyNode,
+  SankeyLink,
+  SankeyChartProps,
+  ParallelDimension,
+  ParallelChartProps,
+  ThemeRiverChartProps,
+  PictorialBarChartProps,
+  BarLabelRotationChartProps,
+  DataZoomColumnChartProps,
+  FinanceChartProps,
+} from './components/charts/EChartsCharts'
+
 // ── Charts (requires recharts peer dependency) ────────────────────────────────
 export { PortalBarChart } from './components/charts/BarChart'
 export type { PortalBarChartProps, ChartSeries } from './components/charts/BarChart'
@@ -212,8 +294,14 @@ export type {
 export {
   Table, TableHeader, TableBody, TableFooter,
   TableRow, TableHead, TableCell, TableCaption,
+  TableCheckboxHead, TableCheckboxCell,
+  useTableSelection,
 } from './components/ui/Table'
-export type { TableProps } from './components/ui/Table'
+export type {
+  TableProps,
+  TableCheckboxHeadProps, TableCheckboxCellProps,
+  UseTableSelectionResult,
+} from './components/ui/Table'
 export { Label } from './components/ui/Label'
 export type { LabelProps } from './components/ui/Label'
 export {

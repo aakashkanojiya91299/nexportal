@@ -10,7 +10,7 @@ import {
   genLoginRoute, genUserRoute, genMiddleware, genSessionRoute,
   genLogoutRoute, genApiClient, genForgotPasswordRoute,
   genResetPasswordRoutes, genResetPasswordValidateRoute,
-  genNavConfig, genDashboardLayout, genDashboardShell, genContentSkeleton,
+  genNavConfig, genDashboardLayout, genDashboardShell, genDashboardLoading, genContentSkeleton,
   genReduxStore, genAuthSlice, genRootPage, genSettingsPage, genGenericHomePage,
   genDashboardHomePage,
   genEcomProductsPage, genEcomOrdersPage,
@@ -18,6 +18,7 @@ import {
   genTalentAthletesPage,
   genUsersPage, genComponentsShowcasePage, genFormBuilderPage, genOnboardingPage,
 } from '../templates'
+import { genChartsShowcasePage } from '../templates/gen-charts-showcase'
 
 // ── File helpers ───────────────────────────────────────────────────────────────
 
@@ -295,7 +296,7 @@ function scaffold(opts: ScaffoldOptions): number {
   w(f('src/app/page.tsx'),       genRootPage())
   w(f('src/providers/index.tsx'),genProviders(opts))
   w(f('src/lib/api.ts'),         genApiClient(opts))
-  w(f('src/proxy.ts'),           genMiddleware(opts))
+  w(f('src/proxy.ts'),            genMiddleware(opts))
 
   // ── Auth pages ─────────────────────────────────────────────────────────────
   w(f('src/app/login/page.tsx'),           genLoginPage(opts))
@@ -314,11 +315,15 @@ function scaffold(opts: ScaffoldOptions): number {
 
   // ── Dashboard core ─────────────────────────────────────────────────────────
   w(f('src/components/layout/nav-config.tsx'),             genNavConfig(opts))
-  w(f('src/app/dashboard/layout.tsx'),                     genDashboardLayout(opts))
-  w(f('src/app/dashboard/_components/dashboard-shell.tsx'),genDashboardShell(opts))
+  w(f('src/app/dashboard/layout.tsx'),                      genDashboardLayout(opts))
+  w(f('src/app/dashboard/loading.tsx'),                     genDashboardLoading())
+  w(f('src/app/dashboard/_components/dashboard-shell.tsx'), genDashboardShell(opts))
   w(f('src/app/dashboard/_components/content-skeleton.tsx'),genContentSkeleton())
   w(f('src/app/dashboard/page.tsx'),                       genDashboardHomePage(opts))
   w(f('src/app/dashboard/settings/page.tsx'),              genSettingsPage(opts))
+
+  // ── Charts showcase — always written for every preset ─────────────────────
+  w(f('src/app/dashboard/charts/page.tsx'), genChartsShowcasePage())
 
   // ── Preset-specific pages ──────────────────────────────────────────────────
   if (opts.preset === 'ecom-header' || opts.preset === 'ecom-sidebar') {

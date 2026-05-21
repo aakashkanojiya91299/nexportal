@@ -2,7 +2,7 @@ import type { ScaffoldOptions } from './types'
 
 export function genPackageJson(o: ScaffoldOptions): string {
   const deps: Record<string, string> = {
-    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.69',
+    '@lucifer91299/ui': o.localUiPath ? `file:${o.localUiPath}` : '^1.1.77',
     '@dnd-kit/core': '^6.3.1',
     '@dnd-kit/sortable': '^10.0.0',
     '@dnd-kit/utilities': '^3.2.2',
@@ -10,6 +10,8 @@ export function genPackageJson(o: ScaffoldOptions): string {
     'react': '^19.0.0',
     'react-dom': '^19.0.0',
     'framer-motion': '^12.0.0',
+    'echarts': '^5.5.1',
+    'echarts-for-react': '^3.0.2',
     'recharts': '^3.8.1',
     'axios': '^1.7.9',
     '@tanstack/react-query': '^5.64.1',
@@ -114,7 +116,12 @@ export function genNextConfig(o: ScaffoldOptions): string {
   return `import type { NextConfig } from 'next'
 
 const config: NextConfig = {
-  transpilePackages: ['@lucifer91299/ui'],
+  experimental: {
+    staleTimes: {
+      dynamic: 30,
+      static:  180,
+    },
+  },
   images: {
     remotePatterns: [],
   },

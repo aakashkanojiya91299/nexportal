@@ -16,7 +16,7 @@ export function genNavConfig(o: ScaffoldOptions): string {
 
 function genEcomNav(): string {
   return `import {
-  LayoutDashboard, ShoppingBag, ShoppingCart, Users, Settings, BarChart2,
+  LayoutDashboard, ShoppingBag, ShoppingCart, Users, Settings, BarChart2, LineChart,
 } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
@@ -33,6 +33,13 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    heading: 'Showcase',
+    groupIcon: <LineChart className="h-3.5 w-3.5" />,
+    items: [
+      { label: 'Charts',  href: '/dashboard/charts',  icon: <LineChart className="h-4 w-4" /> },
+    ],
+  },
+  {
     heading: 'Account',
     groupIcon: <Settings className="h-3.5 w-3.5" />,
     items: [
@@ -45,7 +52,7 @@ export const navGroups: NavGroup[] = [
 
 function genAdminNav(): string {
   return `import {
-  LayoutDashboard, Users, Shield, FileText, Settings, Activity,
+  LayoutDashboard, Users, Shield, FileText, Settings, Activity, LineChart,
 } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
@@ -62,6 +69,13 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    heading: 'Showcase',
+    groupIcon: <LineChart className="h-3.5 w-3.5" />,
+    items: [
+      { label: 'Charts',  href: '/dashboard/charts',  icon: <LineChart className="h-4 w-4" /> },
+    ],
+  },
+  {
     heading: 'Account',
     groupIcon: <Settings className="h-3.5 w-3.5" />,
     items: [
@@ -74,7 +88,7 @@ export const navGroups: NavGroup[] = [
 
 function genTalentNav(): string {
   return `import {
-  LayoutDashboard, UserCheck, ClipboardList, Award, Users, Settings,
+  LayoutDashboard, UserCheck, ClipboardList, Award, Users, Settings, LineChart,
 } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
@@ -90,6 +104,13 @@ export const navGroups: NavGroup[] = [
     ],
   },
   {
+    heading: 'Showcase',
+    groupIcon: <LineChart className="h-3.5 w-3.5" />,
+    items: [
+      { label: 'Charts',  href: '/dashboard/charts',  icon: <LineChart className="h-4 w-4" /> },
+    ],
+  },
+  {
     heading: 'Account',
     groupIcon: <Settings className="h-3.5 w-3.5" />,
     items: [
@@ -101,7 +122,7 @@ export const navGroups: NavGroup[] = [
 }
 
 function genBlankNav(): string {
-  return `import { LayoutDashboard, Settings, Users, Layers, ClipboardList, FormInput } from 'lucide-react'
+  return `import { LayoutDashboard, Settings, Users, Layers, ClipboardList, FormInput, LineChart } from 'lucide-react'
 import type { NavGroup } from '@lucifer91299/ui'
 
 export const navGroups: NavGroup[] = [
@@ -114,6 +135,13 @@ export const navGroups: NavGroup[] = [
       { label: 'Form Builder', href: '/dashboard/form-builder',  icon: <FormInput className="h-4 w-4" /> },
       { label: 'Components',   href: '/dashboard/components',    icon: <Layers className="h-4 w-4" /> },
       { label: 'Onboarding',   href: '/dashboard/onboarding',    icon: <ClipboardList className="h-4 w-4" /> },
+    ],
+  },
+  {
+    heading: 'Showcase',
+    groupIcon: <LineChart className="h-3.5 w-3.5" />,
+    items: [
+      { label: 'Charts',  href: '/dashboard/charts',  icon: <LineChart className="h-4 w-4" /> },
     ],
   },
   {

@@ -21,7 +21,6 @@ export function genDashboardShell(o: ScaffoldOptions): string {
 
 import { DashboardLayout, ${authHook}, type NavGroup } from '@lucifer91299/ui'
 import { usePathname } from 'next/navigation'
-import { ContentSkeleton } from './content-skeleton'
 
 interface Props {
   navGroups: NavGroup[]
@@ -30,7 +29,7 @@ interface Props {
 
 export function DashboardShell({ navGroups, children }: Props) {
   const pathname = usePathname()
-  const { user, loading, logout } = ${authCall}
+  const { user, logout } = ${authCall}
 
   const breadcrumbs = pathname
     .replace('/dashboard', '')
@@ -54,9 +53,18 @@ export function DashboardShell({ navGroups, children }: Props) {
       onLogout={logout}
       breadcrumbs={breadcrumbs}
     >
-      {loading ? <ContentSkeleton /> : children}
+      {children}
     </DashboardLayout>
   )
+}
+`
+}
+
+export function genDashboardLoading(): string {
+  return `import { ContentSkeleton } from './_components/content-skeleton'
+
+export default function DashboardLoading() {
+  return <ContentSkeleton />
 }
 `
 }

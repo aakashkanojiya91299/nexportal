@@ -1,6 +1,6 @@
 # `create-portal-app`
 
-> Scaffold a complete Next.js portal in seconds — pick a domain preset, get realistic demo data, animated login, dashboard layout, JWT auth, and full theming. No backend required.
+> Scaffold a complete Next.js portal in seconds — pick a domain preset, get realistic demo data, animated login, dashboard layout, JWT auth, full theming, and a **built-in charts showcase (40 chart types)**. No backend required.
 
 [![npm version](https://img.shields.io/npm/v/@lucifer91299/create-portal-app)](https://www.npmjs.com/package/@lucifer91299/create-portal-app)
 [![npm downloads](https://img.shields.io/npm/dm/@lucifer91299/create-portal-app)](https://www.npmjs.com/package/@lucifer91299/create-portal-app)
@@ -74,15 +74,17 @@ npm run dev
 
 Each preset bundles a domain-appropriate nav, sidebar/header layout, and (optionally) realistic demo pages. The layout is derived from the preset — you don't pick sidebar and preset separately.
 
-| Preset | CLI flag | Layout | Demo pages |
-|--------|----------|--------|------------|
-| E-commerce (Top Nav) | `--preset=ecom-header` | Header nav | Home · Products · Orders |
-| E-commerce (Sidebar) | `--preset=ecom-sidebar` | Full sidebar | Home · Products · Orders |
-| Admin Panel | `--preset=admin` | Full sidebar | Home · Users · Roles · Audit Log |
-| Talent Portal | `--preset=talent` | Full sidebar | Home · Athletes · Registrations · Certificates |
-| Blank Starter | `--preset=blank` | Your choice | Home · Users · Component Showcase · Form Builder · Onboarding |
+| Preset | CLI flag | Layout | Demo pages | Always included |
+|--------|----------|--------|------------|-----------------|
+| E-commerce (Top Nav) | `--preset=ecom-header` | Header nav | Home · Products · Orders | **Charts** |
+| E-commerce (Sidebar) | `--preset=ecom-sidebar` | Full sidebar | Home · Products · Orders | **Charts** |
+| Admin Panel | `--preset=admin` | Full sidebar | Home · Users · Roles · Audit Log | **Charts** |
+| Talent Portal | `--preset=talent` | Full sidebar | Home · Athletes · Registrations · Certificates | **Charts** |
+| Blank Starter | `--preset=blank` | Your choice | Home · Users · Component Showcase · Form Builder · Onboarding | **Charts** |
 
-> **Blank** always includes the component showcase so you can browse every available UI component.
+> **Charts** (`/dashboard/charts`) is always generated for every preset — it shows all 36 Apache ECharts chart types with live sample data, grouped into 12 sections, so you can drop any chart straight into your pages.
+>
+> **Blank** also always includes the full component showcase so you can browse every available UI component.
 
 ---
 
@@ -97,6 +99,27 @@ When you choose **Include demo content**, each page ships with hardcoded realist
 - Recent registrations table with 10 rows and `StatusBadge`
 
 **With demo off**: every page is a clean `PageShell` stub ready for your data.
+
+**Charts showcase (always included — all presets):**
+
+The `/dashboard/charts` page ships with all 40 chart types pre-populated with realistic sample data:
+
+| # | Section | Charts |
+|---|---------|--------|
+| 1 | Line | `HCLineChart`, `HCSplineChart`, `HCStepLineChart`, `HCStackedLineChart` |
+| 2 | Area | `HCAreaChart`, `HCAreaSplineChart`, `HCStackedAreaChart`, `HCAreaRangeChart` |
+| 3 | Bar & Column | `HCColumnChart`, `HCBarChart`, `HCStackedColumnChart`, `HCStackedBarChart`, `HCColumnRangeChart`, `HCWaterfallChart` |
+| 4 | Pie / Funnel | `HCPieChart`, `HCDonutChart`, `HCNightingaleChart`, `HCFunnelChart` |
+| 5 | Scatter | `HCScatterChart`, `HCEffectScatterChart`, `HCBubbleChart`, `HCBoxPlotChart` |
+| 6 | Candlestick | `HCCandlestickChart` |
+| 7 | Gauges | `HCGaugeChart`, `HCSolidGaugeChart` |
+| 8 | Heatmap | `HCHeatmapChart`, `HCCalendarHeatmapChart` |
+| 9 | Hierarchy | `HCTreemapChart`, `HCTreeChart`, `HCSunburstChart` |
+| 10 | Graph & Sankey | `HCGraphChart`, `HCSankeyChart` |
+| 11 | Advanced | `HCParallelChart`, `HCThemeRiverChart`, `HCPictorialBarChart` |
+| 12 | Radar | `HCPolarChart` |
+
+All charts are themed via CSS variables (`--primary`, `--accent`, `--success`) and lazy-loaded with a skeleton placeholder. Peer deps needed in the generated app: `npm install echarts echarts-for-react`.
 
 ---
 
@@ -189,6 +212,7 @@ my-portal/
 │   │   │   ├── athletes/page.tsx       [talent] athletes table with sport filter
 │   │   │   ├── registrations/page.tsx  [talent] registrations stub
 │   │   │   ├── certificates/page.tsx   [talent] certificates stub
+│   │   │   ├── charts/page.tsx         [ALL]   40 chart types showcase
 │   │   │   ├── components/page.tsx     [blank] full component showcase
 │   │   │   ├── onboarding/page.tsx     [blank] 4-section onboarding form
 │   │   │   └── form-builder/page.tsx   [blank] drag-and-drop form builder
@@ -275,7 +299,8 @@ Clean gradient card login with optional role-select splash. Best for SaaS or min
 
 - **Next.js 16** (App Router) + TypeScript
 - **Tailwind CSS 3** with `@lucifer91299/ui` preset
-- **`@lucifer91299/ui` 1.1.71** — components, hooks, design system
+- **`@lucifer91299/ui` 1.1.77** — 90+ components, hooks, design system
+- **Apache ECharts 6** (`echarts` + `echarts-for-react`) — 40 chart types, Apache-2.0 licence
 - **framer-motion 12** — entrance animations
 - **jose 5** — JWT sign + verify
 - **Redux Toolkit + TanStack Query** (or React Query only)
@@ -320,6 +345,83 @@ See the full component and theming documentation at:
 ---
 
 ## Changelog
+
+### v1.1.38
+
+**Charts showcase expanded to 40 types — bar variants, finance chart, watermark & download:**
+
+- **4 new chart components**: `HCBarLabelRotationChart`, `HCDataZoomColumnChart`, `HCBrushColumnChart`, `HCFinanceChart`
+- **`watermark` + `showDownload` props** added to every chart — overlay text and save-as-PNG button
+- **UI version bump** — generated projects now use `@lucifer91299/ui@^1.1.77`
+- **Charts showcase page** updated from 12 to 13 sections
+
+| # | Section | Charts |
+|---|---------|--------|
+| 1 | Line | `HCLineChart`, `HCSplineChart`, `HCStepLineChart`, `HCStackedLineChart` |
+| 2 | Area | `HCAreaChart`, `HCAreaSplineChart`, `HCStackedAreaChart`, `HCAreaRangeChart` |
+| 3 | Bar & Column | `HCColumnChart`, `HCBarChart`, `HCStackedColumnChart`, `HCStackedBarChart`, `HCColumnRangeChart`, `HCWaterfallChart`, `HCBarLabelRotationChart`, `HCDataZoomColumnChart`, `HCBrushColumnChart` |
+| 3b | Finance | `HCFinanceChart` (candlestick + volume + MA + DataZoom) |
+| 4 | Pie / Funnel | `HCPieChart`, `HCDonutChart`, `HCNightingaleChart`, `HCFunnelChart` |
+| 5 | Scatter | `HCScatterChart`, `HCEffectScatterChart`, `HCBubbleChart`, `HCBoxPlotChart` |
+| 6 | Candlestick | `HCCandlestickChart` |
+| 7 | Gauges | `HCGaugeChart`, `HCSolidGaugeChart` |
+| 8 | Heatmap | `HCHeatmapChart`, `HCCalendarHeatmapChart` |
+| 9 | Hierarchy | `HCTreemapChart`, `HCTreeChart`, `HCSunburstChart` |
+| 10 | Graph & Sankey | `HCGraphChart`, `HCSankeyChart` |
+| 11 | Advanced | `HCParallelChart`, `HCThemeRiverChart`, `HCPictorialBarChart` |
+| 12 | Radar | `HCPolarChart` |
+
+---
+
+### v1.1.37
+
+**Charts showcase expanded to 36 chart types:**
+
+- **16 new chart components** added to `@lucifer91299/ui`: `HCStackedLineChart`, `HCStepLineChart`, `HCStackedAreaChart`, `HCStackedColumnChart`, `HCStackedBarChart`, `HCNightingaleChart`, `HCEffectScatterChart`, `HCCandlestickChart`, `HCTreeChart`, `HCSunburstChart`, `HCCalendarHeatmapChart`, `HCGraphChart`, `HCSankeyChart`, `HCParallelChart`, `HCThemeRiverChart`, `HCPictorialBarChart`
+- **`EChartsCharts.tsx` split** into 7 focused files (≤400 lines each) for readability: `EChartsBase`, `EChartsLine`, `EChartsBar`, `EChartsPie`, `EChartsScatter`, `EChartsGaugeHeatmap`, `EChartsHierarchy`, `EChartsFlowAdvanced`
+- **Charts showcase page updated** from 7 sections to 12 sections covering all ECharts series types
+- **UI version bump** — generated projects now use `@lucifer91299/ui@^1.1.76`
+
+| # | Section | Charts |
+|---|---------|--------|
+| 1 | Line | `HCLineChart`, `HCSplineChart`, `HCStepLineChart`, `HCStackedLineChart` |
+| 2 | Area | `HCAreaChart`, `HCAreaSplineChart`, `HCStackedAreaChart`, `HCAreaRangeChart` |
+| 3 | Bar & Column | `HCColumnChart`, `HCBarChart`, `HCStackedColumnChart`, `HCStackedBarChart`, `HCColumnRangeChart`, `HCWaterfallChart` |
+| 4 | Pie / Funnel | `HCPieChart`, `HCDonutChart`, `HCNightingaleChart`, `HCFunnelChart` |
+| 5 | Scatter | `HCScatterChart`, `HCEffectScatterChart`, `HCBubbleChart`, `HCBoxPlotChart` |
+| 6 | Candlestick | `HCCandlestickChart` |
+| 7 | Gauges | `HCGaugeChart`, `HCSolidGaugeChart` |
+| 8 | Heatmap | `HCHeatmapChart`, `HCCalendarHeatmapChart` |
+| 9 | Hierarchy | `HCTreemapChart`, `HCTreeChart`, `HCSunburstChart` |
+| 10 | Graph & Sankey | `HCGraphChart`, `HCSankeyChart` |
+| 11 | Advanced | `HCParallelChart`, `HCThemeRiverChart`, `HCPictorialBarChart` |
+| 12 | Radar | `HCPolarChart` |
+
+---
+
+### v1.1.36
+
+**Charts showcase — available in every preset:**
+
+- **New page `/dashboard/charts`** generated for all 5 presets (`ecom-header`, `ecom-sidebar`, `admin`, `talent`, `blank`), always — regardless of `includeDemo`. Shows all 20 Apache ECharts chart types with realistic sample data grouped into 7 sections.
+- **New "Showcase" nav group** added to all 4 nav configs (`genEcomNav`, `genAdminNav`, `genTalentNav`, `genBlankNav`) — a `LineChart` icon group with a single "Charts" link to `/dashboard/charts`.
+- **New template file** `src/templates/gen-charts-showcase.ts` — `genChartsShowcasePage()` exports the fully-typed TSX generator.
+- **Apache ECharts peer deps note** — generated README / stack docs reference `echarts` + `echarts-for-react` (Apache-2.0, open source).
+- **UI version bump** — generated projects now use `@lucifer91299/ui@^1.1.73` (switched from Highcharts to Apache ECharts under the hood).
+
+**Charts showcase sections:**
+
+| # | Section | Charts |
+|---|---------|--------|
+| 1 | Line & Spline | `HCLineChart`, `HCSplineChart` |
+| 2 | Area | `HCAreaChart`, `HCAreaSplineChart`, `HCAreaRangeChart` |
+| 3 | Bar & Column | `HCColumnChart`, `HCBarChart`, `HCColumnRangeChart`, `HCWaterfallChart` |
+| 4 | Pie, Donut & Funnel | `HCPieChart`, `HCDonutChart`, `HCFunnelChart` |
+| 5 | Scatter, Bubble & Box Plot | `HCScatterChart`, `HCBubbleChart`, `HCBoxPlotChart` |
+| 6 | Gauges | `HCGaugeChart`, `HCSolidGaugeChart` |
+| 7 | Heatmap, Treemap & Radar | `HCHeatmapChart`, `HCTreemapChart`, `HCPolarChart` |
+
+---
 
 ### v1.1.35
 

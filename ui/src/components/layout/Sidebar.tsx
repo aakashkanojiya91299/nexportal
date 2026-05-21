@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useMemo } from 'react'
 import { createPortal } from 'react-dom'
 import { ChevronDown, ChevronRight, LogOut, Menu, X, Settings, ChevronsLeft, ChevronsRight } from 'lucide-react'
 import { cn } from '../../lib/cn'
@@ -18,6 +18,8 @@ export interface SidebarProps {
   collapsed?: boolean
   onToggleCollapse?: () => void
   onLogout: () => void
+  /** Client-side navigation — use Next.js router.push in App Router apps */
+  onNavigate?: (href: string) => void
   className?: string
   style?: React.CSSProperties
 }
@@ -25,6 +27,10 @@ export interface SidebarProps {
 function isActive(pathname: string, href: string): boolean {
   if (href === '/dashboard') return pathname === href
   return pathname === href || pathname.startsWith(href + '/')
+}
+
+function groupHasActive(pathname: string, group: NavGroup): boolean {
+  return group.items.some((item) => isActive(pathname, item.href))
 }
 
 function UserAvatar({ name, size = 'md' }: { name: string; size?: 'sm' | 'md' }) {
@@ -57,14 +63,24 @@ export function Sidebar({
   collapsed = false,
   onToggleCollapse,
   onLogout,
+  onNavigate,
   className,
   style,
 }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false)
-  const [openSection, setOpenSection] = useState<string | null>(null)
+  const [manualSection, setManualSection] = useState<string | null>(null)
   const [tooltip, setTooltip] = useState<{ label: string; top: number; left: number } | null>(null)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const mobileMenuRef = React.useRef<HTMLDivElement>(null)
+
+  const routeSection = useMemo(() => {
+    for (const group of navGroups) {
+      if (group.items.length > 1 && groupHasActive(pathname, group)) return group.heading
+    }
+    return null
+  }, [pathname, navGroups])
+
+  const openSection = routeSection ?? manualSection
 
   useEffect(() => {
     function handleOutside(e: MouseEvent) {
@@ -85,14 +101,19 @@ export function Sidebar({
   const hideTooltip = useCallback(() => setTooltip(null), [])
 
   useEffect(() => {
-    let active: string | null = null
-    navGroups.forEach((g) => {
-      if (g.items.length > 1 && g.items.some((item) => isActive(pathname, item.href))) {
-        active = g.heading
+    setManualSection(null)
+  }, [pathname])
+
+  const handleNavClick = useCallback(
+    (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+      setIsMobileOpen(false)
+      if (onNavigate) {
+        event.preventDefault()
+        onNavigate(href)
       }
-    })
-    setOpenSection(active)
-  }, [pathname, navGroups])
+    },
+    [onNavigate],
+  )
 
   const activeStyle = {
     background: 'linear-gradient(135deg, var(--primary, #000080) 0%, color-mix(in srgb, var(--primary, #000080) 80%, #1e3a8a) 100%)',
@@ -151,6 +172,8 @@ export function Sidebar({
         {navGroups.map((group, gi) => {
           const isMulti = group.items.length > 1
           const expanded = openSection === group.heading
+          const groupActive = groupHasActive(pathname, group)
+          const showGroupItems = groupActive || (!routeSection && manualSection === group.heading)
 
           if (!isMulti) {
             const item = group.items[0]
@@ -159,7 +182,7 @@ export function Sidebar({
               <div key={group.heading} className={gi > 0 ? 'mt-1' : ''}>
                 <a
                   href={item.href}
-                  onClick={() => setIsMobileOpen(false)}
+                  onClick={(e) => handleNavClick(e, item.href)}
                   onMouseEnter={(e) => showTooltip(e, item.label)}
                   onMouseLeave={hideTooltip}
                   className={cn(
@@ -188,7 +211,10 @@ export function Sidebar({
               {!collapsed && (
                 <button
                   type="button"
-                  onClick={() => setOpenSection((p) => p === group.heading ? null : group.heading)}
+                  onClick={() => {
+                    if (groupActive) return
+                    setManualSection((current) => (current === group.heading ? null : group.heading))
+                  }}
                   className="mb-1 flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-surface-secondary/60"
                 >
                   <span
@@ -216,14 +242,14 @@ export function Sidebar({
 
               <div
                 className={cn(
-                  !collapsed && expanded
+                  !collapsed && showGroupItems
                     ? 'space-y-0.5 border-l-2 pl-3 ml-4'
                     : !collapsed
                     ? 'hidden'
                     : 'space-y-1',
                 )}
                 style={
-                  !collapsed && expanded
+                  !collapsed && showGroupItems
                     ? { borderColor: 'var(--accent-soft, rgba(255,153,51,0.4))' }
                     : undefined
                 }
@@ -234,7 +260,7 @@ export function Sidebar({
                     <div key={item.href} className={collapsed ? 'flex justify-center' : ''}>
                       <a
                         href={item.href}
-                        onClick={() => setIsMobileOpen(false)}
+                        onClick={(e) => handleNavClick(e, item.href)}
                         onMouseEnter={(e) => showTooltip(e, item.label)}
                         onMouseLeave={hideTooltip}
                         className={cn(
@@ -334,7 +360,11 @@ export function Sidebar({
                 <div className="py-1.5">
                   <a
                     href="/dashboard/settings"
-                    onClick={() => { setMobileMenuOpen(false); setIsMobileOpen(false) }}
+                    onClick={(e) => {
+                      setMobileMenuOpen(false)
+                      setIsMobileOpen(false)
+                      if (onNavigate) { e.preventDefault(); onNavigate('/dashboard/settings') }
+                    }}
                     className="flex items-center gap-3 px-4 py-2.5 text-callout font-medium text-label-secondary hover:bg-surface-secondary/80 transition-colors"
                   >
                     <Settings className="h-4 w-4 text-label-tertiary" />

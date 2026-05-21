@@ -7,6 +7,8 @@ export interface NavItem {
   badge?: number
   /** Optional permission key — consumer filters these before passing navGroups */
   permission?: string
+  /** Sub-items trigger a flyout panel on desktop, inline expand on mobile */
+  subItems?: NavItem[]
 }
 
 export interface NavGroup {

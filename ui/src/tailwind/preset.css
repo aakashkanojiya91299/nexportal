@@ -1,0 +1,193 @@
+/*
+ * @lucifer91299/ui Tailwind v4 CSS preset
+ *
+ * Import before @import "tailwindcss" in your CSS entry:
+ *   @import "@lucifer91299/ui/tailwind/preset.css";
+ *   @import "tailwindcss";
+ *
+ * Color tokens use CSS variables so ThemeProvider can swap them at runtime.
+ */
+
+@theme inline {
+  /* ── Brand palette ────────────────────────────────────────────────────── */
+  --color-primary: var(--primary, #000080);
+  --color-primary-soft: var(--primary-soft, rgba(0, 0, 128, 0.12));
+  --color-primary-hover: var(--primary-hover, rgba(0, 0, 128, 0.9));
+
+  --color-accent: var(--accent, #FF9933);
+  --color-accent-soft: var(--accent-soft, rgba(255, 153, 51, 0.12));
+  --color-accent-hover: var(--accent-hover, rgba(255, 153, 51, 0.9));
+
+  --color-success: var(--success, #138808);
+  --color-success-soft: var(--success-soft, rgba(19, 136, 8, 0.12));
+  --color-success-hover: var(--success-hover, rgba(19, 136, 8, 0.9));
+
+  /* ── Surface hierarchy ────────────────────────────────────────────────── */
+  --color-surface-primary: #ffffff;
+  --color-surface-secondary: #f5f5f7;
+  --color-surface-tertiary: #fbfbfd;
+
+  /* ── Text hierarchy ───────────────────────────────────────────────────── */
+  --color-label-primary: #1d1d1f;
+  --color-label-secondary: #86868b;
+  --color-label-tertiary: #aeaeb2;
+
+  /* ── Dividers ─────────────────────────────────────────────────────────── */
+  --color-separator: rgba(0, 0, 0, 0.06);
+  --color-separator-opaque: #d2d2d7;
+
+  /* ── Font family ──────────────────────────────────────────────────────── */
+  --font-family-sans: var(--font-sans, Inter), -apple-system, BlinkMacSystemFont,
+    'SF Pro Display', Inter, system-ui, sans-serif;
+
+  /* ── Apple HIG type scale (compound tokens: size + line-height + tracking + weight) */
+  --text-display: 38px;
+  --text-display--line-height: 1.08;
+  --text-display--letter-spacing: -0.003em;
+  --text-display--font-weight: 600;
+
+  --text-title1: 22px;
+  --text-title1--line-height: 1.14;
+  --text-title1--letter-spacing: 0.007em;
+  --text-title1--font-weight: 600;
+
+  --text-title2: 18px;
+  --text-title2--line-height: 1.18;
+  --text-title2--letter-spacing: 0.016em;
+  --text-title2--font-weight: 600;
+
+  --text-title3: 16px;
+  --text-title3--line-height: 1.2;
+  --text-title3--letter-spacing: 0.012em;
+  --text-title3--font-weight: 600;
+
+  --text-headline: 14px;
+  --text-headline--line-height: 1.29;
+  --text-headline--letter-spacing: -0.022em;
+  --text-headline--font-weight: 600;
+
+  --text-body: 14px;
+  --text-body--line-height: 1.47;
+  --text-body--letter-spacing: -0.022em;
+  --text-body--font-weight: 400;
+
+  --text-callout: 13px;
+  --text-callout--line-height: 1.38;
+  --text-callout--letter-spacing: -0.02em;
+  --text-callout--font-weight: 400;
+
+  --text-subhead: 12px;
+  --text-subhead--line-height: 1.33;
+  --text-subhead--letter-spacing: -0.016em;
+  --text-subhead--font-weight: 400;
+
+  --text-footnote: 11px;
+  --text-footnote--line-height: 1.38;
+  --text-footnote--letter-spacing: -0.006em;
+  --text-footnote--font-weight: 400;
+
+  --text-caption1: 10px;
+  --text-caption1--line-height: 1.33;
+  --text-caption1--letter-spacing: 0em;
+  --text-caption1--font-weight: 400;
+
+  --text-caption2: 9px;
+  --text-caption2--line-height: 1.27;
+  --text-caption2--letter-spacing: 0.006em;
+  --text-caption2--font-weight: 400;
+
+  /* ── Border radius — Apple HIG scale ─────────────────────────────────── */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-md: 14px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* ── Shadows ──────────────────────────────────────────────────────────── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12);
+  --shadow-none: none;
+
+  /* ── Easing functions ─────────────────────────────────────────────────── */
+  --ease-smooth: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-reveal: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* ── Transition durations ─────────────────────────────────────────────── */
+  --duration: 200ms;
+  --duration-fast: 150ms;
+  --duration-slow: 300ms;
+  --duration-slower: 500ms;
+
+  /* ── Animations ───────────────────────────────────────────────────────── */
+  --animate-fade-in: fadeIn 0.2s cubic-bezier(0.25, 0.1, 0.25, 1);
+  --animate-slide-up: slideUp 0.3s cubic-bezier(0.25, 0.1, 0.25, 1);
+  --animate-scale-in: scaleIn 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+  --animate-step-forward: stepForward 0.32s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  --animate-step-backward: stepBackward 0.32s cubic-bezier(0.25, 0.1, 0.25, 1) both;
+  --animate-mesh-move: meshMove 20s ease infinite;
+  --animate-orb-1: orbDrift1 16s ease-in-out infinite;
+  --animate-orb-2: orbDrift2 18s ease-in-out infinite;
+  --animate-orb-3: orbDrift3 14s ease-in-out infinite;
+  --animate-scanner-sweep: scannerSweep 3s ease-in-out infinite;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.96); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  @keyframes stepForward {
+    from { opacity: 0; transform: translateX(28px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes stepBackward {
+    from { opacity: 0; transform: translateX(-28px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  @keyframes loginReveal {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes tricolorSweep {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+  @keyframes meshMove {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  @keyframes orbDrift1 {
+    0%, 100% { transform: translate(0, 0) scale(1);          opacity: 0.55; }
+    25%      { transform: translate(60px, -50px) scale(1.15); opacity: 0.7; }
+    50%      { transform: translate(20px, 40px) scale(0.9);   opacity: 0.45; }
+    75%      { transform: translate(-40px, -20px) scale(1.1); opacity: 0.65; }
+  }
+  @keyframes orbDrift2 {
+    0%, 100% { transform: translate(0, 0) scale(1);           opacity: 0.5; }
+    25%      { transform: translate(-50px, 40px) scale(1.1);  opacity: 0.65; }
+    50%      { transform: translate(30px, -60px) scale(0.95); opacity: 0.4; }
+    75%      { transform: translate(50px, 20px) scale(1.12);  opacity: 0.6; }
+  }
+  @keyframes orbDrift3 {
+    0%, 100% { transform: translate(0, 0) scale(1);             opacity: 0.4; }
+    33%      { transform: translate(-30px, -45px) scale(1.08);  opacity: 0.55; }
+    66%      { transform: translate(40px, 30px) scale(0.92);    opacity: 0.5; }
+  }
+  @keyframes scannerSweep {
+    0%, 100% { top: 2%;  opacity: 0.3; }
+    50%      { top: 98%; opacity: 1; }
+  }
+}

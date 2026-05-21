@@ -16,7 +16,7 @@ export {
 } from './gen-auth'
 
 // ── Dashboard generators ──────────────────────────────────────────────────────
-export { genDashboardLayout, genDashboardShell, genContentSkeleton } from './gen-dashboard'
+export { genDashboardLayout, genDashboardShell, genDashboardLoading, genContentSkeleton } from './gen-dashboard'
 
 // ── Nav generators ────────────────────────────────────────────────────────────
 export { genNavConfig } from './gen-nav'
@@ -47,6 +47,9 @@ export {
   genComponentsShowcasePage, genFormBuilderPage, genOnboardingPage,
   genUsersPage,
 } from './gen-legacy'
+
+// ── Charts showcase (all 20 Apache ECharts chart types) ───────────────────────
+export { genChartsShowcasePage } from './gen-charts-showcase'
 
 // ── Preset-aware home page helper ─────────────────────────────────────────────
 import type { ScaffoldOptions } from './types'
